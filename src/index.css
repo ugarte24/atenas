@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 18px;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (max-width: 640px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  body {
+    @apply antialiased text-gray-800 min-h-screen m-0 p-0;
+    background-color: #F4F4F4;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  #root {
+    min-height: 100vh;
+  }
+  button:not([class*="text-"]),
+  .btn-primary {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+  }
+  a:focus-visible,
+  button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #003366;
+  }
+}
+
+@layer components {
+  .atenas-logo {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    font-size: 1.5rem;
+    color: #003366;
+  }
+  .atenas-subtitle {
+    @apply text-slate-600 text-sm;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-slate-200 shadow-md;
+  }
+  .card-hover {
+    @apply card transition-shadow duration-200 hover:shadow-lg;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white focus:ring-2 focus:ring-offset-2 transition-colors;
+    background-color: #003366;
+  }
+  .btn-primary:hover { background-color: #002244; }
+  .btn-primary:focus { --tw-ring-color: #003366; }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold transition-colors;
+    color: #003366;
+    background-color: #e6edf5;
+    border: 1px solid #c2d4e8;
+  }
+  .btn-secondary:hover { background-color: #c2d4e8; }
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-gray-900 placeholder-slate-400 transition-shadow;
+  }
+  .input-field:focus {
+    border-color: #003366;
+    box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
+    outline: none;
+  }
+  .label {
+    @apply block text-sm font-medium text-slate-700 mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .table-mobile {
+    @apply text-sm sm:text-base;
+  }
+  .table-mobile th,
+  .table-mobile td {
+    @apply align-middle;
+  }
+  .badge-role {
+    @apply badge bg-slate-100 text-slate-600;
+  }
+}

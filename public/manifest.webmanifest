@@ -1,0 +1,19 @@
+{
+  "name": "ATENAS · Ciencias Sociales",
+  "short_name": "ATENAS",
+  "description": "Plataforma de Ciencias Sociales para 6.º de Primaria",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#003366",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
