@@ -19,13 +19,24 @@ export default function TemaView() {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { tema, loading: loadingTema } = useTema(temaId ?? null);
-  const { recursos, loading: loadingRecursos } = useRecursos(temaId ?? null);
-  const { actividades, loading: loadingActividades } = useActividades(temaId ?? null);
-  const { evaluaciones, loading: loadingEvaluaciones } = useEvaluaciones(temaId ?? null);
   const [progreso, setProgreso] = useState<ProgresoTema | null>(null);
   const [loadingProgreso, setLoadingProgreso] = useState(false);
   const [prereqOk, setPrereqOk] = useState(true);
-  const [loadingPrereq, setLoadingPrereq] = useState(false);
+  const [prereqResolved, setPrereqResolved] = useState(false);
+
+  const temaIdContenido = (() => {
+    if (!temaId) return null;
+    if (!tema) return null;
+    // Si no tiene prerequisito, puede cargarse contenido inmediatamente.
+    if (!tema.prerequisito_tema_id) return temaId;
+    // Si tiene prerequisito, cargamos contenido solo cuando ya verificamos el prerequisito.
+    if (prereqResolved && prereqOk) return temaId;
+    return null;
+  })();
+
+  const { recursos, loading: loadingRecursos } = useRecursos(temaIdContenido);
+  const { actividades, loading: loadingActividades } = useActividades(temaIdContenido);
+  const { evaluaciones, loading: loadingEvaluaciones } = useEvaluaciones(temaIdContenido);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,14 +107,15 @@ export default function TemaView() {
   useEffect(() => {
     if (!user || !tema?.prerequisito_tema_id) {
       setPrereqOk(true);
+      setPrereqResolved(true);
       return;
     }
     let c = false;
-    setLoadingPrereq(true);
+    setPrereqResolved(false);
     usuarioCumplePrerequisitoTema(user.id, tema.prerequisito_tema_id).then((ok) => {
       if (!c) {
         setPrereqOk(ok);
-        setLoadingPrereq(false);
+        setPrereqResolved(true);
       }
     });
     return () => {
@@ -115,7 +127,7 @@ export default function TemaView() {
     return <p className="text-slate-600 text-lg">Cargando...</p>;
   }
 
-  if (loadingPrereq) {
+  if (tema.prerequisito_tema_id && !prereqResolved) {
     return <p className="text-slate-800">Comprobando acceso al tema…</p>;
   }
   if (!prereqOk && tema.prerequisito_tema_id) {
