@@ -84,6 +84,9 @@ export default function Home() {
   const { profile } = useAuthContext();
   const { misiones } = useMisionesAlumno();
 
+  const isStudent = profile?.role === 'estudiante';
+  if (!isStudent) return null;
+
   const abyaMision = useMemo(
     () => misiones.find((m) => m.titulo === 'Abya Yala y mundo actual'),
     [misiones],

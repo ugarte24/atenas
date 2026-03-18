@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { useAuthContext } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Perfil from './pages/Perfil';
@@ -32,6 +33,17 @@ function PageLoader() {
   );
 }
 
+function LandingByRole() {
+  const { profile } = useAuthContext();
+
+  if (!profile) return <Home />;
+
+  if (profile.role === 'docente') return <Navigate to="/docente" replace />;
+  if (profile.role === 'admin') return <Navigate to="/admin" replace />;
+
+  return <Home />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -43,7 +55,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <Home />
+                  <LandingByRole />
                 </Layout>
               </ProtectedRoute>
             }
@@ -51,7 +63,7 @@ function App() {
           <Route
             path="/progreso"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['estudiante']}>
                 <Layout>
                   <Progreso />
                 </Layout>
@@ -61,7 +73,7 @@ function App() {
           <Route
             path="/logros"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['estudiante']}>
                 <Layout>
                   <Logros />
                 </Layout>
