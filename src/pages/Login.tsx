@@ -32,64 +32,85 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-10 relative"
-      style={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&q=80)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
-      <div className="absolute inset-0 bg-[#003366]/75" aria-hidden />
-      <div className="relative w-full max-w-md card overflow-hidden shadow-xl">
-        <div className="px-6 py-5 text-white" style={{ backgroundColor: '#003366' }}>
-          <h1 className="text-2xl font-bold tracking-tight">ATENAS</h1>
-          <p className="text-blue-100 text-sm mt-0.5">Ciencias Sociales · 6.º Primaria</p>
-        </div>
-        <div className="p-6 sm:p-8 bg-white">
-          <p className="text-slate-600 text-sm mb-6">Inicia sesión con tu correo y contraseña</p>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm" role="alert">
-                {error}
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-b from-[#E5D4FF] via-[#C6F7D0] to-[#C9E7FF] relative overflow-hidden">
+      <div className="pointer-events-none absolute -left-16 -top-20 w-40 h-40 rounded-full bg-white/40" />
+      <div className="pointer-events-none absolute -right-20 -bottom-24 w-56 h-56 rounded-full bg-white/30" />
+
+      <div className="relative w-full max-w-md">
+        <div className="rounded-3xl bg-white/90 shadow-xl border border-white/60 overflow-hidden backdrop-blur">
+          <div className="px-6 pt-6 pb-4 flex items-center justify-between gap-4 bg-gradient-to-r from-[#C6F7D0] via-[#FFE9A9] to-[#C9E7FF]">
+            <div className="text-left">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+                Plataforma ATENAS
+              </p>
+              <p className="text-[13px] text-slate-700">
+                Ciencias Sociales · 6.º Primaria
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-white shadow flex items-center justify-center">
+              <img
+                src="/favicon.svg"
+                alt="Logo ATENAS"
+                className="w-8 h-8"
+              />
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-7">
+            <p className="text-slate-700 text-sm mb-5">
+              Escribe tu correo y contraseña para continuar tu camino por el mapa del Abya Yala.
+            </p>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div
+                  className="p-3.5 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm"
+                  role="alert"
+                >
+                  {error}
+                </div>
+              )}
+              <div>
+                <label htmlFor="email" className="label">
+                  Correo electrónico
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="input-field rounded-2xl"
+                  placeholder="tu@correo.com"
+                />
               </div>
-            )}
-            <div>
-              <label htmlFor="email" className="label">Correo electrónico</label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="input-field"
-                placeholder="tu@correo.com"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="label">Contraseña</label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="input-field"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full py-3.5 text-base disabled:opacity-50"
-            >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
-          <p className="mt-4 text-[13px] text-slate-500 text-center">
-            Si todavía no tienes cuenta, pídele a tu docente o administrador que te registre en ATENAS.
-          </p>
+              <div>
+                <label htmlFor="password" className="label">
+                  Contraseña
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="input-field rounded-2xl"
+                  placeholder="Tu contraseña"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 text-base font-semibold rounded-2xl bg-emerald-500 text-white shadow-md hover:bg-emerald-600 disabled:opacity-60 transition-colors"
+              >
+                {loading ? 'Entrando...' : 'Ingresar'}
+              </button>
+            </form>
+            <p className="mt-4 text-[13px] text-slate-500 text-center">
+              Si todavía no tienes cuenta, pídele a tu docente o administrador que te registre en ATENAS.
+            </p>
+          </div>
         </div>
       </div>
     </div>

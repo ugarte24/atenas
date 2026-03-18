@@ -143,6 +143,9 @@ export default function Home() {
               <span className="text-slate-600">5 / 5</span>
             </div>
           </div>
+          <div className="mt-3 text-[11px] text-slate-600 text-right">
+            Versión del sistema <span className="font-semibold">v1.0.0</span>
+          </div>
         </div>
       </section>
 
