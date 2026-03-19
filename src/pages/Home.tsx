@@ -85,14 +85,16 @@ export default function Home() {
   const { misiones } = useMisionesAlumno();
 
   const isStudent = profile?.role === 'estudiante';
-  if (!isStudent) return null;
-
   const abyaMision = useMemo(
     () => misiones.find((m) => m.titulo === 'Abya Yala y mundo actual'),
     [misiones],
   );
 
   const levels = useMemo(() => buildLevelsFromMision(abyaMision), [abyaMision]);
+
+  // Importante: no retornar antes de llamar a los hooks (useMemo),
+  // porque el rol puede cambiar entre renders y React se rompe con "more hooks".
+  if (!isStudent) return null;
 
   return (
     <div className="max-w-md sm:max-w-xl mx-auto pb-24">
