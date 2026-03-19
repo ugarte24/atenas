@@ -19,6 +19,10 @@ export interface Evaluacion {
   modo_examen?: boolean;
   /** Si true, no se muestra la opción correcta al fallar */
   ocultar_respuesta_correcta?: boolean;
+  /** Si true, se muestra como micro-quiz en la vista de tema (tarjeta rápida) */
+  es_micro_quiz?: boolean;
+  /** Dónde mostrarlo en la vista de tema (inicio|post_contenido) */
+  micro_ubicacion?: string;
 }
 
 export interface EvaluacionIntento {

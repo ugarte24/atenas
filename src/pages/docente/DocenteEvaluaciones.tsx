@@ -40,9 +40,13 @@ export default function DocenteEvaluaciones() {
   const [maxIntentos, setMaxIntentos] = useState('');
   const [modoExamen, setModoExamen] = useState(false);
   const [ocultarCorrecta, setOcultarCorrecta] = useState(false);
+  const [esMicroQuiz, setEsMicroQuiz] = useState(false);
+  const [microUbicacion, setMicroUbicacion] = useState<'inicio' | 'post_contenido'>('post_contenido');
   const [editMaxIntentos, setEditMaxIntentos] = useState('');
   const [editModoExamen, setEditModoExamen] = useState(false);
   const [editOcultarCorrecta, setEditOcultarCorrecta] = useState(false);
+  const [editEsMicroQuiz, setEditEsMicroQuiz] = useState(false);
+  const [editMicroUbicacion, setEditMicroUbicacion] = useState<'inicio' | 'post_contenido'>('post_contenido');
   const [statsPorEvaluacion, setStatsPorEvaluacion] = useState<
     Record<string, { alumnos: number; aprobados: number; promedio: number | null }>
   >({});
@@ -179,6 +183,8 @@ export default function DocenteEvaluaciones() {
         preguntas: JSON.parse(JSON.stringify(ev.preguntas)) as PreguntaEvaluacion[],
         publicada: false,
         orden: maxOrden + 1,
+        es_micro_quiz: ev.es_micro_quiz ?? false,
+        micro_ubicacion: ev.micro_ubicacion ?? 'post_contenido',
       });
     } catch (err) {
       console.error(err);
@@ -197,6 +203,8 @@ export default function DocenteEvaluaciones() {
     setEditMaxIntentos(ev.max_intentos != null ? String(ev.max_intentos) : '');
     setEditModoExamen(ev.modo_examen === true);
     setEditOcultarCorrecta(ev.ocultar_respuesta_correcta === true);
+    setEditEsMicroQuiz(ev.es_micro_quiz === true);
+    setEditMicroUbicacion((ev.micro_ubicacion ?? 'post_contenido') as 'inicio' | 'post_contenido');
   }
 
   async function handleSaveEdit(e: React.FormEvent) {
@@ -219,6 +227,8 @@ export default function DocenteEvaluaciones() {
         max_intentos: m != null && !Number.isNaN(m) && m >= 1 ? m : null,
         modo_examen: editModoExamen,
         ocultar_respuesta_correcta: editOcultarCorrecta,
+        es_micro_quiz: editEsMicroQuiz,
+        micro_ubicacion: editMicroUbicacion,
       });
       setEditing(null);
     } catch (err) {
@@ -249,6 +259,8 @@ export default function DocenteEvaluaciones() {
         max_intentos: m != null && !Number.isNaN(m) && m >= 1 ? m : null,
         modo_examen: modoExamen,
         ocultar_respuesta_correcta: ocultarCorrecta,
+        es_micro_quiz: esMicroQuiz,
+        micro_ubicacion: microUbicacion,
       });
       setTitle('');
       setDescripcion('');
@@ -256,6 +268,8 @@ export default function DocenteEvaluaciones() {
       setMaxIntentos('');
       setModoExamen(false);
       setOcultarCorrecta(false);
+      setEsMicroQuiz(false);
+      setMicroUbicacion('post_contenido');
       setPreguntasJson(JSON.stringify(PREGUNTAS_EJEMPLO_EVALUACION, null, 2));
       setPlantillaEvalId('');
       setAdding(false);
@@ -437,6 +451,27 @@ export default function DocenteEvaluaciones() {
             />
             No mostrar la respuesta correcta si falla
           </label>
+          <label className="flex items-center gap-2 text-slate-800">
+            <input
+              type="checkbox"
+              checked={editEsMicroQuiz}
+              onChange={(e) => setEditEsMicroQuiz(e.target.checked)}
+            />
+            Usar como micro-quiz
+          </label>
+          {editEsMicroQuiz ? (
+            <div>
+              <label className="label mb-0">Ubicación</label>
+              <select
+                value={editMicroUbicacion}
+                onChange={(e) => setEditMicroUbicacion(e.target.value as 'inicio' | 'post_contenido')}
+                className="input-field max-w-[260px]"
+              >
+                <option value="inicio">Inicio</option>
+                <option value="post_contenido">Después de contenido</option>
+              </select>
+            </div>
+          ) : null}
           <label className="label">Preguntas (JSON)</label>
           <textarea
             value={editPreguntasJson}
@@ -530,6 +565,27 @@ export default function DocenteEvaluaciones() {
             />
             Ocultar respuesta correcta
           </label>
+          <label className="flex items-center gap-2 text-slate-800">
+            <input
+              type="checkbox"
+              checked={esMicroQuiz}
+              onChange={(e) => setEsMicroQuiz(e.target.checked)}
+            />
+            Usar como micro-quiz
+          </label>
+          {esMicroQuiz ? (
+            <div>
+              <label className="label mb-0">Ubicación</label>
+              <select
+                value={microUbicacion}
+                onChange={(e) => setMicroUbicacion(e.target.value as 'inicio' | 'post_contenido')}
+                className="input-field max-w-[260px]"
+              >
+                <option value="inicio">Inicio</option>
+                <option value="post_contenido">Después de contenido</option>
+              </select>
+            </div>
+          ) : null}
           <label className="label">Preguntas (JSON)</label>
           <textarea
             value={preguntasJson}
@@ -552,6 +608,8 @@ export default function DocenteEvaluaciones() {
             setEditing(null);
             setPlantillaEvalId('');
             setAdding(true);
+            setEsMicroQuiz(false);
+            setMicroUbicacion('post_contenido');
           }}
           className="btn-primary mb-6"
         >

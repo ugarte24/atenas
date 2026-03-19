@@ -8,6 +8,7 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { usuarioCumplePrerequisitoTema } from '../lib/prerequisitoTema';
 import { TemaMensajes } from '../components/TemaMensajes';
+import { MicroQuizCard } from '../components/MicroQuizCard';
 
 type ProgresoTema = {
   total: number;
@@ -17,7 +18,8 @@ type ProgresoTema = {
 export default function TemaView() {
   const { temaId } = useParams<{ temaId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user, profile, loading: authLoading } = useAuthContext();
+  const esEstudiante = profile?.role === 'estudiante';
   const { tema, loading: loadingTema } = useTema(temaId ?? null);
   const [progreso, setProgreso] = useState<ProgresoTema | null>(null);
   const [loadingProgreso, setLoadingProgreso] = useState(false);
@@ -37,6 +39,11 @@ export default function TemaView() {
   const { recursos, loading: loadingRecursos } = useRecursos(temaIdContenido);
   const { actividades, loading: loadingActividades } = useActividades(temaIdContenido);
   const { evaluaciones, loading: loadingEvaluaciones } = useEvaluaciones(temaIdContenido);
+
+  const microQuizEvaluacion =
+    !loadingEvaluaciones && Array.isArray(evaluaciones)
+      ? evaluaciones.find((e) => e.publicada && e.es_micro_quiz === true)
+      : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -126,6 +133,9 @@ export default function TemaView() {
   if (loadingTema || !tema) {
     return <p className="text-slate-600 text-lg">Cargando...</p>;
   }
+  if (authLoading || !profile) {
+    return <p className="text-slate-600 text-lg">Cargando perfil...</p>;
+  }
 
   if (tema.prerequisito_tema_id && !prereqResolved) {
     return <p className="text-slate-800">Comprobando acceso al tema…</p>;
@@ -162,6 +172,12 @@ export default function TemaView() {
         ← Volver a la unidad
       </button>
       <h1 className="text-page-title font-bold text-slate-900 mb-6">{tema.title}</h1>
+
+      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion === 'inicio' && esEstudiante ? (
+        <div className="mb-8">
+          <MicroQuizCard evaluacion={microQuizEvaluacion} defaultCollapsed />
+        </div>
+      ) : null}
 
       {progreso && (
         <div className="card p-4 mb-6 flex items-center justify-between gap-4">
@@ -249,14 +265,22 @@ export default function TemaView() {
         </section>
       ) : null}
 
+      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion !== 'inicio' && esEstudiante ? (
+        <div className="mt-10">
+          <MicroQuizCard evaluacion={microQuizEvaluacion} defaultCollapsed />
+        </div>
+      ) : null}
+
       {loadingEvaluaciones ? (
         <p className="text-slate-600 mt-8">Cargando evaluaciones...</p>
       ) : evaluaciones.filter((e) => e.publicada).length > 0 ? (
         <section className="mt-10">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Evaluaciones</h2>
           <ul className="space-y-3">
-            {evaluaciones
-              .filter((e) => e.publicada)
+            {(esEstudiante
+              ? evaluaciones.filter((e) => e.publicada && e.es_micro_quiz !== true)
+              : evaluaciones.filter((e) => e.publicada)
+            )
               .map((e) => (
                 <li key={e.id}>
                   <Link
@@ -275,7 +299,7 @@ export default function TemaView() {
         </section>
       ) : null}
 
-      <TemaMensajes temaId={tema.id} />
+      {esEstudiante ? null : <TemaMensajes temaId={tema.id} />}
     </div>
   );
 }

@@ -44,6 +44,8 @@ export function useEvaluaciones(temaId: string | null) {
     max_intentos?: number | null;
     modo_examen?: boolean;
     ocultar_respuesta_correcta?: boolean;
+    es_micro_quiz?: boolean;
+    micro_ubicacion?: string;
   }) {
     const { data, error: e } = await supabase
       .from('evaluaciones')
@@ -58,6 +60,8 @@ export function useEvaluaciones(temaId: string | null) {
         max_intentos: values.max_intentos ?? null,
         modo_examen: values.modo_examen ?? false,
         ocultar_respuesta_correcta: values.ocultar_respuesta_correcta ?? false,
+        es_micro_quiz: values.es_micro_quiz ?? false,
+        micro_ubicacion: values.micro_ubicacion ?? 'post_contenido',
       })
       .select()
       .single();
@@ -79,6 +83,8 @@ export function useEvaluaciones(temaId: string | null) {
       max_intentos: number | null;
       modo_examen: boolean;
       ocultar_respuesta_correcta: boolean;
+      es_micro_quiz: boolean;
+      micro_ubicacion: string;
     }>
   ) {
     const { data, error: e } = await supabase

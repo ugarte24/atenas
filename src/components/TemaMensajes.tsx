@@ -10,7 +10,7 @@ type Msg = {
 };
 
 export function TemaMensajes({ temaId }: { temaId: string }) {
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
   const [lista, setLista] = useState<Msg[]>([]);
   const [cuerpo, setCuerpo] = useState('');
   const [loading, setLoading] = useState(true);
@@ -64,6 +64,8 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
   }
 
   if (!user) return null;
+  // En el flujo actual, el estudiante no debe ver ni enviar mensajes del tema
+  if (profile?.role === 'estudiante') return null;
 
   return (
     <section className="mt-10 card p-5 border border-slate-200" aria-labelledby="tema-msj-h">
@@ -71,7 +73,7 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
         Mensajes del tema
       </h2>
       <p className="text-sm text-slate-600 mb-4">
-        Docentes y estudiantes pueden dejar un mensaje visible para quienes cursan este tema.
+        Docentes y administradores pueden dejar un mensaje visible para quienes cursan este tema.
       </p>
       <form onSubmit={enviar} className="flex flex-col sm:flex-row gap-2 mb-6">
         <label htmlFor="tema-msj-input" className="sr-only">

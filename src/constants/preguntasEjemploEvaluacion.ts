@@ -2,19 +2,19 @@ import type { PreguntaEvaluacion } from '../types';
 
 export const PREGUNTAS_EJEMPLO_EVALUACION: PreguntaEvaluacion[] = [
   {
-    enunciado: '¿Cuál es la capital de Perú?',
+    enunciado: '¿Qué valor significa “ayudarse entre todos” en la comunidad?',
     opciones: [
-      { texto: 'Lima', correcta: true },
-      { texto: 'Cusco', correcta: false },
-      { texto: 'Arequipa', correcta: false },
+      { texto: 'Solidaridad (ayni/minka)', correcta: true },
+      { texto: 'Individualismo (cada uno por su cuenta)', correcta: false },
+      { texto: 'Competencia sin reglas', correcta: false },
     ],
   },
   {
-    enunciado: '¿En qué siglo se declaró la independencia de Perú?',
+    enunciado: '¿Qué busca el equilibrio en el uso de recursos?',
     opciones: [
-      { texto: 'XVIII', correcta: false },
-      { texto: 'XIX', correcta: true },
-      { texto: 'XX', correcta: false },
+      { texto: 'Tomar solo lo necesario', correcta: true },
+      { texto: 'Gastar sin pensar', correcta: false },
+      { texto: 'Acumular sin compartir', correcta: false },
     ],
   },
 ];
