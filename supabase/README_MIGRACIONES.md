@@ -35,4 +35,4 @@ Las políticas existentes (insert/select propio, docente/admin ven intentos) sig
 
 ## PWA
 
-En producción (HTTPS) el cliente registra `/sw.js`. Iconos PNG 192×512 mejoran la instalación; el manifest usa `favicon.svg`.
+En producción (HTTPS) el cliente registra `/sw.js`. El manifest declara `favicon.png` y `favicon.svg` (PWA / pestaña del navegador).

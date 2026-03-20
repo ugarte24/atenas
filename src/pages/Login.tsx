@@ -47,11 +47,15 @@ export default function Login() {
                 Ciencias Sociales · 6.º Primaria
               </p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-white shadow flex items-center justify-center">
+            <div
+              className="w-20 h-20 shrink-0 rounded-2xl bg-[#0a0a0a] shadow-md ring-1 ring-black/20 flex items-center justify-center overflow-hidden p-1.5"
+              title="Logo ATENAS"
+            >
               <img
                 src="/favicon.svg"
                 alt="Logo ATENAS"
-                className="w-8 h-8"
+                className="max-h-full max-w-full h-full w-full object-contain"
+                decoding="async"
               />
             </div>
           </div>
