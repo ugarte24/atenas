@@ -43,9 +43,6 @@ export default function Login() {
               <p className="text-lg sm:text-xl font-semibold uppercase tracking-[0.1em] text-black font-atenas leading-tight">
                 Plataforma ATENAS
               </p>
-              <p className="text-base sm:text-lg text-slate-700 leading-snug mt-1">
-                Ciencias Sociales · 6.º Primaria
-              </p>
             </div>
             <div
               className="w-16 h-16 shrink-0 rounded-2xl bg-[#0a0a0a] shadow-md ring-1 ring-black/20 flex items-center justify-center overflow-hidden p-1"
@@ -62,7 +59,7 @@ export default function Login() {
 
           <div className="p-6 sm:p-7">
             <p className="text-slate-700 text-sm mb-5">
-              Escribe tu correo y contraseña para continuar tu camino por el mapa del Abya Yala.
+              Escribe tu correo y contraseña para iniciar sesión.
             </p>
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (

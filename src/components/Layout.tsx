@@ -18,7 +18,7 @@ export function Layout({ children }: Props) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
           <Link
             to="/"
-            className="atenas-logo hover:opacity-90 focus:outline-none rounded-lg px-2 py-2 min-h-touch flex items-center transition-opacity"
+            className="atenas-logo hover:opacity-90 focus:outline-none rounded-lg px-1.5 sm:px-2 py-2 min-h-touch flex shrink-0 items-center transition-opacity"
           >
             ATENAS
           </Link>
