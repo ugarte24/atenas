@@ -53,11 +53,19 @@ function IconLock({ className }: { className?: string }) {
   );
 }
 
-/** Grano tipo piedra / pizarra (fondo login) */
-const LOGIN_STONE_NOISE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+/** Textura pantalla: moteado tipo pizarra/cuero (sin feColorMatrix → sin static RGB) */
+const LOGIN_BG_SLATE = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><defs><filter id="b" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.026 0.034" numOctaves="4" seed="13" stitchTiles="stitch" result="t"/><feGaussianBlur in="t" stdDeviation="1.05"/></filter></defs><rect width="100%" height="100%" filter="url(#b)" opacity="0.58"/></svg>`
+)}")`;
 
-/** Grano sutil solo en la tarjeta del formulario */
-const CARD_GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E")`;
+const LOGIN_BG_FINE = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><defs><filter id="f" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.58" numOctaves="2" seed="29" stitchTiles="stitch" result="t"/><feGaussianBlur in="t" stdDeviation="0.38"/></filter></defs><rect width="100%" height="100%" filter="url(#f)" opacity="0.3"/></svg>`
+)}")`;
+
+/** Grano muy sutil en la tarjeta (pergamino) */
+const CARD_GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#g)" opacity="0.045"/></svg>`
+)}")`;
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -89,30 +97,44 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-16 relative overflow-hidden font-login">
-      {/* Capas de fondo: piedra oscura + luz detrás del logo + viñeta (como referencia mockup) */}
-      <div className="pointer-events-none absolute inset-0 bg-[#1F2D2A]" aria-hidden />
+    <div className="min-h-[100dvh] flex flex-col items-center px-4 pt-8 pb-10 sm:pt-10 sm:pb-14 relative overflow-x-hidden overflow-y-auto isolate font-login">
+      {/* Capa 1: color base + degradado radial (esquina superior izquierda) */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.22] mix-blend-soft-light"
+        className="pointer-events-none absolute inset-0 z-0"
         style={{
-          backgroundImage: LOGIN_STONE_NOISE,
-          backgroundSize: '160px 160px',
+          backgroundColor: '#1F2D2A',
+          backgroundImage:
+            'radial-gradient(ellipse 155% 135% at 24% 14%, #2F423D 0%, #2a3d38 18%, #253933 36%, #21332f 54%, #1c2e2b 72%, #1a2b28 86%, #1F2D2A 100%)',
+        }}
+        aria-hidden
+      />
+      {/* Capa 2–3: textura orgánica (luminosity) + grano fino (muy suave) */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 mix-blend-luminosity opacity-[0.42]"
+        style={{
+          backgroundImage: LOGIN_BG_SLATE,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 z-0 mix-blend-soft-light opacity-[0.07]"
         style={{
-          background: [
-            // Luz suave detrás del logo / centro superior
-            'radial-gradient(ellipse 90% 75% at 50% 5%, rgba(82, 112, 102, 0.38) 0%, transparent 60%)',
-            // Mancha verde pizarra (esquina superior izq.)
-            'radial-gradient(circle at 25% 15%, #2F423D 0%, #1F2D2A 78%)',
-            // Profundidad esquina inferior derecha
-            'radial-gradient(circle at 85% 90%, rgba(20, 31, 28, 0.95) 0%, transparent 52%)',
-            // Viñeta: bordes hacia negro verdoso
-            'radial-gradient(ellipse 130% 115% at 50% 45%, transparent 40%, rgba(5, 10, 9, 0.65) 100%)',
-          ].join(', '),
+          backgroundImage: LOGIN_BG_FINE,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden
+      />
+      {/* Capa 4: viñeta — centro un poco más claro, bordes hacia negro */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 128% 118% at 50% 46%, transparent 26%, rgba(0, 0, 0, 0.28) 62%, rgba(0, 0, 0, 0.68) 100%)',
         }}
         aria-hidden
       />
@@ -121,7 +143,7 @@ export default function Login() {
         {/* Marca sobre el fondo oscuro (como mockup) */}
         <div className="flex flex-col items-center text-center mb-5">
           <div
-            className="w-[7.25rem] h-[7.25rem] rounded-full bg-[#1F2D2A] border-[2.5px] border-[#D6B98C] flex items-center justify-center overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.45),0_0_12px_rgba(214,185,140,0.25)]"
+            className="w-[7.25rem] h-[7.25rem] rounded-full bg-[#0a0e0c] border-[2.5px] border-[#c9a66a] flex items-center justify-center overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.55),0_0_20px_rgba(201,166,106,0.2)]"
             title="Logo ATENAS"
           >
             <img
@@ -131,21 +153,21 @@ export default function Login() {
               decoding="async"
             />
           </div>
-          <h1 className="mt-3 font-atenas text-[32px] tracking-[1.5px] font-semibold uppercase text-[#D6B98C] sm:text-[48px] sm:tracking-[2px] [text-shadow:0_2px_8px_rgba(0,0,0,0.45)]">
+          <h1 className="mt-4 font-atenas font-bold uppercase text-[2rem] sm:text-[3rem] tracking-[0.18em] sm:tracking-[0.22em] bg-gradient-to-b from-[#f0e6d4] via-[#d6b98c] to-[#a88b5c] bg-clip-text text-transparent drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)]">
             ATENAS
           </h1>
         </div>
 
-        {/* Tarjeta clara tipo pergamino */}
+        {/* Tarjeta pergamino (referencia) */}
         <div
-          className="w-full rounded-[1.75rem] border border-white/25 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.55)] overflow-hidden"
+          className="w-full rounded-[30px] border border-white/20 shadow-[0_28px_64px_-8px_rgba(0,0,0,0.58),0_0_1px_rgba(0,0,0,0.2)] overflow-hidden"
           style={{
-            backgroundColor: '#F5F7FA',
+            backgroundColor: '#f2f0ec',
             backgroundImage: CARD_GRAIN,
           }}
         >
           <div className="px-6 sm:px-9 pt-8 pb-9">
-            <p className="text-center text-[1.05rem] leading-snug text-[#2c3330] font-semibold mb-7">
+            <p className="text-center text-[1.05rem] leading-snug text-[#2a3330] font-semibold mb-7 font-login">
               Escribe tu correo y contraseña para iniciar sesión.
             </p>
 
@@ -160,7 +182,10 @@ export default function Login() {
               )}
 
               <div>
-                <label htmlFor="email" className="sr-only">
+                <label
+                  htmlFor="email"
+                  className="block text-base font-bold text-[#1c2422] mb-2 tracking-tight font-login"
+                >
                   Correo electrónico
                 </label>
                 <div className="relative">
@@ -178,7 +203,7 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="tu@correo.com"
-                    className="w-full rounded-2xl border border-stone-300/90 bg-white py-3.5 pl-12 pr-4 text-[1.05rem] text-[#1c2422] placeholder:text-stone-400 shadow-inner focus:border-[#1F2D2A] focus:outline-none focus:ring-2 focus:ring-[#1F2D2A]/20"
+                    className="w-full rounded-full border border-stone-300/90 bg-white py-3.5 pl-12 pr-4 text-[1.05rem] text-[#1c2422] placeholder:text-stone-400 shadow-inner focus:border-[#1F2D2A] focus:outline-none focus:ring-2 focus:ring-[#1F2D2A]/25"
                   />
                 </div>
               </div>
@@ -186,7 +211,7 @@ export default function Login() {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-base font-bold text-[#1c2422] mb-2 tracking-tight"
+                  className="block text-base font-bold text-[#1c2422] mb-2 tracking-tight font-login"
                 >
                   Contraseña
                 </label>
@@ -205,7 +230,7 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="Tu contraseña"
-                    className="w-full rounded-2xl border border-stone-300/90 bg-white py-3.5 pl-12 pr-4 text-[1.05rem] text-[#1c2422] placeholder:text-stone-400 shadow-inner focus:border-[#1F2D2A] focus:outline-none focus:ring-2 focus:ring-[#1F2D2A]/20"
+                    className="w-full rounded-full border border-stone-300/90 bg-white py-3.5 pl-12 pr-4 text-[1.05rem] text-[#1c2422] placeholder:text-stone-400 shadow-inner focus:border-[#1F2D2A] focus:outline-none focus:ring-2 focus:ring-[#1F2D2A]/25"
                   />
                 </div>
               </div>
@@ -215,7 +240,7 @@ export default function Login() {
               </button>
             </form>
 
-            <p className="mt-7 text-center text-[0.8125rem] leading-relaxed text-stone-600 italic">
+            <p className="mt-7 text-center text-[0.8125rem] leading-relaxed text-stone-600 italic font-login">
               Si todavía no tienes cuenta, pídele a tu docente o administrador que te registre en ATENAS.
             </p>
           </div>
