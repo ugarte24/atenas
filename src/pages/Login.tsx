@@ -31,16 +31,30 @@ function IconLock({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
+      {/* Candado: arco + cuerpo */}
       <path
-        d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75M5.25 21h13.5a2.25 2.25 0 002.25-2.25v-9.75a2.25 2.25 0 00-2.25-2.25H5.25a2.25 2.25 0 00-2.25 2.25v9.75A2.25 2.25 0 005.25 21z"
+        d="M7 11V7a5 5 0 0 1 10 0v4"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.75"
         strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <rect
+        x="4.5"
+        y="10.5"
+        width="15"
+        height="11"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.75"
         strokeLinejoin="round"
       />
     </svg>
   );
 }
+
+/** Grano tipo piedra / pizarra (fondo login) */
+const LOGIN_STONE_NOISE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
 /** Grano sutil solo en la tarjeta del formulario */
 const CARD_GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E")`;
@@ -75,13 +89,34 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center px-4 pt-10 pb-16 relative overflow-hidden font-login"
-      style={{
-        backgroundColor: '#1F2D2A',
-        backgroundImage: 'radial-gradient(circle at 30% 20%, #2A3A36, transparent 60%)',
-      }}
-    >
+    <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-16 relative overflow-hidden font-login">
+      {/* Capas de fondo: piedra oscura + luz detrás del logo + viñeta (como referencia mockup) */}
+      <div className="pointer-events-none absolute inset-0 bg-[#1F2D2A]" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.22] mix-blend-soft-light"
+        style={{
+          backgroundImage: LOGIN_STONE_NOISE,
+          backgroundSize: '160px 160px',
+        }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: [
+            // Luz suave detrás del logo / centro superior
+            'radial-gradient(ellipse 90% 75% at 50% 5%, rgba(82, 112, 102, 0.38) 0%, transparent 60%)',
+            // Mancha verde pizarra (esquina superior izq.)
+            'radial-gradient(circle at 25% 15%, #2F423D 0%, #1F2D2A 78%)',
+            // Profundidad esquina inferior derecha
+            'radial-gradient(circle at 85% 90%, rgba(20, 31, 28, 0.95) 0%, transparent 52%)',
+            // Viñeta: bordes hacia negro verdoso
+            'radial-gradient(ellipse 130% 115% at 50% 45%, transparent 40%, rgba(5, 10, 9, 0.65) 100%)',
+          ].join(', '),
+        }}
+        aria-hidden
+      />
+
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         {/* Marca sobre el fondo oscuro (como mockup) */}
         <div className="flex flex-col items-center text-center mb-5">
