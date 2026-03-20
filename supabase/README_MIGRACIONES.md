@@ -9,6 +9,15 @@ En Supabase: **SQL Editor** → ejecutar en orden (o `supabase db push`).
 
 Sin la migración 1, fallarán columnas nuevas en `evaluaciones` y el modelo de intentos.
 
+## Seed de contenido (unidades, temas, actividades, evaluaciones)
+
+Tras aplicar todas las migraciones, puedes cargar datos de ejemplo del currículo 6.º Primaria:
+
+1. Abre **Supabase → SQL Editor**.
+2. Pega y ejecuta el archivo **`seed_contenido_curricular.sql`** (raíz `supabase/`).
+
+Incluye **7 unidades**, **21 temas** (prerequisito en cadena por unidad), **21 actividades** publicadas (`seleccion_multiple`) y **21 evaluaciones** publicadas (3 preguntas cada una). Es **idempotente** (`ON CONFLICT DO NOTHING`).
+
 ## RLS implementado
 
 ### `docente_unidad`
