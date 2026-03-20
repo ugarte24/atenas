@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno, type Mision } from '../hooks/useMisiones';
+import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
 
 type LevelStatus = 'locked' | 'unlocked' | 'completed';
 
@@ -37,7 +38,6 @@ const BASE_LEVELS: Omit<Level, 'status' | 'progress'>[] = [
 
 function buildLevelsFromMision(mision: Mision | undefined): Level[] {
   if (!mision || mision.totalPasos === 0) {
-    // Sin datos: primer nivel desbloqueado, resto bloqueado
     return BASE_LEVELS.map((base) => ({
       ...base,
       status: base.id === 1 ? 'unlocked' : 'locked',
@@ -83,196 +83,194 @@ function buildLevelsFromMision(mision: Mision | undefined): Level[] {
 export default function Home() {
   const { profile } = useAuthContext();
   const { misiones } = useMisionesAlumno();
+  const { puntos, racha, porcentajeGlobal, energia, loading: loadingGam } = useGamificacionEstudiante();
 
   const isStudent = profile?.role === 'estudiante';
   const abyaMision = useMemo(
     () => misiones.find((m) => m.titulo === 'Abya Yala y mundo actual'),
-    [misiones],
+    [misiones]
   );
 
   const levels = useMemo(() => buildLevelsFromMision(abyaMision), [abyaMision]);
 
-  // Importante: no retornar antes de llamar a los hooks (useMemo),
-  // porque el rol puede cambiar entre renders y React se rompe con "more hooks".
   if (!isStudent) return null;
+
+  const pctDisplay = loadingGam ? '…' : `${porcentajeGlobal}%`;
 
   return (
     <div className="max-w-md sm:max-w-xl mx-auto pb-24">
-      {/* Header gamificado */}
-      <section className="mt-2 mb-5">
-        <div className="rounded-3xl bg-gradient-to-r from-[#C6F7D0] via-[#FFE9A9] to-[#C9E7FF] shadow-lg px-5 py-5 relative overflow-hidden">
-          <div className="absolute -right-6 -bottom-4 w-32 h-32 rounded-full bg-white/40" />
-          <div className="flex items-center gap-4 relative">
-            <div className="flex-1">
-              <p className="text-sm text-slate-700">Hola, Estudiante!</p>
-              <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">
-                Tu aventura por el Abya Yala
-              </h1>
-              {profile && (
-                <p className="mt-1 text-sm text-slate-700">
-                  Bienvenido, <span className="font-semibold">{profile.full_name}</span>
-                </p>
-              )}
-            </div>
-            <div className="shrink-0">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center">
-                <span className="text-3xl" aria-hidden="true">
-                  🎒
-                </span>
-              </div>
-            </div>
-          </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="rounded-xl bg-white/70 py-2 px-1 flex flex-col items-center gap-1">
-              <span className="text-amber-500 text-lg" aria-hidden="true">
-                ⭐
-              </span>
-              <span className="font-semibold text-slate-800">Puntos</span>
-              <span className="text-slate-600">1 250</span>
-            </div>
-            <div className="rounded-xl bg-white/70 py-2 px-1 flex flex-col items-center gap-1">
-              <span className="text-sky-500 text-lg" aria-hidden="true">
-                📚
-              </span>
-              <span className="font-semibold text-slate-800">Lecciones</span>
-              <span className="text-slate-600">
-                {abyaMision ? `${abyaMision.pasosCompletados} / ${abyaMision.totalPasos}` : '–'}
-              </span>
-            </div>
-            <div className="rounded-xl bg-white/70 py-2 px-1 flex flex-col items-center gap-1">
-              <span className="text-rose-500 text-lg" aria-hidden="true">
-                ❤️
-              </span>
-              <span className="font-semibold text-slate-800">Energía</span>
-              <span className="text-slate-600">5 / 5</span>
-            </div>
-          </div>
-          <div className="mt-3 text-[11px] text-slate-600 text-right">
-            Versión del sistema <span className="font-semibold">v1.0.0</span>
+      {/* Hero */}
+      <section className="mt-2 mb-6 rounded-3xl overflow-hidden shadow-lg border border-[#1F2D2A]/20 bg-[#1F2D2A] text-white">
+        <div className="px-5 py-6 sm:px-7 sm:py-7 relative">
+          <div className="absolute inset-0 opacity-[0.12] bg-[radial-gradient(circle_at_30%_20%,#D6B98C_0%,transparent_55%)]" aria-hidden />
+          <div className="relative flex flex-col gap-3">
+            <p className="text-sm text-[#D6B98C] font-medium tracking-wide uppercase">
+              Tu camino de aprendizaje
+            </p>
+            <h1 className="text-2xl sm:text-[1.65rem] font-extrabold leading-tight font-atenas text-[#FAF8F5]">
+              Continúa tu aventura por el Abya Yala
+            </h1>
+            {profile && (
+              <p className="text-sm text-white/85">
+                Hola, <span className="font-semibold text-[#D6B98C]">{profile.full_name}</span>
+              </p>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Mapa vertical */}
-      <section aria-label="Mapa de niveles Abya Yala">
-        <div className="relative">
-          {/* Fondo con naturaleza */}
-          <div className="absolute inset-0 -z-10">
-            <div className="h-24 bg-gradient-to-b from-[#E5D4FF] to-[#C6F7D0]" />
-            <div className="h-32 bg-gradient-to-b from-[#C6F7D0] to-[#FFE9A9]" />
-            <div className="h-32 bg-gradient-to-b from-[#FFE9A9] to-[#C9E7FF]" />
+      {/* Progreso global estilo Duolingo */}
+      <section className="mb-6 rounded-3xl bg-atenas-card border border-slate-200/80 shadow-md px-5 py-5 sm:px-6">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h2 className="text-sm font-bold text-[#1F2D2A] uppercase tracking-wide">
+              Progreso general
+            </h2>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Suma de tus unidades · datos reales
+            </p>
           </div>
+          <span className="text-2xl font-extrabold tabular-nums text-[#1F2D2A]">{pctDisplay}</span>
+        </div>
+        <div
+          className="h-5 w-full rounded-full overflow-hidden bg-[#1F2D2A]/15 ring-1 ring-[#1F2D2A]/10"
+          role="progressbar"
+          aria-valuenow={porcentajeGlobal}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full rounded-full bg-atenas-blue transition-all duration-500 ease-out"
+            style={{ width: `${Math.min(100, porcentajeGlobal)}%` }}
+          />
+        </div>
 
-          {/* Camino curvo aproximado */}
-          <div className="absolute inset-x-10 sm:inset-x-16 top-0 bottom-0 -z-10 flex flex-col items-center justify-between pointer-events-none">
-            <div className="w-16 h-16 rounded-full bg-emerald-200/80" />
-            <div className="w-20 h-20 rounded-full bg-emerald-300/80 translate-x-6" />
-            <div className="w-16 h-16 rounded-full bg-emerald-200/80 -translate-x-6" />
+        <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
+          <div className="rounded-2xl bg-white/80 border border-slate-100 py-2.5 px-1">
+            <span className="text-amber-600 text-lg block mb-0.5" aria-hidden>
+              ⭐
+            </span>
+            <span className="font-semibold text-slate-800 block">Puntos</span>
+            <span className="text-slate-600 tabular-nums">{loadingGam ? '–' : puntos.toLocaleString('es')}</span>
           </div>
+          <div className="rounded-2xl bg-white/80 border border-slate-100 py-2.5 px-1">
+            <span className="text-sky-600 text-lg block mb-0.5" aria-hidden>
+              📚
+            </span>
+            <span className="font-semibold text-slate-800 block">Lecciones</span>
+            <span className="text-slate-600 tabular-nums">
+              {abyaMision ? `${abyaMision.pasosCompletados} / ${abyaMision.totalPasos}` : '–'}
+            </span>
+          </div>
+          <div className="rounded-2xl bg-white/80 border border-slate-100 py-2.5 px-1">
+            <span className="text-rose-500 text-lg block mb-0.5" aria-hidden>
+              ❤️
+            </span>
+            <span className="font-semibold text-slate-800 block">Energía</span>
+            <span className="text-slate-600 tabular-nums">
+              {loadingGam ? '–' : `${energia} / 5`}
+            </span>
+          </div>
+        </div>
+        {racha > 0 && (
+          <p className="mt-3 text-[11px] text-center text-slate-600">
+            Racha: <span className="font-semibold text-[#1F2D2A]">{racha}</span> día{racha !== 1 ? 's' : ''} seguidos
+          </p>
+        )}
+      </section>
 
-          {/* Mundos y niveles */}
-          <div className="space-y-10">
-            {levels.map((level, index) => {
-              const isFirst = index === 0;
-              const worldColor =
-                index === 0 ? 'from-[#C6F7D0] to-[#E5F9F0]' :
-                index === 1 ? 'from-[#FFE9A9] to-[#FFE0C2]' :
-                'from-[#C9E7FF] to-[#E5D4FF]';
+      {/* CTA principal */}
+      <div className="mb-8 flex justify-center">
+        <Link to="/unidades" className="btn-atenas-gold w-full max-w-sm text-center justify-center">
+          Continuar aprendiendo
+        </Link>
+      </div>
 
-              const isLocked = level.status === 'locked';
-              const isCompleted = level.status === 'completed';
+      {/* Mapa / niveles sobre fondo neutro */}
+      <section aria-label="Mapa de niveles Abya Yala" className="relative">
+        <h2 className="text-sm font-semibold text-slate-800 mb-3">Tu ruta por el Abya Yala</h2>
+        <div className="space-y-8">
+          {levels.map((level, index) => {
+            const isLocked = level.status === 'locked';
+            const isCompleted = level.status === 'completed';
 
-              return (
-                <div key={level.id} className="relative pt-2">
-                  {/* Etiqueta de mundo */}
-                  {isFirst && (
-                    <p className="text-xs font-semibold text-slate-700 mb-1">
-                      Tu ruta por el Abya Yala
-                    </p>
-                  )}
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-[11px] font-semibold text-slate-700 shadow-sm">
-                      {level.worldLabel}
-                    </span>
-                  </div>
+            return (
+              <div key={level.id} className="relative pt-1">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-700 shadow-sm">
+                    {level.worldLabel}
+                  </span>
+                </div>
 
-                  {/* Nodo principal sobre el camino */}
-                  <div className="absolute -left-1 top-12 flex flex-col items-center gap-1">
-                    <div
-                      className={`w-9 h-9 rounded-full border-4 ${
-                        isLocked
-                          ? 'border-slate-400 bg-slate-300'
-                          : isCompleted
-                          ? 'border-emerald-400 bg-emerald-300'
-                          : 'border-sky-400 bg-sky-300 animate-pulse'
-                      } flex items-center justify-center text-sm`}
-                    >
-                      {isLocked ? '🔒' : isCompleted ? '✔' : '▶'}
-                    </div>
-                  </div>
-
-                  {/* Tarjeta de nivel */}
+                <div className="absolute -left-1 top-11 flex flex-col items-center gap-1">
                   <div
-                    className={`ml-8 rounded-3xl bg-gradient-to-br ${worldColor} shadow-lg p-4 pr-3 flex gap-3 items-center ${
-                      isLocked ? 'opacity-70' : ''
+                    className={`w-9 h-9 rounded-full border-4 flex items-center justify-center text-sm ${
+                      isLocked
+                        ? 'border-slate-400 bg-slate-200'
+                        : isCompleted
+                          ? 'border-emerald-500 bg-emerald-100 text-emerald-800'
+                          : 'border-atenas-blue bg-sky-100 text-sky-800'
                     }`}
                   >
-                    <div className="flex-1">
-                      <h2 className="text-sm font-bold text-slate-900">
-                        {level.title}
-                      </h2>
-                      <p className="mt-0.5 text-xs text-slate-700">
-                        {level.lessonsLabel}
-                      </p>
-                      <div className="mt-2 h-2 w-full rounded-full bg-white/60 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-emerald-500 transition-all"
-                          style={{ width: `${isLocked ? 0 : level.progress}%` }}
-                        />
-                      </div>
-                      <p className="mt-1 text-[11px] text-slate-700">
-                        {isLocked
-                          ? 'Completa el nivel anterior para desbloquear.'
-                          : isCompleted
-                          ? 'Nivel completado.'
-                          : `${level.progress}% completado.`}
-                      </p>
-                      <div className="mt-3 flex items-center gap-2">
-                        {isLocked ? (
-                          <button
-                            type="button"
-                            disabled
-                            className="rounded-full bg-slate-400 text-white text-xs px-3 py-1.5 opacity-80 cursor-not-allowed"
-                          >
-                            Bloqueado
-                          </button>
-                        ) : (
-                          <Link
-                            to="/unidades"
-                            className="rounded-full bg-emerald-500 text-white text-xs px-4 py-1.5 font-semibold shadow-sm hover:bg-emerald-600 transition-colors"
-                          >
-                            {isCompleted ? 'Repetir' : 'Jugar'}
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Ilustración lateral */}
-                    <div className="w-16 h-16 rounded-2xl bg-white/70 flex items-center justify-center shrink-0 text-2xl">
-                      {index === 0 && '🌱'}
-                      {index === 1 && '🏕️'}
-                      {index === 2 && '⛵'}
-                    </div>
+                    {isLocked ? '🔒' : isCompleted ? '✔' : '▶'}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div
+                  className={`ml-8 rounded-3xl bg-atenas-card border border-slate-200/90 shadow-md p-4 pr-3 flex gap-3 items-center ${
+                    isLocked ? 'opacity-75' : ''
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-slate-900 leading-snug">{level.title}</h3>
+                    <p className="mt-0.5 text-xs text-slate-600">{level.lessonsLabel}</p>
+                    <div className="mt-2 h-2.5 w-full rounded-full bg-[#1F2D2A]/10 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-emerald-500 transition-all"
+                        style={{ width: `${isLocked ? 0 : level.progress}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-[11px] text-slate-600">
+                      {isLocked
+                        ? 'Completa el nivel anterior para desbloquear.'
+                        : isCompleted
+                          ? 'Nivel completado.'
+                          : `${level.progress}% completado.`}
+                    </p>
+                    <div className="mt-3 flex items-center gap-2">
+                      {isLocked ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="rounded-full bg-slate-300 text-slate-600 text-xs px-3 py-1.5 cursor-not-allowed"
+                        >
+                          Bloqueado
+                        </button>
+                      ) : (
+                        <Link
+                          to="/unidades"
+                          className="rounded-full btn-atenas-gold text-xs px-4 py-1.5 font-semibold shadow-sm"
+                        >
+                          {isCompleted ? 'Repetir' : 'Jugar'}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shrink-0 text-2xl">
+                    {index === 0 && '🌱'}
+                    {index === 1 && '🏕️'}
+                    {index === 2 && '⛵'}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
+        <p className="mt-6 text-[11px] text-slate-500 text-right">
+          Versión del sistema <span className="font-semibold text-slate-700">v1.0.0</span>
+        </p>
       </section>
 
-      {/* Navegación inferior tipo app móvil */}
       <nav className="fixed bottom-0 inset-x-0 z-20 md:hidden">
         <div className="mx-auto max-w-md px-4 pb-4">
           <div className="rounded-3xl bg-white/95 shadow-lg border border-slate-100 flex justify-around py-2">
@@ -299,12 +297,12 @@ function BottomNavItem({ to, label, icon, active }: BottomNavItemProps) {
     <Link
       to={to}
       className={`flex flex-col items-center gap-0.5 text-[11px] ${
-        active ? 'text-emerald-600' : 'text-slate-500'
+        active ? 'text-[#1F2D2A]' : 'text-slate-500'
       }`}
     >
       <span
         className={`w-8 h-8 rounded-full flex items-center justify-center text-base ${
-          active ? 'bg-emerald-50' : ''
+          active ? 'bg-[#D6B98C]/25' : ''
         }`}
         aria-hidden="true"
       >

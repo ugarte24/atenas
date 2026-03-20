@@ -36,16 +36,13 @@ export default function Unidades() {
 
   return (
     <div className="max-w-6xl mx-auto pb-8">
-      <section className="mb-8 rounded-3xl bg-gradient-to-r from-[#C6F7D0] via-[#FFE9A9] to-[#C9E7FF] shadow-lg px-5 py-6 sm:px-8 sm:py-7 relative overflow-hidden">
-        <div className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/40" />
-        <div className="relative">
-          <p className="text-sm font-semibold text-slate-700">Plataforma ATENAS</p>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Contenidos</h1>
-          <p className="text-slate-700 mt-2 max-w-xl">
-            Elige una unidad y sigue tu ruta: cada una tiene temas, actividades y retos para aprender Ciencias
-            Sociales.
-          </p>
-        </div>
+      <section className="mb-8 border-b border-slate-200/90 pb-6">
+        <p className="text-sm font-semibold text-slate-600">Plataforma ATENAS</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F2D2A] mt-1">Contenidos</h1>
+        <p className="text-slate-600 mt-2 max-w-xl text-sm sm:text-base">
+          Elige una unidad y sigue tu ruta: cada una tiene temas, actividades y retos para aprender Ciencias
+          Sociales.
+        </p>
       </section>
 
       <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none m-0 p-0">
@@ -61,7 +58,7 @@ export default function Unidades() {
       </ul>
 
       {unidades.length === 0 && (
-        <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+        <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-atenas-card p-12 text-center">
           <p className="text-4xl mb-3" aria-hidden>
             📚
           </p>

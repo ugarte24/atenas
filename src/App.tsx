@@ -1,19 +1,20 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthContext } from './contexts/AuthContext';
 import Login from './pages/Login';
-import Home from './pages/Home';
-import Perfil from './pages/Perfil';
-import Progreso from './pages/Progreso';
-import Logros from './pages/Logros';
-import Unidades from './pages/Unidades';
-import UnidadTemas from './pages/UnidadTemas';
-import TemaView from './pages/TemaView';
-import ActividadView from './pages/ActividadView';
-import EvaluacionView from './pages/EvaluacionView';
+
+const Home = lazy(() => import('./pages/Home'));
+const Perfil = lazy(() => import('./pages/Perfil'));
+const Progreso = lazy(() => import('./pages/Progreso'));
+const Logros = lazy(() => import('./pages/Logros'));
+const Unidades = lazy(() => import('./pages/Unidades'));
+const UnidadTemas = lazy(() => import('./pages/UnidadTemas'));
+const TemaView = lazy(() => import('./pages/TemaView'));
+const ActividadView = lazy(() => import('./pages/ActividadView'));
+const EvaluacionView = lazy(() => import('./pages/EvaluacionView'));
 
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const DocenteLayout = lazy(() => import('./pages/docente/DocenteLayout'));
@@ -44,6 +45,10 @@ function LandingByRole() {
   return <Home />;
 }
 
+function WithPageSuspense({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -55,7 +60,9 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <LandingByRole />
+                  <WithPageSuspense>
+                    <LandingByRole />
+                  </WithPageSuspense>
                 </Layout>
               </ProtectedRoute>
             }
@@ -65,7 +72,9 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['estudiante']}>
                 <Layout>
-                  <Progreso />
+                  <WithPageSuspense>
+                    <Progreso />
+                  </WithPageSuspense>
                 </Layout>
               </ProtectedRoute>
             }
@@ -75,7 +84,9 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['estudiante']}>
                 <Layout>
-                  <Logros />
+                  <WithPageSuspense>
+                    <Logros />
+                  </WithPageSuspense>
                 </Layout>
               </ProtectedRoute>
             }
@@ -85,16 +96,73 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <Perfil />
+                  <WithPageSuspense>
+                    <Perfil />
+                  </WithPageSuspense>
                 </Layout>
               </ProtectedRoute>
             }
           />
-          <Route path="/unidades" element={<ProtectedRoute><Layout><Unidades /></Layout></ProtectedRoute>} />
-          <Route path="/unidades/:unidadId" element={<ProtectedRoute><Layout><UnidadTemas /></Layout></ProtectedRoute>} />
-          <Route path="/temas/:temaId" element={<ProtectedRoute><Layout><TemaView /></Layout></ProtectedRoute>} />
-          <Route path="/actividades/:actividadId" element={<ProtectedRoute><Layout><ActividadView /></Layout></ProtectedRoute>} />
-          <Route path="/evaluaciones/:evaluacionId" element={<ProtectedRoute><Layout><EvaluacionView /></Layout></ProtectedRoute>} />
+          <Route
+            path="/unidades"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WithPageSuspense>
+                    <Unidades />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/unidades/:unidadId"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WithPageSuspense>
+                    <UnidadTemas />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/temas/:temaId"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WithPageSuspense>
+                    <TemaView />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/actividades/:actividadId"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WithPageSuspense>
+                    <ActividadView />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/evaluaciones/:evaluacionId"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WithPageSuspense>
+                    <EvaluacionView />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/docente"
             element={

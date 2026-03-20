@@ -17,31 +17,37 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
   return (
     <Link
       to={`/unidades/${unidad.id}`}
-      className="group block rounded-3xl overflow-hidden shadow-lg border border-slate-100 focus:outline-none focus:ring-2 focus:ring-[#003366] focus:ring-offset-2 transition-transform hover:-translate-y-0.5"
+      className="group block rounded-3xl overflow-hidden shadow-lg border border-slate-200/90 bg-atenas-card transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F2D2A] focus-visible:ring-offset-2"
     >
-      <div className="aspect-[16/10] overflow-hidden relative bg-slate-200">
+      <div className="aspect-video overflow-hidden relative bg-slate-200">
         <img
           src={cover}
           alt=""
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
         <div
-          className="absolute inset-0 opacity-25 pointer-events-none"
-          style={{
-            background: `linear-gradient(135deg, ${accent} 0%, transparent 55%)`,
-          }}
+          className="absolute inset-0 bg-gradient-to-t from-[#1F2D2A]/75 via-[#1F2D2A]/10 to-transparent pointer-events-none"
+          aria-hidden
         />
         <span
-          className="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold shadow-sm"
-          style={{ color: accent }}
+          className="absolute top-3 left-3 inline-flex items-center rounded-full bg-black/45 backdrop-blur-sm px-3 py-1 text-[11px] font-bold text-white shadow-sm border border-white/20"
+          style={{ borderColor: `${accent}88` }}
         >
-          Unidad {listIndex + 1}
+          Nivel {listIndex + 1}
         </span>
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between gap-3">
+          <h2 className="text-base sm:text-lg font-bold text-white leading-snug drop-shadow-sm line-clamp-2">
+            {unidad.title}
+          </h2>
+          <span className="btn-atenas-gold shrink-0 text-sm px-4 py-2 shadow-lg pointer-events-none">
+            Entrar
+          </span>
+        </div>
       </div>
-      <div className="p-5 bg-gradient-to-br from-white to-slate-50">
-        <h2 className="text-lg font-bold text-slate-900 leading-snug">{unidad.title}</h2>
+      <div className="p-5 pt-4">
         {unidad.description && (
-          <p className="text-slate-600 text-sm mt-2 line-clamp-2">{unidad.description}</p>
+          <p className="text-slate-600 text-sm line-clamp-2">{unidad.description}</p>
         )}
         {showProgress && (
           <div className="mt-3">
@@ -49,7 +55,7 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
               <span>Tu progreso</span>
               <span className="font-semibold text-slate-800">{progressPct}%</span>
             </div>
-            <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+            <div className="h-2.5 w-full rounded-full bg-[#1F2D2A]/10 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
                 style={{

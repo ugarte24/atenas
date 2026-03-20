@@ -13,8 +13,8 @@ export function Layout({ children }: Props) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F4F4F4' }}>
-      <header className="bg-white border-b border-slate-200 shadow-md">
+    <div className="min-h-screen flex flex-col bg-atenas-page">
+      <header className="bg-white border-b border-slate-200/80 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
           <Link
             to="/"
@@ -31,14 +31,14 @@ export function Layout({ children }: Props) {
                 </span>
                 <Link
                   to="/perfil"
-                  className="text-sm font-medium text-slate-600 hover:text-[#003366] hover:bg-[#e6edf5] rounded-lg px-3 py-2.5 min-h-touch flex items-center transition-colors"
+                  className="text-sm font-medium text-slate-600 hover:text-atenas-blue hover:bg-slate-100 rounded-lg px-3 py-2.5 min-h-touch flex items-center transition-colors"
                 >
                   Mi perfil
                 </Link>
                 {(profile.role === 'docente' || profile.role === 'admin') && (
                   <Link
                     to="/docente"
-                    className="text-sm font-medium text-slate-600 hover:text-[#003366] hover:bg-[#e6edf5] rounded-lg px-3 py-2.5 min-h-touch flex items-center transition-colors"
+                    className="text-sm font-medium text-slate-600 hover:text-atenas-blue hover:bg-slate-100 rounded-lg px-3 py-2.5 min-h-touch flex items-center transition-colors"
                   >
                     Panel docente
                   </Link>
@@ -46,7 +46,7 @@ export function Layout({ children }: Props) {
                 {profile.role === 'admin' && (
                   <Link
                     to="/admin"
-                    className="text-sm font-medium text-slate-600 hover:text-[#003366] hover:bg-[#e6edf5] rounded-lg px-3 py-2.5 min-h-touch flex items-center transition-colors"
+                    className="text-sm font-medium text-slate-600 hover:text-atenas-blue hover:bg-slate-100 rounded-lg px-3 py-2.5 min-h-touch flex items-center transition-colors"
                   >
                     Administración
                   </Link>

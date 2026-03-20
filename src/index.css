@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --atenas-ink: #1f2d2a;
+    --atenas-ink-hover: #161f1c;
+    --atenas-gold: #d6b98c;
+    --atenas-page: #f5f7fa;
+    --atenas-blue: #4a90e2;
+    --atenas-card: #faf8f5;
+    --atenas-mist: #e8edeb;
+    --atenas-mist-border: #c5d0cc;
+  }
   html {
     font-size: 18px;
     -webkit-text-size-adjust: 100%;
@@ -14,7 +24,7 @@
   }
   body {
     @apply antialiased text-gray-800 min-h-screen m-0 p-0;
-    background-color: #F4F4F4;
+    background-color: var(--atenas-page);
     font-size: 1rem;
     line-height: 1.5;
   }
@@ -64,23 +74,38 @@
   }
   .btn-primary {
     @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white focus:ring-2 focus:ring-offset-2 transition-colors;
-    background-color: #003366;
+    background-color: var(--atenas-ink);
   }
-  .btn-primary:hover { background-color: #002244; }
-  .btn-primary:focus { --tw-ring-color: #003366; }
+  .btn-primary:hover { background-color: var(--atenas-ink-hover); }
+  .btn-primary:focus { --tw-ring-color: var(--atenas-ink); }
+  /** CTA dorado (login, acciones principales estilo mockup) */
+  .btn-atenas-gold {
+    @apply inline-flex items-center justify-center px-6 py-3.5 rounded-2xl font-semibold text-[#1f2d2a] shadow-md focus:ring-2 focus:ring-offset-2 transition-colors;
+    background: linear-gradient(180deg, #e8d4b8 0%, #d6b98c 45%, #c4a574 100%);
+  }
+  .btn-atenas-gold:hover {
+    filter: brightness(1.05);
+  }
+  .btn-atenas-gold:focus {
+    --tw-ring-color: var(--atenas-gold);
+  }
+  .btn-atenas-gold:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
   .btn-secondary {
     @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold transition-colors;
-    color: #003366;
-    background-color: #e6edf5;
-    border: 1px solid #c2d4e8;
+    color: var(--atenas-ink);
+    background-color: var(--atenas-mist);
+    border: 1px solid var(--atenas-mist-border);
   }
-  .btn-secondary:hover { background-color: #c2d4e8; }
+  .btn-secondary:hover { background-color: var(--atenas-mist-border); }
   .input-field {
     @apply w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-gray-900 placeholder-slate-400 transition-shadow;
   }
   .input-field:focus {
-    border-color: #003366;
-    box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
+    border-color: var(--atenas-ink);
+    box-shadow: 0 0 0 2px rgba(31, 45, 42, 0.2);
     outline: none;
   }
   .label {

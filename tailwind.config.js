@@ -13,6 +13,18 @@ export default {
         atenas: ['Cinzel', 'Georgia', 'Times New Roman', 'serif'],
       },
       colors: {
+        /** Identidad academia ATENAS (plan híbrido) */
+        atenas: {
+          ink: '#1F2D2A',
+          'ink-hover': '#161f1c',
+          gold: '#D6B98C',
+          'gold-mid': '#c4a574',
+          page: '#F5F7FA',
+          blue: '#4A90E2',
+          card: '#FAF8F5',
+          mist: '#E8EDEB',
+          'mist-border': '#C5D0CC',
+        },
         primary: {
           50: '#eef2ff',
           100: '#e0e7ff',
