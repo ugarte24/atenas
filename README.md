@@ -16,6 +16,7 @@ Aplicación web interactiva para fortalecer el aprendizaje de **Ciencias Sociale
 - [Rutas de la aplicación](#rutas-de-la-aplicación)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Resumen de fases implementadas](#resumen-de-fases-implementadas)
+- [Portada y vídeo por unidad](#portada-y-vídeo-por-unidad)
 
 ---
 
@@ -160,6 +161,16 @@ src/
 ```
 
 Las migraciones SQL están en `supabase/migrations/`. El script para crear el primer admin está en `supabase/scripts/crear_usuario_admin.sql`.
+
+---
+
+## Portada y vídeo por unidad
+
+Ejecuta también la migración `supabase/migrations/20260321_unidades_cover_media.sql` (columnas opcionales en `unidades`: portada, vídeo, color, intro larga, tema visual).
+
+El docente las edita en **Docente → Contenidos** al crear o editar una unidad. Los estudiantes las ven en **`/unidades`** (tarjetas estilo Home) y en **`/unidades/:unidadId`** (hero, vídeo e intro ampliada).
+
+Guía y checklist: [`supabase/UNIDADES_MEDIA.md`](supabase/UNIDADES_MEDIA.md).
 
 ---
 

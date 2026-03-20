@@ -2,6 +2,16 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useUnidades } from '../../hooks/useUnidades';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { isOptionalHexColor, isOptionalHttpUrl } from '../../lib/unidadVisual';
+import type { Unidad } from '../../types';
+
+const VISUAL_THEME_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'Por defecto' },
+  { value: 'abya_yala', label: 'Abya Yala' },
+  { value: 'europa', label: 'Europa' },
+  { value: 'historia', label: 'Historia' },
+  { value: 'ciudadania', label: 'Convivencia / ciudadanía' },
+];
 
 export default function DocenteContenidos() {
   const { profile } = useAuthContext();
@@ -17,6 +27,11 @@ export default function DocenteContenidos() {
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formCertUmbral, setFormCertUmbral] = useState('');
+  const [formCoverImageUrl, setFormCoverImageUrl] = useState('');
+  const [formCoverVideoUrl, setFormCoverVideoUrl] = useState('');
+  const [formAccentColor, setFormAccentColor] = useState('');
+  const [formIntroExtended, setFormIntroExtended] = useState('');
+  const [formVisualTheme, setFormVisualTheme] = useState('');
   const [busquedaUnidad, setBusquedaUnidad] = useState('');
 
   const unidadesFiltradas = useMemo(() => {
@@ -29,8 +44,27 @@ export default function DocenteContenidos() {
     );
   }, [unidades, busquedaUnidad]);
 
+  function resetForm() {
+    setFormTitle('');
+    setFormDescription('');
+    setFormCertUmbral('');
+    setFormCoverImageUrl('');
+    setFormCoverVideoUrl('');
+    setFormAccentColor('');
+    setFormIntroExtended('');
+    setFormVisualTheme('');
+  }
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (!isOptionalHttpUrl(formCoverImageUrl) || !isOptionalHttpUrl(formCoverVideoUrl)) {
+      alert('Las URLs de imagen o vídeo deben empezar por http:// o https://');
+      return;
+    }
+    if (!isOptionalHexColor(formAccentColor)) {
+      alert('El color acento debe ser un hex de 6 dígitos, ej. #009975 (o vacío).');
+      return;
+    }
     try {
       const cert = formCertUmbral.trim() ? parseInt(formCertUmbral, 10) : null;
       await create({
@@ -39,10 +73,13 @@ export default function DocenteContenidos() {
         orden: unidades.length,
         certificado_umbral_pct:
           cert != null && !Number.isNaN(cert) && cert >= 0 && cert <= 100 ? cert : null,
+        cover_image_url: formCoverImageUrl.trim() || null,
+        cover_video_url: formCoverVideoUrl.trim() || null,
+        accent_color: formAccentColor.trim() || null,
+        intro_extended: formIntroExtended.trim() || null,
+        visual_theme: formVisualTheme.trim() || null,
       });
-      setFormTitle('');
-      setFormDescription('');
-      setFormCertUmbral('');
+      resetForm();
       setCreating(false);
     } catch (err) {
       console.error(err);
@@ -52,35 +89,47 @@ export default function DocenteContenidos() {
 
   async function handleUpdate(e: React.FormEvent, id: string) {
     e.preventDefault();
+    if (!isOptionalHttpUrl(formCoverImageUrl) || !isOptionalHttpUrl(formCoverVideoUrl)) {
+      alert('Las URLs de imagen o vídeo deben empezar por http:// o https://');
+      return;
+    }
+    if (!isOptionalHexColor(formAccentColor)) {
+      alert('El color acento debe ser un hex de 6 dígitos, ej. #009975 (o vacío).');
+      return;
+    }
     try {
       const cert = formCertUmbral.trim() ? parseInt(formCertUmbral, 10) : null;
       await update(id, {
         title: formTitle,
-        description: formDescription || undefined,
+        description: formDescription.trim() || null,
         certificado_umbral_pct:
           cert != null && !Number.isNaN(cert) && cert >= 0 && cert <= 100 ? cert : null,
+        cover_image_url: formCoverImageUrl.trim() || null,
+        cover_video_url: formCoverVideoUrl.trim() || null,
+        accent_color: formAccentColor.trim() || null,
+        intro_extended: formIntroExtended.trim() || null,
+        visual_theme: formVisualTheme.trim() || null,
       });
       setEditingId(null);
-      setFormTitle('');
-      setFormDescription('');
+      resetForm();
     } catch (err) {
       console.error(err);
       alert('Error al actualizar');
     }
   }
 
-  function startEdit(u: {
-    id: string;
-    title: string;
-    description: string | null;
-    certificado_umbral_pct?: number | null;
-  }) {
+  function startEdit(u: Unidad) {
     setEditingId(u.id);
     setFormTitle(u.title);
     setFormDescription(u.description ?? '');
     setFormCertUmbral(
       u.certificado_umbral_pct != null ? String(u.certificado_umbral_pct) : ''
     );
+    setFormCoverImageUrl(u.cover_image_url ?? '');
+    setFormCoverVideoUrl(u.cover_video_url ?? '');
+    setFormAccentColor(u.accent_color ?? '');
+    setFormIntroExtended(u.intro_extended ?? '');
+    setFormVisualTheme(u.visual_theme ?? '');
   }
 
   async function handleRemove(id: string) {
@@ -92,6 +141,90 @@ export default function DocenteContenidos() {
       alert('Error al eliminar');
     }
   }
+
+  const formCamposVisuales = (
+    <>
+      <div>
+        <label htmlFor="u-cover-img" className="label">
+          URL imagen de portada (opcional)
+        </label>
+        <input
+          id="u-cover-img"
+          value={formCoverImageUrl}
+          onChange={(e) => setFormCoverImageUrl(e.target.value)}
+          placeholder="https://…"
+          className="input-field"
+          type="url"
+        />
+      </div>
+      <div>
+        <label htmlFor="u-cover-vid" className="label">
+          URL de vídeo (opcional, YouTube / Vimeo / .mp4)
+        </label>
+        <input
+          id="u-cover-vid"
+          value={formCoverVideoUrl}
+          onChange={(e) => setFormCoverVideoUrl(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=…"
+          className="input-field"
+          type="url"
+        />
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="u-accent" className="label">
+            Color acento (hex, opcional)
+          </label>
+          <div className="flex gap-2 items-center">
+            <input
+              id="u-accent"
+              value={formAccentColor}
+              onChange={(e) => setFormAccentColor(e.target.value)}
+              placeholder="#009975"
+              className="input-field flex-1 font-mono text-sm"
+            />
+            <input
+              type="color"
+              aria-label="Elegir color"
+              className="h-10 w-14 rounded border border-slate-300 cursor-pointer"
+              value={/^#[0-9A-Fa-f]{6}$/.test(formAccentColor.trim()) ? formAccentColor.trim() : '#003366'}
+              onChange={(e) => setFormAccentColor(e.target.value)}
+            />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="u-theme" className="label">
+            Tema visual (fallback si no hay imagen)
+          </label>
+          <select
+            id="u-theme"
+            value={formVisualTheme}
+            onChange={(e) => setFormVisualTheme(e.target.value)}
+            className="input-field"
+          >
+            {VISUAL_THEME_OPTIONS.map((o) => (
+              <option key={o.value || 'default'} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div>
+        <label htmlFor="u-intro-ext" className="label">
+          Intro ampliada (opcional)
+        </label>
+        <textarea
+          id="u-intro-ext"
+          value={formIntroExtended}
+          onChange={(e) => setFormIntroExtended(e.target.value)}
+          placeholder="Texto largo que verá el estudiante en la ficha de la unidad…"
+          className="input-field min-h-[120px] font-sans"
+          rows={5}
+        />
+      </div>
+    </>
+  );
 
   if (loading) return <p className="text-slate-600">Cargando unidades...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
@@ -108,7 +241,8 @@ export default function DocenteContenidos() {
         aria-label="Buscar unidades"
       />
       {creating ? (
-        <form onSubmit={handleCreate} className="mb-6 card p-5 space-y-3 max-w-md">
+        <form onSubmit={handleCreate} className="mb-6 card p-5 space-y-3 max-w-2xl">
+          <p className="text-sm font-semibold text-slate-800">Nueva unidad</p>
           <input
             value={formTitle}
             onChange={(e) => setFormTitle(e.target.value)}
@@ -119,7 +253,7 @@ export default function DocenteContenidos() {
           <textarea
             value={formDescription}
             onChange={(e) => setFormDescription(e.target.value)}
-            placeholder="Descripción (opcional)"
+            placeholder="Descripción corta (opcional)"
             className="input-field min-h-[80px]"
             rows={2}
           />
@@ -138,64 +272,108 @@ export default function DocenteContenidos() {
               className="input-field max-w-xs"
             />
           </div>
-          <div className="flex gap-3">
-            <button type="submit" className="btn-primary">Guardar</button>
-            <button type="button" onClick={() => setCreating(false)} className="btn-secondary">Cancelar</button>
+          {formCamposVisuales}
+          <div className="flex gap-3 pt-2">
+            <button type="submit" className="btn-primary">
+              Guardar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCreating(false);
+                resetForm();
+              }}
+              className="btn-secondary"
+            >
+              Cancelar
+            </button>
           </div>
         </form>
       ) : (
         <button
           type="button"
-          onClick={() => setCreating(true)}
+          onClick={() => {
+            resetForm();
+            setCreating(true);
+          }}
           className="btn-primary mb-6"
         >
           + Nueva unidad
         </button>
       )}
 
-      <ul className="space-y-2">
+      <ul className="space-y-2 list-none m-0 p-0">
         {unidadesFiltradas.map((u) => (
-          <li key={u.id} className="flex items-center gap-3 p-4 card">
+          <li key={u.id} className="card p-4">
             {editingId === u.id ? (
-              <form onSubmit={(e) => handleUpdate(e, u.id)} className="flex-1 flex gap-2 items-center flex-wrap">
+              <form onSubmit={(e) => handleUpdate(e, u.id)} className="space-y-3 max-w-2xl">
+                <p className="text-sm font-semibold text-slate-800">Editar unidad</p>
                 <input
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  className="input-field py-2 flex-1 min-w-[120px]"
+                  className="input-field"
                   required
                 />
-                <input
+                <textarea
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Descripción"
-                  className="input-field py-2 flex-1 min-w-[120px]"
+                  placeholder="Descripción corta"
+                  className="input-field min-h-[72px]"
+                  rows={2}
                 />
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={formCertUmbral}
-                  onChange={(e) => setFormCertUmbral(e.target.value)}
-                  placeholder="Cert %"
-                  className="input-field py-2 w-24"
-                  title="Umbral certificado"
-                />
-                <button type="submit" className="btn-primary py-2 text-sm">Guardar</button>
-                <button type="button" onClick={() => setEditingId(null)} className="btn-secondary py-2 text-sm">Cancelar</button>
+                <div>
+                  <label className="label">Certificado %</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={formCertUmbral}
+                    onChange={(e) => setFormCertUmbral(e.target.value)}
+                    className="input-field max-w-xs"
+                  />
+                </div>
+                {formCamposVisuales}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <button type="submit" className="btn-primary">
+                    Guardar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(null);
+                      resetForm();
+                    }}
+                    className="btn-secondary"
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </form>
             ) : (
-              <>
-                <span className="flex-1 font-medium text-slate-900">{u.title}</span>
-                <Link to={`/docente/unidades/${u.id}`} className="text-sm font-medium hover:underline" style={{ color: '#003366' }}>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="flex-1 min-w-[140px] font-medium text-slate-900">{u.title}</span>
+                <Link
+                  to={`/docente/unidades/${u.id}`}
+                  className="text-sm font-medium hover:underline"
+                  style={{ color: '#003366' }}
+                >
                   Temas
                 </Link>
-                <button type="button" onClick={() => startEdit(u)} className="text-sm text-slate-600 hover:text-slate-800">
+                <button
+                  type="button"
+                  onClick={() => startEdit(u)}
+                  className="text-sm text-slate-600 hover:text-slate-800"
+                >
                   Editar
                 </button>
-                <button type="button" onClick={() => handleRemove(u.id)} className="text-sm text-red-600 hover:text-red-700">
+                <button
+                  type="button"
+                  onClick={() => handleRemove(u.id)}
+                  className="text-sm text-red-600 hover:text-red-700"
+                >
                   Eliminar
                 </button>
-              </>
+              </div>
             )}
           </li>
         ))}

@@ -1,62 +1,71 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useUnidades } from '../hooks/useUnidades';
-
-const UNIT_IMAGES = [
-  'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80',
-  'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=400&q=80',
-  'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80',
-  'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&q=80',
-  'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&q=80',
-  'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80',
-];
+import { useAuthContext } from '../contexts/AuthContext';
+import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
+import { UnidadCard } from '../components/UnidadCard';
 
 export default function Unidades() {
+  const { user, profile } = useAuthContext();
   const { unidades, loading, error } = useUnidades();
+  const [pctByUnit, setPctByUnit] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!user || profile?.role !== 'estudiante' || unidades.length === 0) {
+      setPctByUnit({});
+      return;
+    }
+    let cancel = false;
+    void (async () => {
+      const entries = await Promise.all(
+        unidades.map(async (u) => {
+          const p = await progresoPorcentajeUnidad(user.id, u.id);
+          return [u.id, p] as const;
+        })
+      );
+      if (!cancel) setPctByUnit(Object.fromEntries(entries));
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [user, profile?.role, unidades]);
 
   if (loading) return <p className="text-slate-600 text-lg">Cargando unidades...</p>;
   if (error) return <p className="text-red-600 text-lg">Algo salió mal. Vuelve a intentarlo.</p>;
 
+  const esEstudiante = profile?.role === 'estudiante';
+
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Contenidos</h1>
-        <p className="text-slate-600">Elige una unidad para ver sus temas.</p>
-      </div>
-      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="max-w-6xl mx-auto pb-8">
+      <section className="mb-8 rounded-3xl bg-gradient-to-r from-[#C6F7D0] via-[#FFE9A9] to-[#C9E7FF] shadow-lg px-5 py-6 sm:px-8 sm:py-7 relative overflow-hidden">
+        <div className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/40" />
+        <div className="relative">
+          <p className="text-sm font-semibold text-slate-700">Plataforma ATENAS</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Contenidos</h1>
+          <p className="text-slate-700 mt-2 max-w-xl">
+            Elige una unidad y sigue tu ruta: cada una tiene temas, actividades y retos para aprender Ciencias
+            Sociales.
+          </p>
+        </div>
+      </section>
+
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none m-0 p-0">
         {unidades.map((u, i) => (
           <li key={u.id}>
-            <Link
-              to={`/unidades/${u.id}`}
-              className="group block card-hover rounded-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#003366] focus:ring-offset-2"
-            >
-              <div className="aspect-[16/10] overflow-hidden bg-slate-200">
-                <img
-                  src={UNIT_IMAGES[i % UNIT_IMAGES.length]}
-                  alt=""
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#009975' }}>
-                  Unidad {i + 1}
-                </span>
-                <h2 className="text-lg font-bold text-slate-900 mt-2">{u.title}</h2>
-                {u.description && (
-                  <p className="text-slate-600 text-sm mt-2 line-clamp-2">{u.description}</p>
-                )}
-              </div>
-            </Link>
+            <UnidadCard
+              unidad={u}
+              listIndex={i}
+              progressPct={esEstudiante ? (pctByUnit[u.id] ?? null) : undefined}
+            />
           </li>
         ))}
       </ul>
+
       {unidades.length === 0 && (
-        <div className="card p-12 text-center">
-          <img
-            src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=300&q=80"
-            alt=""
-            className="w-32 h-32 mx-auto rounded-full object-cover opacity-60"
-          />
-          <p className="text-slate-500 text-lg mt-4">Aún no hay unidades. Tu profesor las publicará pronto.</p>
+        <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+          <p className="text-4xl mb-3" aria-hidden>
+            📚
+          </p>
+          <p className="text-slate-600 text-lg">Aún no hay unidades. Tu profesor las publicará pronto.</p>
         </div>
       )}
     </div>

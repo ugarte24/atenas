@@ -5,6 +5,10 @@ import { useTemas } from '../hooks/useTemas';
 import { useAuthContext } from '../contexts/AuthContext';
 import { usuarioCumplePrerequisitoTema } from '../lib/prerequisitoTema';
 import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
+import { UnidadHero } from '../components/UnidadHero';
+import { UnidadMediaBlock } from '../components/UnidadMediaBlock';
+import { UnidadIntroExtended } from '../components/UnidadIntroExtended';
+import { resolveAccentColor } from '../lib/unidadVisual';
 
 export default function UnidadTemas() {
   const { unidadId } = useParams<{ unidadId: string }>();
@@ -22,7 +26,7 @@ export default function UnidadTemas() {
       return;
     }
     let cancel = false;
-    (async () => {
+    void (async () => {
       const next: Record<string, boolean> = {};
       for (const t of temas) {
         if (!t.prerequisito_tema_id) next[t.id] = false;
@@ -65,6 +69,9 @@ export default function UnidadTemas() {
     pctUnidad != null &&
     pctUnidad >= umbralCert;
 
+  const accent = resolveAccentColor(unidad.accent_color);
+  const heroIndex = unidad.orden ?? 0;
+
   return (
     <div>
       <button
@@ -75,28 +82,19 @@ export default function UnidadTemas() {
       >
         ← Volver a unidades
       </button>
-      <div
-        className="rounded-xl p-6 sm:p-8 mb-8 text-white overflow-hidden relative"
-        style={{ backgroundColor: '#003366' }}
-      >
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&q=80)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <h1 className="relative text-2xl sm:text-3xl font-bold">{unidad.title}</h1>
-        {unidad.description && (
-          <p className="relative text-blue-100 mt-2 text-lg">{unidad.description}</p>
-        )}
+
+      <UnidadHero unidad={unidad} listIndex={heroIndex}>
         {profile?.role === 'estudiante' && pctUnidad != null && (
-          <p className="relative text-white/95 text-sm mt-2">
+          <p className="relative text-white/95 text-sm mt-3 font-medium">
             Tu progreso en la unidad: <strong>{pctUnidad}%</strong>
           </p>
         )}
-      </div>
+      </UnidadHero>
+
+      <UnidadMediaBlock coverVideoUrl={unidad.cover_video_url} className="mb-8" />
+
+      <UnidadIntroExtended text={unidad.intro_extended} />
+
       {mostrarCert && (
         <div className="mb-6">
           <button
@@ -116,17 +114,18 @@ export default function UnidadTemas() {
           </button>
         </div>
       )}
+
       {loading ? (
         <p className="text-slate-600 text-lg">Cargando temas...</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-3 list-none m-0 p-0">
           {temas.map((t, i) => {
             const bloqueado = bloqueoTema[t.id] === true;
             return (
               <li key={t.id}>
                 {bloqueado ? (
                   <div
-                    className="flex items-center gap-4 p-5 rounded-xl border-2 border-slate-300 bg-slate-100 opacity-90"
+                    className="flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-300 bg-slate-100 opacity-90"
                     aria-disabled="true"
                   >
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-400 text-white font-bold">
@@ -142,11 +141,11 @@ export default function UnidadTemas() {
                 ) : (
                   <Link
                     to={`/temas/${t.id}`}
-                    className="flex items-center gap-4 p-5 card-hover rounded-xl focus:outline-none focus:ring-2 focus:ring-[#003366] focus:ring-offset-2 border border-slate-200"
+                    className="flex items-center gap-4 p-5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#003366] focus:ring-offset-2 border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div
                       className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-lg"
-                      style={{ backgroundColor: '#009975' }}
+                      style={{ backgroundColor: accent }}
                     >
                       {i + 1}
                     </div>
@@ -158,8 +157,9 @@ export default function UnidadTemas() {
           })}
         </ul>
       )}
+
       {temas.length === 0 && !loading && (
-        <div className="card p-8 text-center">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
           <p className="text-slate-500 text-lg">No hay temas en esta unidad todavía.</p>
         </div>
       )}

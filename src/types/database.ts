@@ -42,6 +42,11 @@ export interface Database {
           description: string | null;
           orden: number;
           certificado_umbral_pct?: number | null;
+          cover_image_url?: string | null;
+          cover_video_url?: string | null;
+          accent_color?: string | null;
+          intro_extended?: string | null;
+          visual_theme?: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -50,6 +55,12 @@ export interface Database {
           title: string;
           description?: string | null;
           orden: number;
+          certificado_umbral_pct?: number | null;
+          cover_image_url?: string | null;
+          cover_video_url?: string | null;
+          accent_color?: string | null;
+          intro_extended?: string | null;
+          visual_theme?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -58,6 +69,12 @@ export interface Database {
           title?: string;
           description?: string | null;
           orden?: number;
+          certificado_umbral_pct?: number | null;
+          cover_image_url?: string | null;
+          cover_video_url?: string | null;
+          accent_color?: string | null;
+          intro_extended?: string | null;
+          visual_theme?: string | null;
           created_at?: string;
           updated_at?: string;
         };

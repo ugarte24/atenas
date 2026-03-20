@@ -52,6 +52,11 @@ export function useUnidades(filtroDocente?: FiltroUnidadesDocente | null) {
     description?: string;
     orden?: number;
     certificado_umbral_pct?: number | null;
+    cover_image_url?: string | null;
+    cover_video_url?: string | null;
+    accent_color?: string | null;
+    intro_extended?: string | null;
+    visual_theme?: string | null;
   }) {
     const { data, error: e } = await supabase
       .from('unidades')
@@ -60,6 +65,11 @@ export function useUnidades(filtroDocente?: FiltroUnidadesDocente | null) {
         description: values.description ?? null,
         orden: values.orden ?? 0,
         certificado_umbral_pct: values.certificado_umbral_pct ?? null,
+        cover_image_url: values.cover_image_url ?? null,
+        cover_video_url: values.cover_video_url ?? null,
+        accent_color: values.accent_color ?? null,
+        intro_extended: values.intro_extended ?? null,
+        visual_theme: values.visual_theme ?? null,
       })
       .select()
       .single();
@@ -79,9 +89,14 @@ export function useUnidades(filtroDocente?: FiltroUnidadesDocente | null) {
     id: string,
     values: Partial<{
       title: string;
-      description: string;
+      description: string | null;
       orden: number;
       certificado_umbral_pct: number | null;
+      cover_image_url: string | null;
+      cover_video_url: string | null;
+      accent_color: string | null;
+      intro_extended: string | null;
+      visual_theme: string | null;
     }>
   ) {
     const { data, error: e } = await supabase
