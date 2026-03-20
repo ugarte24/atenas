@@ -26,19 +26,25 @@
     min-height: 44px;
     padding: 0.5rem 1rem;
   }
-  a:focus-visible,
+  a:focus-visible:not(.atenas-logo),
   button:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px white, 0 0 0 4px #003366;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #1f2d2a;
   }
 }
 
 @layer components {
   .atenas-logo {
+    font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
     font-weight: 700;
-    letter-spacing: -0.025em;
+    letter-spacing: 0.14em;
     font-size: 1.5rem;
-    color: #003366;
+    /* Marca ATENAS: dorado/beige #D6B98C */
+    color: #d6b98c;
+  }
+  .atenas-logo:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #1f2d2a;
   }
   .atenas-subtitle {
     @apply text-slate-600 text-sm;

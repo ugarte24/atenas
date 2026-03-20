@@ -40,8 +40,8 @@ export default function Login() {
         <div className="rounded-3xl bg-white/90 shadow-xl border border-white/60 overflow-hidden backdrop-blur">
           <div className="px-6 pt-6 pb-4 flex items-center justify-between gap-4 bg-gradient-to-r from-[#C6F7D0] via-[#FFE9A9] to-[#C9E7FF]">
             <div className="text-left">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">
-                Plataforma ATENAS
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-700 font-atenas">
+                Plataforma <span className="text-[#d6b98c]">ATENAS</span>
               </p>
               <p className="text-[13px] text-slate-700">
                 Ciencias Sociales · 6.º Primaria
