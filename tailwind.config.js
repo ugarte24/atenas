@@ -11,6 +11,8 @@ export default {
         sans: ['system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
         /** Logo / marca: clásica, alineada con el emblema de Atenea */
         atenas: ['Cinzel', 'Georgia', 'Times New Roman', 'serif'],
+        /** Login y copy académico (serif legible) */
+        login: ['Crimson Text', 'Georgia', 'Times New Roman', 'serif'],
       },
       colors: {
         /** Identidad academia ATENAS (plan híbrido) */

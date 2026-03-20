@@ -124,4 +124,22 @@
   .badge-role {
     @apply badge bg-slate-100 text-slate-600;
   }
+  /** Login: botón dorado con tipografía clásica (mockup academia) */
+  .btn-login-gold {
+    @apply inline-flex w-full items-center justify-center rounded-2xl px-6 py-4 text-lg font-bold tracking-wide shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D6B98C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F5F7FA];
+    font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    color: #1a2320;
+    background: linear-gradient(180deg, #f0e4d2 0%, #d6b98c 38%, #b8956b 100%);
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.12),
+      0 2px 4px -2px rgb(0 0 0 / 0.08),
+      inset 0 1px 0 rgb(255 255 255 / 0.35);
+  }
+  .btn-login-gold:hover:not(:disabled) {
+    filter: brightness(1.04);
+  }
+  .btn-login-gold:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
 }
