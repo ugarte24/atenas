@@ -54,8 +54,9 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
   const iframe = document.createElement('iframe');
   iframe.setAttribute('title', 'Certificado PDF');
   iframe.setAttribute('aria-hidden', 'true');
+  /* Sin opacity:0: html2canvas suele pintar imágenes con fondo negro si el iframe es invisible */
   iframe.style.cssText =
-    'position:fixed;left:-10000px;top:0;width:1056px;height:816px;border:0;opacity:0;pointer-events:none';
+    'position:fixed;left:-10000px;top:0;width:1056px;height:816px;border:0;pointer-events:none';
 
   document.body.appendChild(iframe);
 
@@ -112,6 +113,7 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
     windowWidth: 1056,
     windowHeight: 816,
     imageTimeout: 20000,
+    foreignObjectRendering: false,
   });
 
   document.body.removeChild(iframe);

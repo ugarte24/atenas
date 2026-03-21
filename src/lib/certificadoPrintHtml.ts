@@ -272,7 +272,7 @@ export function buildCertificadoPrintDocument(
     .corner-bl { bottom: 14px; left: 14px; border-bottom: 2px solid; border-left: 2px solid; }
     .corner-br { bottom: 14px; right: 14px; border-bottom: 2px solid; border-right: 2px solid; }
 
-    /* Emblema: encima del texto; PNG completo (incl. fondo crema del archivo, sin recorte circular) */
+    /* Emblema: encima del texto. Sin capa extra de color: el PNG trae su fondo crema; huecos ven el papel .cert */
     .cert-emblema-wrap {
       position: absolute;
       top: 28px;
@@ -283,8 +283,8 @@ export function buildCertificadoPrintDocument(
       pointer-events: none;
       border-radius: 4px;
       overflow: hidden;
-      background: var(--cert-paper);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+      background: transparent;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     }
     .cert-emblema {
       display: block;
@@ -292,6 +292,7 @@ export function buildCertificadoPrintDocument(
       height: 100%;
       object-fit: contain;
       object-position: center;
+      background: transparent;
     }
     .cert-emblema--hidden {
       display: none !important;
