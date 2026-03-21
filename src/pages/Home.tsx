@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno, type Mision } from '../hooks/useMisiones';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
+import { APP_VERSION } from '../constants/version';
 
 type LevelStatus = 'locked' | 'unlocked' | 'completed';
 
@@ -286,7 +287,8 @@ export default function Home() {
           })}
         </div>
         <p className="mt-6 text-[11px] text-atenas-muted text-right">
-          Versión del sistema <span className="font-semibold text-atenas-ink">v1.0.0</span>
+          Versión del sistema{' '}
+          <span className="font-semibold text-atenas-ink">v{APP_VERSION}</span>
         </p>
       </section>
     </div>
