@@ -174,6 +174,18 @@ Guía y checklist: [`supabase/UNIDADES_MEDIA.md`](supabase/UNIDADES_MEDIA.md).
 
 ---
 
+## Certificado de progreso (impresión)
+
+El certificado de unidad completada se genera en **formato A4 apaisado** e incluye el escudo del **Colegio Particular Dr. Antonio Vaca Diez** (Riberalta).
+
+Coloca el archivo PNG del escudo en la raíz de `public/` con el nombre exacto:
+
+`public/escudo-colegio-vaca-diez.png`
+
+Si falta el archivo, el texto del colegio sigue mostrándose; la imagen se oculta automáticamente.
+
+---
+
 ## Resumen de fases implementadas
 
 | Fase | Contenido |
