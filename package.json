@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prepare-athena-icon": "node scripts/clean-athena-logo-png.mjs && node scripts/embed-favicon-png-in-svg.mjs"
+    "prepare-athena-icon": "node scripts/clean-athena-logo-png.mjs && node scripts/embed-favicon-png-in-svg.mjs",
+    "prepare-emblema-colegio": "node scripts/make-emblema-colegio-transparent.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",
