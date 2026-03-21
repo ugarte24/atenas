@@ -9,6 +9,7 @@ import { UnidadHero } from '../components/UnidadHero';
 import { UnidadMediaBlock } from '../components/UnidadMediaBlock';
 import { UnidadIntroExtended } from '../components/UnidadIntroExtended';
 import { resolveAccentColor } from '../lib/unidadVisual';
+import { buildCertificadoPrintDocument } from '../lib/certificadoPrintHtml';
 
 export default function UnidadTemas() {
   const { unidadId } = useParams<{ unidadId: string }>();
@@ -102,14 +103,18 @@ export default function UnidadTemas() {
             onClick={() => {
               const w = window.open('', '_blank');
               if (!w) return;
-              const nombre = nombreEstudiante;
               w.document.write(
-                `<!DOCTYPE html><html><head><title>Certificado</title><style>body{font-family:system-ui;padding:2rem;text-align:center;}h1{color:#003366}</style></head><body><h1>Certificado de progreso</h1><p><strong>${nombre}</strong></p><p>Unidad: ${unidad.title}</p><p>Progreso: ${pctUnidad}% (umbral ${umbralCert}%)</p><p style="margin-top:3rem;font-size:0.9rem;color:#666;">Atenas</p><script>window.onload=function(){window.print();}</script></body></html>`
+                buildCertificadoPrintDocument({
+                  nombreEstudiante: nombreEstudiante,
+                  tituloUnidad: unidad.title,
+                  porcentajeUnidad: pctUnidad ?? 0,
+                  umbralCertificado: umbralCert ?? 0,
+                })
               );
               w.document.close();
             }}
           >
-            Descargar / imprimir certificado (≥ {umbralCert}%)
+            Descargar o imprimir certificado
           </button>
         </div>
       )}
