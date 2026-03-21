@@ -101,17 +101,51 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .footer-brand {
       font-family: Georgia, 'Times New Roman', Times, serif !important;
     }
-    html.certificado-root--pdf * {
-      letter-spacing: normal !important;
-      word-spacing: normal !important;
-      font-variant: normal !important;
+    html.certificado-root--pdf p,
+    html.certificado-root--pdf .pill,
+    html.certificado-root--pdf small {
+      font-variant: normal;
     }
+    /* Espaciado explícito (Georgia en PDF se veía muy apretado con letter-spacing: normal en todo) */
     html.certificado-root--pdf .brand {
       text-transform: uppercase;
       font-size: 0.62rem;
+      letter-spacing: 0.14em !important;
+      word-spacing: 0.12em;
     }
     html.certificado-root--pdf h1 {
       text-transform: uppercase;
+      letter-spacing: 0.065em !important;
+      word-spacing: 0.04em;
+    }
+    html.certificado-root--pdf .sub {
+      letter-spacing: 0.02em !important;
+    }
+    html.certificado-root--pdf .lead {
+      letter-spacing: 0.018em !important;
+    }
+    html.certificado-root--pdf .name {
+      letter-spacing: 0.05em !important;
+      word-spacing: 0.03em;
+      text-transform: capitalize;
+    }
+    html.certificado-root--pdf .detail {
+      letter-spacing: 0.018em !important;
+    }
+    html.certificado-root--pdf .pill {
+      letter-spacing: 0.02em !important;
+    }
+    html.certificado-root--pdf .pill span {
+      letter-spacing: 0.03em !important;
+    }
+    html.certificado-root--pdf .footer-date {
+      letter-spacing: 0.015em !important;
+    }
+    html.certificado-root--pdf .footer-brand {
+      letter-spacing: 0.1em !important;
+    }
+    html.certificado-root--pdf .footer-brand small {
+      letter-spacing: 0.05em !important;
     }
 
     html.certificado-root--print, html.certificado-root--print body {
