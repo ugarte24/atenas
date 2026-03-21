@@ -1,8 +1,8 @@
 /**
  * HTML/CSS para certificado de progreso.
  * Tamaño de página: carta (letter) apaisado.
- * Variante `print`: ventana para imprimir / vista previa.
- * Variante `pdf`: dimensiones fijas para captura y generación de PDF.
+ * Variante `print`: fuentes web (Google) para vista previa.
+ * Variante `pdf`: sin fuentes remotas + Georgia/Times para html2canvas (evita letras amontonadas).
  */
 
 function escapeHtml(s: string): string {
@@ -55,7 +55,6 @@ export function buildCertificadoPrintDocument(
   });
   const fechaEsc = escapeHtml(fecha);
   const escudoRaw = params.escudoUrl ?? resolveCertificadoEscudoUrl();
-  /* data:image/... no debe pasar por escapeHtml (rompe el atributo src) */
   const escudoUrl =
     escudoRaw.startsWith('data:') ? escudoRaw : escapeHtml(escudoRaw);
 
@@ -64,18 +63,22 @@ export function buildCertificadoPrintDocument(
       ? 'certificado-root certificado-root--pdf'
       : 'certificado-root certificado-root--print';
 
+  const fontLink =
+    variant === 'print'
+      ? `<link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />`
+      : '';
+
   return `<!DOCTYPE html>
 <html lang="es" class="${rootClass}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Certificado de progreso · ATENAS</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  ${fontLink}
   <style>
     * { box-sizing: border-box; }
-    /* Carta horizontal: 11" × 8.5" */
     @page { size: letter landscape; margin: 0.28in; }
     html, body { margin: 0; }
     body {
@@ -86,7 +89,31 @@ export function buildCertificadoPrintDocument(
       print-color-adjust: exact;
     }
 
-    /* Vista impresión / ventana */
+    /* PDF: fuentes locales + sin letter-spacing amplio (html2canvas falla con Cinzel/remotas) */
+    html.certificado-root--pdf body,
+    html.certificado-root--pdf .cert,
+    html.certificado-root--pdf .col-main {
+      font-family: Georgia, 'Times New Roman', Times, serif !important;
+    }
+    html.certificado-root--pdf .brand,
+    html.certificado-root--pdf h1,
+    html.certificado-root--pdf .name,
+    html.certificado-root--pdf .footer-brand {
+      font-family: Georgia, 'Times New Roman', Times, serif !important;
+    }
+    html.certificado-root--pdf * {
+      letter-spacing: normal !important;
+      word-spacing: normal !important;
+      font-variant: normal !important;
+    }
+    html.certificado-root--pdf .brand {
+      text-transform: uppercase;
+      font-size: 0.62rem;
+    }
+    html.certificado-root--pdf h1 {
+      text-transform: uppercase;
+    }
+
     html.certificado-root--print, html.certificado-root--print body {
       min-height: 100%;
     }
@@ -102,7 +129,6 @@ export function buildCertificadoPrintDocument(
       max-width: 1024px;
     }
 
-    /* Captura PDF: lienzo fijo proporcional a carta horizontal (96 CSS px/in ≈ 1056×816) */
     html.certificado-root--pdf,
     html.certificado-root--pdf body {
       width: 1056px;
@@ -117,60 +143,50 @@ export function buildCertificadoPrintDocument(
       justify-content: center;
       padding: 10px 12px;
     }
-    html.certificado-root--pdf .escudo-nombre { font-size: 0.55rem; max-width: 9.5rem; }
-    html.certificado-root--pdf .escudo-lugar { font-size: 0.62rem; }
     html.certificado-root--pdf .escudo-en-esquina {
       width: 64px;
       height: 64px;
       top: 10px;
       right: 12px;
     }
-    html.certificado-root--pdf h1 { font-size: 1.05rem; margin-bottom: 0.1rem; }
-    html.certificado-root--pdf .sub { font-size: 0.78rem; margin-bottom: 0.35rem; }
-    html.certificado-root--pdf .brand { font-size: 0.55rem; margin-bottom: 0.1rem; }
-    html.certificado-root--pdf .lead { font-size: 0.82rem; margin-bottom: 0.35rem; line-height: 1.35; }
-    html.certificado-root--pdf .name { font-size: 1.1rem; margin-bottom: 0.35rem; padding-bottom: 0.3rem; font-variant: normal; text-transform: none; }
-    html.certificado-root--pdf .detail { font-size: 0.8rem; margin: 0.25rem 0; }
-    html.certificado-root--pdf .stats { margin: 0.35rem 0 0.3rem; gap: 0.5rem; }
-    html.certificado-root--pdf .pill { font-size: 0.72rem; padding: 0.25rem 0.55rem; }
-    html.certificado-root--pdf .pill span { font-size: 0.88rem; }
-    html.certificado-root--pdf .footer-date { font-size: 0.72rem; margin-top: 0.2rem; }
-    html.certificado-root--pdf .footer-brand { margin-top: 0.35rem; padding-top: 0.3rem; font-size: 0.62rem; }
-    html.certificado-root--pdf .footer-brand small { font-size: 0.55rem; }
-    html.certificado-root--pdf .rule { margin-bottom: 0.35rem; }
+    html.certificado-root--pdf h1 { font-size: 1.15rem; margin-bottom: 0.15rem; }
+    html.certificado-root--pdf .sub { font-size: 0.8rem; margin-bottom: 0.4rem; }
+    html.certificado-root--pdf .brand { margin-bottom: 0.15rem; }
+    html.certificado-root--pdf .lead {
+      font-size: 0.88rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.45;
+      padding: 0 0.25rem;
+    }
+    html.certificado-root--pdf .name {
+      font-size: 1.15rem;
+      margin-bottom: 0.4rem;
+      padding-bottom: 0.3rem;
+    }
+    html.certificado-root--pdf .detail { font-size: 0.85rem; margin: 0.3rem 0; line-height: 1.45; }
+    html.certificado-root--pdf .stats { margin: 0.4rem 0 0.35rem; gap: 0.75rem; }
+    html.certificado-root--pdf .pill { font-size: 0.78rem; padding: 0.35rem 0.75rem; line-height: 1.35; }
+    html.certificado-root--pdf .pill span { font-size: 0.95rem; }
+    html.certificado-root--pdf .footer-date { font-size: 0.78rem; margin-top: 0.25rem; }
+    html.certificado-root--pdf .footer-brand { margin-top: 0.4rem; padding-top: 0.35rem; font-size: 0.68rem; }
+    html.certificado-root--pdf .footer-brand small { font-size: 0.6rem; }
+    html.certificado-root--pdf .rule { margin-bottom: 0.4rem; }
     html.certificado-root--pdf .corner { width: 28px; height: 28px; }
 
-    /*
-     * PDF (html2canvas): CSS Grid con minmax(0,1fr) suele colapsar la columna de texto
-     * y amontonar letras. Forzamos flex + anchos en px para la variante --pdf.
-     */
     html.certificado-root--pdf .cert {
-      display: flex !important;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-items: stretch;
-      justify-content: flex-start;
-      gap: 12px;
-      grid-template-columns: unset !important;
-      max-width: none;
+      display: block !important;
       width: 100%;
       height: 100%;
-      padding: 0.65rem 0.85rem 0.55rem;
+      padding: 0.75rem 1rem 0.6rem;
       box-sizing: border-box;
     }
-    html.certificado-root--pdf .col-escudo {
-      flex: 0 0 132px;
-      width: 132px;
-      min-width: 132px;
-      max-width: 132px;
-    }
     html.certificado-root--pdf .col-main {
-      flex: 0 0 auto;
-      width: 812px;
-      min-width: 812px;
-      max-width: 812px;
-      min-height: 0;
-      padding-right: 5.25rem;
+      display: block;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      padding: 0 5.5rem 0 0.75rem;
+      margin: 0;
       box-sizing: border-box;
     }
     html.certificado-root--pdf .col-main .brand,
@@ -181,18 +197,24 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .col-main .detail,
     html.certificado-root--pdf .col-main .footer-date,
     html.certificado-root--pdf .col-main .footer-brand {
+      display: block;
       width: 100%;
       max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
       box-sizing: border-box;
     }
     html.certificado-root--pdf .stats {
+      display: flex;
       width: 100%;
       justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
     html.certificado-root--pdf .pill {
-      flex: 1 1 auto;
-      min-width: 120px;
-      max-width: 360px;
+      flex: 0 1 auto;
+      min-width: 200px;
+      max-width: 420px;
       white-space: normal;
       text-align: center;
     }
@@ -212,10 +234,6 @@ export function buildCertificadoPrintDocument(
       padding: 0.85rem 1rem 0.75rem;
       position: relative;
       overflow: hidden;
-      display: grid;
-      grid-template-columns: minmax(108px, 150px) minmax(0, 1fr);
-      gap: 0.85rem 1.25rem;
-      align-items: stretch;
     }
     .cert::before {
       content: '';
@@ -238,37 +256,6 @@ export function buildCertificadoPrintDocument(
     .corner-bl { bottom: 12px; left: 12px; border-bottom: 2px solid; border-left: 2px solid; }
     .corner-br { bottom: 12px; right: 12px; border-bottom: 2px solid; border-right: 2px solid; }
 
-    .col-escudo {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-      padding: 0.15rem 0.4rem 0.15rem 0;
-      border-right: 1px solid rgba(201, 166, 106, 0.55);
-    }
-    .escudo-nombre {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 0.58rem;
-      font-weight: 700;
-      line-height: 1.3;
-      letter-spacing: 0.03em;
-      color: #1a2b44;
-      text-transform: uppercase;
-      margin: 0 0 0.15rem;
-      max-width: 10rem;
-    }
-    .escudo-lugar {
-      font-size: 0.68rem;
-      color: #1a2b44;
-      margin: 0;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    /* Escudo del colegio (PNG en public/) — esquina superior derecha */
     .escudo-en-esquina {
       position: absolute;
       top: 14px;
@@ -408,16 +395,11 @@ export function buildCertificadoPrintDocument(
       <img
         class="escudo-en-esquina"
         src="${escudoUrl}"
-        alt="Escudo del Colegio Particular Dr. Antonio Vaca Diez"
+        alt="Escudo del colegio"
         width="82"
         height="82"
         onerror="this.classList.add('escudo-en-esquina--hidden')"
       />
-
-      <aside class="col-escudo">
-        <p class="escudo-nombre">Colegio Particular Dr. Antonio Vaca Diez</p>
-        <p class="escudo-lugar">Riberalta</p>
-      </aside>
 
       <div class="col-main">
         <p class="brand">Plataforma educativa · Ciencias Sociales</p>

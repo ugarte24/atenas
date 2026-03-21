@@ -176,7 +176,7 @@ Guía y checklist: [`supabase/UNIDADES_MEDIA.md`](supabase/UNIDADES_MEDIA.md).
 
 ## Certificado de progreso (PDF)
 
-El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5") e incluye el escudo del **Colegio Particular Dr. Antonio Vaca Diez** (Riberalta).
+El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5"). Puede mostrarse el **escudo del colegio** en una esquina (archivo PNG en `public/`, ver nombre abajo).
 
 - **Descargar certificado (PDF):** genera un archivo `.pdf` listo para imprimir o archivar.
 
