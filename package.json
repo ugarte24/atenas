@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "prepare-athena-icon": "node scripts/clean-athena-logo-png.mjs && node scripts/embed-favicon-png-in-svg.mjs",
-    "prepare-emblema-colegio": "node scripts/make-emblema-colegio-transparent.mjs"
+    "prepare-emblema-colegio": "node scripts/make-emblema-colegio-transparent.mjs",
+    "fix-emblema-black": "node scripts/fix-emblema-black-edge.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",

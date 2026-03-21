@@ -108,7 +108,7 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
     useCORS: true,
     allowTaint: false,
     logging: false,
-    backgroundColor: '#fffdf9',
+    backgroundColor: '#fdfbf4',
     windowWidth: 1056,
     windowHeight: 816,
     imageTimeout: 20000,

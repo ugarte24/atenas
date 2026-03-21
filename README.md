@@ -179,7 +179,7 @@ Guía y checklist: [`supabase/UNIDADES_MEDIA.md`](supabase/UNIDADES_MEDIA.md).
 El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5"). El diseño es HTML/CSS (marco, líneas y tipografía) y **incluye el emblema del colegio** en la esquina superior derecha (`public/emblema-colegio-vaca-diez.png`).
 
 - **Descargar certificado (PDF):** genera un archivo `.pdf` listo para imprimir o archivar.
-- **Cambiar el emblema:** sustituye `public/emblema-colegio-vaca-diez.png` por tu PNG (puede incluir fondo crema u otro; se muestra tal cual). Opcional: **`npm run prepare-emblema-colegio`** solo si quieres transparencia en el borde del archivo.
+- **Cambiar el emblema:** sustituye `public/emblema-colegio-vaca-diez.png` por tu PNG. Si el archivo trae un **cuadrado negro** alrededor del sello, ejecuta **`npm run fix-emblema-black`** (sustituye ese negro por el color crema del certificado). Opcional: **`npm run prepare-emblema-colegio`** solo si quieres transparencia en un borde blanco.
 
 ---
 

@@ -1,7 +1,7 @@
 /**
  * Certificado de progreso — carta (letter) horizontal.
  * Emblema del colegio: `public/emblema-colegio-vaca-diez.png` (esquina superior derecha).
- * El PNG puede llevar su propio fondo (p. ej. crema). Opcional: `npm run prepare-emblema-colegio` solo si quieres quitar el blanco del borde.
+ * Borde negro en el PNG: `npm run fix-emblema-black`. Borde blanco: `npm run prepare-emblema-colegio`.
  * Variante `print`: fuentes Google.
  * Variante `pdf`: Georgia/Times para html2canvas.
  */
@@ -85,6 +85,8 @@ export function buildCertificadoPrintDocument(
 
     /* Escala institucional (px) — aire, secciones, nombre, firmas */
     :root {
+      /* Papel del certificado (crema; mismo tono que corrección del PNG del emblema) */
+      --cert-paper: #fdfbf4;
       --cert-pad-y: 60px;
       --cert-pad-x: 80px;
       --section-gap: 28px;
@@ -161,6 +163,9 @@ export function buildCertificadoPrintDocument(
       width: 1056px;
       height: 816px;
       overflow: hidden;
+      background: var(--cert-paper) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     html.certificado-root--pdf .sheet {
       width: 100%;
@@ -169,6 +174,7 @@ export function buildCertificadoPrintDocument(
       align-items: stretch;
       justify-content: center;
       padding: 0;
+      background: var(--cert-paper);
     }
     html.certificado-root--pdf .cert {
       width: 100%;
@@ -236,7 +242,7 @@ export function buildCertificadoPrintDocument(
     /* Marco: borde dorado grueso + línea interior oscura (solo CSS) */
     .cert {
       position: relative;
-      background: #fffdf9;
+      background: var(--cert-paper);
       border: 4px solid #c4a574;
       box-shadow:
         inset 0 0 0 1px #2a2a2a,
@@ -277,7 +283,7 @@ export function buildCertificadoPrintDocument(
       pointer-events: none;
       border-radius: 4px;
       overflow: hidden;
-      background: transparent;
+      background: var(--cert-paper);
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
     }
     .cert-emblema {
