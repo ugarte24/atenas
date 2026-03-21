@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { Unidad } from '../types';
 import { resolveAccentColor, resolveCoverImageUrl } from '../lib/unidadVisual';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
+import { limpiarDescripcionUnidad } from '../lib/unidadDescripcion';
 
 type Props = {
   unidad: Unidad;
@@ -15,6 +16,7 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
   const accent = resolveAccentColor(unidad.accent_color);
   const showProgress = progressPct != null && !Number.isNaN(progressPct);
   const tituloHero = tituloUnidadConOrden(unidad.orden ?? 0, unidad.title, listIndex);
+  const descripcionLimpia = limpiarDescripcionUnidad(unidad.description);
 
   return (
     <Link
@@ -42,8 +44,8 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
         </div>
       </div>
       <div className="p-5 pt-4">
-        {unidad.description && (
-          <p className="text-atenas-muted text-sm line-clamp-2">{unidad.description}</p>
+        {descripcionLimpia && (
+          <p className="text-atenas-muted text-sm line-clamp-2">{descripcionLimpia}</p>
         )}
         {showProgress && (
           <div className="mt-3">

@@ -74,3 +74,23 @@ UPDATE public.unidades SET
   intro_extended = 'Explorarás perspectivas del Abya Yala y su diálogo con el mundo actual: territorios, culturas, colonialidad y desafíos globales. Integrarás miradas locales y planetarias en cada tema.',
   visual_theme = 'abya_yala'
 WHERE orden = 8;
+
+-- ---------------------------------------------------------------------------
+-- Textos: quitar marcadores «ejemplo» / «Contenido de ejemplo para ATENAS»
+-- (alinea con seed_contenido_curricular.sql en instalaciones ya cargadas)
+-- ---------------------------------------------------------------------------
+UPDATE public.unidades SET
+  description = 'Forma de la Tierra, mapas y climas.'
+WHERE id = 'aaaa0001-0000-4000-8000-000000000001'::uuid
+  AND description LIKE '%Contenido de ejemplo para ATENAS%';
+
+UPDATE public.temas SET
+  content = '<p>Introducción a la forma esférica de la Tierra, rotación y traslación.</p>'
+WHERE id = 'bbbb0001-0000-4000-8000-000000000001'::uuid;
+UPDATE public.temas SET
+  content = REPLACE(content, ' (contenido de ejemplo)', '')
+WHERE content LIKE '%(contenido de ejemplo)%';
+
+UPDATE public.evaluaciones SET
+  descripcion = 'Cuestionario corto.'
+WHERE descripcion = 'Cuestionario corto (ejemplo).';

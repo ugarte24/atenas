@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Unidad } from '../types';
 import { resolveAccentColor, resolveCoverImageUrl } from '../lib/unidadVisual';
+import { limpiarDescripcionUnidad } from '../lib/unidadDescripcion';
 
 type Props = {
   unidad: Unidad;
@@ -12,6 +13,7 @@ type Props = {
 export function UnidadHero({ unidad, listIndex = 0, children }: Props) {
   const accent = resolveAccentColor(unidad.accent_color);
   const cover = resolveCoverImageUrl(unidad, listIndex);
+  const descripcionLimpia = limpiarDescripcionUnidad(unidad.description);
 
   return (
     <div className="rounded-3xl overflow-hidden shadow-xl mb-8 relative text-white">
@@ -29,8 +31,8 @@ export function UnidadHero({ unidad, listIndex = 0, children }: Props) {
       />
       <div className="relative p-6 sm:p-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold drop-shadow-sm">{unidad.title}</h1>
-        {unidad.description && (
-          <p className="mt-2 text-lg text-white/95 max-w-3xl drop-shadow-sm">{unidad.description}</p>
+        {descripcionLimpia && (
+          <p className="mt-2 text-lg text-white/95 max-w-3xl drop-shadow-sm">{descripcionLimpia}</p>
         )}
         {children}
       </div>

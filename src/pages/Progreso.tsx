@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useMisionesAlumno } from '../hooks/useMisiones';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
+import { limpiarDescripcionUnidad } from '../lib/unidadDescripcion';
 
 export default function Progreso() {
   const { misiones, loading, error } = useMisionesAlumno();
@@ -38,6 +39,7 @@ export default function Progreso() {
               ? Math.round((m.pasosCompletados / m.totalPasos) * 100)
               : 0;
             const tituloMostrado = tituloUnidadConOrden(m.orden, m.titulo);
+            const descripcionLimpia = limpiarDescripcionUnidad(m.descripcion);
             return (
               <article
                 key={m.id}
@@ -45,9 +47,9 @@ export default function Progreso() {
               >
                 <div>
                   <h2 className="text-sm font-semibold text-atenas-ink">{tituloMostrado}</h2>
-                  {m.descripcion && (
+                  {descripcionLimpia && (
                     <p className="mt-0.5 text-xs text-atenas-muted line-clamp-2">
-                      {m.descripcion}
+                      {descripcionLimpia}
                     </p>
                   )}
                 </div>

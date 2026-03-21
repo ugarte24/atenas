@@ -29,7 +29,7 @@ INSERT INTO public.unidades (
 )
 VALUES
   ('aaaa0001-0000-4000-8000-000000000001'::uuid, 'Unidad 1 · El planeta Tierra y su representación',
-   'Forma de la Tierra, mapas y climas. Contenido de ejemplo para ATENAS.', 1, 70,
+   'Forma de la Tierra, mapas y climas.', 1, 70,
    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/1280px-The_Earth_seen_from_Apollo_17.jpg',
    'https://www.youtube.com/watch?v=th79sDCAh0Q',
    '#0B5394',
@@ -87,7 +87,7 @@ VALUES
   -- Unidad 1
   ('bbbb0001-0000-4000-8000-000000000001'::uuid, 'aaaa0001-0000-4000-8000-000000000001'::uuid,
    'T1.1 · La forma de la Tierra y sus movimientos',
-   '<p>Introducción a la forma esférica de la Tierra, rotación y traslación (contenido de ejemplo).</p>', 1, NULL),
+   '<p>Introducción a la forma esférica de la Tierra, rotación y traslación.</p>', 1, NULL),
   ('bbbb0001-0000-4000-8000-000000000002'::uuid, 'aaaa0001-0000-4000-8000-000000000001'::uuid,
    'T1.2 · Los mapas: escala, símbolos y coordenadas',
    '<p>Lectura de mapas: escala, leyenda y coordenadas básicas.</p>', 2, 'bbbb0001-0000-4000-8000-000000000001'::uuid),
@@ -211,147 +211,147 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.evaluaciones (id, tema_id, title, descripcion, umbral_aprobado, preguntas, publicada, orden)
 VALUES
   ('dddd0001-0000-4000-8000-000000000001'::uuid, 'bbbb0001-0000-4000-8000-000000000001'::uuid,
-   'Evaluación: La Tierra y sus movimientos', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: La Tierra y sus movimientos', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La Tierra tiene forma aproximadamente…","opciones":[{"texto":"Esférica","correcta":true},{"texto":"Cuadrada","correcta":false},{"texto":"Plana","correcta":false}]},
      {"enunciado":"La traslación produce, en términos generales…","opciones":[{"texto":"Las estaciones del año","correcta":true},{"texto":"El día y la noche","correcta":false},{"texto":"Las mareas","correcta":false}]},
      {"enunciado":"La rotación se produce aproximadamente en…","opciones":[{"texto":"24 horas","correcta":true},{"texto":"365 días","correcta":false},{"texto":"1 mes","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0002-0000-4000-8000-000000000001'::uuid, 'bbbb0001-0000-4000-8000-000000000002'::uuid,
-   'Evaluación: Mapas', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Mapas', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La leyenda del mapa sirve para…","opciones":[{"texto":"Interpretar símbolos y colores","correcta":true},{"texto":"Borrar el mapa","correcta":false},{"texto":"Medir el tiempo","correcta":false}]},
      {"enunciado":"La escala permite…","opciones":[{"texto":"Relacionar distancias en el mapa y en la realidad","correcta":true},{"texto":"Solo medir temperaturas","correcta":false},{"texto":"Solo el relieve","correcta":false}]},
      {"enunciado":"Las coordenadas geográficas usan…","opciones":[{"texto":"Latitud y longitud","correcta":true},{"texto":"Solo colores","correcta":false},{"texto":"Solo el viento","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0003-0000-4000-8000-000000000001'::uuid, 'bbbb0001-0000-4000-8000-000000000003'::uuid,
-   'Evaluación: Climas y paisajes', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Climas y paisajes', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La latitud influye en…","opciones":[{"texto":"La cantidad de radiación solar recibida","correcta":true},{"texto":"Solo el idioma","correcta":false},{"texto":"Solo el tráfico","correcta":false}]},
      {"enunciado":"La vegetación suele relacionarse con…","opciones":[{"texto":"Clima y suelo","correcta":true},{"texto":"Solo la música","correcta":false},{"texto":"Solo el deporte","correcta":false}]},
      {"enunciado":"Un climograma muestra…","opciones":[{"texto":"Temperatura y precipitaciones","correcta":true},{"texto":"Solo la población","correcta":false},{"texto":"Solo el PIB","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0004-0000-4000-8000-000000000001'::uuid, 'bbbb0002-0000-4000-8000-000000000001'::uuid,
-   'Evaluación: Relieve de España', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Relieve de España', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La Meseta es…","opciones":[{"texto":"Una gran superficie elevada en el interior","correcta":true},{"texto":"Un océano","correcta":false},{"texto":"Un río","correcta":false}]},
      {"enunciado":"La cordillera pirenaica se sitúa…","opciones":[{"texto":"Al norte de la Península","correcta":true},{"texto":"Al sur de la Antártida","correcta":false},{"texto":"En el océano Índico","correcta":false}]},
      {"enunciado":"El relieve influye en…","opciones":[{"texto":"Clima y ríos","correcta":true},{"texto":"Solo la música","correcta":false},{"texto":"Solo la hora mundial","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0005-0000-4000-8000-000000000001'::uuid, 'bbbb0002-0000-4000-8000-000000000002'::uuid,
-   'Evaluación: Ríos', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Ríos', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"Un río es…","opciones":[{"texto":"Un curso natural de agua","correcta":true},{"texto":"Una montaña","correcta":false},{"texto":"Un desierto","correcta":false}]},
      {"enunciado":"La cuenca hidrográfica es…","opciones":[{"texto":"La zona que drena hacia un mismo sistema","correcta":true},{"texto":"Solo la desembocadura","correcta":false},{"texto":"Solo el cielo","correcta":false}]},
      {"enunciado":"La vertiente mediterránea vierte en general…","opciones":[{"texto":"Al mar Mediterráneo","correcta":true},{"texto":"Al océano Índico","correcta":false},{"texto":"Al mar Muerto","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0006-0000-4000-8000-000000000001'::uuid, 'bbbb0002-0000-4000-8000-000000000003'::uuid,
-   'Evaluación: Climas de España', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Climas de España', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"El clima mediterráneo suele tener…","opciones":[{"texto":"Veranos secos","correcta":true},{"texto":"Nieve permanente en costa","correcta":false},{"texto":"Lluvia constante todo el año en todas partes","correcta":false}]},
      {"enunciado":"El clima oceánico en el norte suele ser…","opciones":[{"texto":"Más húmedo y moderado","correcta":true},{"texto":"Siempre desértico","correcta":false},{"texto":"Igual que el desierto del Sahara","correcta":false}]},
      {"enunciado":"La altitud puede…","opciones":[{"texto":"Enfriar la temperatura","correcta":true},{"texto":"Eliminar la gravedad","correcta":false},{"texto":"Cambiar el número de meses","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0007-0000-4000-8000-000000000001'::uuid, 'bbbb0003-0000-4000-8000-000000000001'::uuid,
-   'Evaluación: Europa', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Europa', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"Europa es un continente…","opciones":[{"texto":"Del hemisferio norte","correcta":true},{"texto":"Sin países","correcta":false},{"texto":"Solo desierto","correcta":false}]},
      {"enunciado":"Los Alpes son…","opciones":[{"texto":"Una cordillera importante","correcta":true},{"texto":"Un lago único","correcta":false},{"texto":"Un río sin montañas","correcta":false}]},
      {"enunciado":"La Península Ibérica está en…","opciones":[{"texto":"Europa","correcta":true},{"texto":"Oceanía","correcta":false},{"texto":"Antártida","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0008-0000-4000-8000-000000000001'::uuid, 'bbbb0003-0000-4000-8000-000000000002'::uuid,
-   'Evaluación: Unión Europea', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Unión Europea', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La UE tiene…","opciones":[{"texto":"Instituciones comunes","correcta":true},{"texto":"Un solo idioma obligatorio","correcta":false},{"texto":"Cero normas","correcta":false}]},
      {"enunciado":"Los Estados miembros…","opciones":[{"texto":"Comparten un marco político y económico","correcta":true},{"texto":"No tienen relación","correcta":false},{"texto":"Son todos el mismo país","correcta":false}]},
      {"enunciado":"La ampliación de la UE ha…","opciones":[{"texto":"Incorporado a nuevos Estados","correcta":true},{"texto":"Eliminado Europa","correcta":false},{"texto":"Prohibido el comercio","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0009-0000-4000-8000-000000000001'::uuid, 'bbbb0003-0000-4000-8000-000000000003'::uuid,
-   'Evaluación: Ciudadanía europea', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Ciudadanía europea', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La ciudadanía europea…","opciones":[{"texto":"Complementa la nacional","correcta":true},{"texto":"Reemplaza la nacionalidad","correcta":false},{"texto":"No existe","correcta":false}]},
      {"enunciado":"Los derechos fundamentales en la UE se relacionan con…","opciones":[{"texto":"Dignidad y libertad","correcta":true},{"texto":"Solo la deuda","correcta":false},{"texto":"Solo el deporte","correcta":false}]},
      {"enunciado":"La libre circulación es…","opciones":[{"texto":"Una libertad importante en el espacio UE","correcta":true},{"texto":"Imposible","correcta":false},{"texto":"Solo para vehículos","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0010-0000-4000-8000-000000000001'::uuid, 'bbbb0004-0000-4000-8000-000000000001'::uuid,
-   'Evaluación: Población', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Población', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La densidad de población relaciona…","opciones":[{"texto":"Habitantes y superficie","correcta":true},{"texto":"Solo la altitud","correcta":false},{"texto":"Solo el viento","correcta":false}]},
      {"enunciado":"La migración es…","opciones":[{"texto":"Una movilidad de personas","correcta":true},{"texto":"Solo la lluvia","correcta":false},{"texto":"Solo el relieve","correcta":false}]},
      {"enunciado":"Las pirámides de edad muestran…","opciones":[{"texto":"Estructura por edades y sexos","correcta":true},{"texto":"Solo el clima","correcta":false},{"texto":"Solo el PIB","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0011-0000-4000-8000-000000000001'::uuid, 'bbbb0004-0000-4000-8000-000000000002'::uuid,
-   'Evaluación: Sectores económicos', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Sectores económicos', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"El sector primario incluye…","opciones":[{"texto":"Agricultura y minería","correcta":true},{"texto":"Solo banca","correcta":false},{"texto":"Solo sanidad","correcta":false}]},
      {"enunciado":"El sector secundario transforma…","opciones":[{"texto":"Materias primas en productos industriales","correcta":true},{"texto":"Solo nubes","correcta":false},{"texto":"Solo el tiempo","correcta":false}]},
      {"enunciado":"El sector terciario ofrece…","opciones":[{"texto":"Servicios","correcta":true},{"texto":"Solo petróleo","correcta":false},{"texto":"Solo agricultura","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0012-0000-4000-8000-000000000001'::uuid, 'bbbb0004-0000-4000-8000-000000000003'::uuid,
-   'Evaluación: Globalización', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Globalización', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La globalización implica…","opciones":[{"texto":"Mayor interdependencia","correcta":true},{"texto":"Aislamiento total","correcta":false},{"texto":"Eliminar el comercio","correcta":false}]},
      {"enunciado":"El comercio internacional…","opciones":[{"texto":"Intercambia bienes y servicios entre países","correcta":true},{"texto":"Solo existe en un país","correcta":false},{"texto":"Prohibe la economía","correcta":false}]},
      {"enunciado":"El consumo responsable busca…","opciones":[{"texto":"Sostenibilidad y respeto","correcta":true},{"texto":"Desperdicio constante","correcta":false},{"texto":"Solo comprar sin límites","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0013-0000-4000-8000-000000000001'::uuid, 'bbbb0005-0000-4000-8000-000000000001'::uuid,
-   'Evaluación: Prehistoria y Antigüedad', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Prehistoria y Antigüedad', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La escritura marca el inicio de…","opciones":[{"texto":"La Historia (en sentido amplio)","correcta":true},{"texto":"La Prehistoria","correcta":false},{"texto":"El futuro","correcta":false}]},
      {"enunciado":"La Prehistoria estudia…","opciones":[{"texto":"Sociedades sin escritura","correcta":true},{"texto":"Solo el siglo XXI","correcta":false},{"texto":"Solo el espacio","correcta":false}]},
      {"enunciado":"La Edad Antigua incluye…","opciones":[{"texto":"Grandes civilizaciones mediterráneas","correcta":true},{"texto":"Solo la Edad Media","correcta":false},{"texto":"Solo la Edad Contemporánea","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0014-0000-4000-8000-000000000001'::uuid, 'bbbb0005-0000-4000-8000-000000000002'::uuid,
-   'Evaluación: Edad Media y Moderna', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Edad Media y Moderna', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La Edad Media se caracteriza, entre otras cosas, por…","opciones":[{"texto":"Una organización social compleja","correcta":true},{"texto":"Internet global","correcta":false},{"texto":"Solo democracia digital","correcta":false}]},
      {"enunciado":"La Edad Moderna incluye…","opciones":[{"texto":"Grandes cambios políticos y culturales","correcta":true},{"texto":"Solo Prehistoria","correcta":false},{"texto":"Solo el año 3000","correcta":false}]},
      {"enunciado":"Los reinos cristianos en la Península…","opciones":[{"texto":"Tuvieron un proceso histórico largo","correcta":true},{"texto":"Aparecieron ayer","correcta":false},{"texto":"No existieron","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0015-0000-4000-8000-000000000001'::uuid, 'bbbb0005-0000-4000-8000-000000000003'::uuid,
-   'Evaluación: Patrimonio', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Patrimonio', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"El patrimonio histórico…","opciones":[{"texto":"Puede ser material e inmaterial","correcta":true},{"texto":"Solo es comida","correcta":false},{"texto":"Solo el clima","correcta":false}]},
      {"enunciado":"La UNESCO puede declarar…","opciones":[{"texto":"Patrimonio de la Humanidad","correcta":true},{"texto":"Solo parques de atracciones","correcta":false},{"texto":"Solo mapas meteorológicos","correcta":false}]},
      {"enunciado":"La conservación busca…","opciones":[{"texto":"Proteger y transmitir valor cultural","correcta":true},{"texto":"Destruir monumentos","correcta":false},{"texto":"Ignorar el pasado","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0016-0000-4000-8000-000000000001'::uuid, 'bbbb0006-0000-4000-8000-000000000001'::uuid,
-   'Evaluación: Siglo XIX y Guerra Civil', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Siglo XIX y Guerra Civil', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"El siglo XIX en España fue…","opciones":[{"texto":"Un periodo de grandes tensiones y cambios","correcta":true},{"texto":"Idéntico a la Prehistoria","correcta":false},{"texto":"Sin conflictos","correcta":false}]},
      {"enunciado":"La Guerra Civil (1936–1939) fue…","opciones":[{"texto":"Un conflicto bélico interno","correcta":true},{"texto":"Un festival","correcta":false},{"texto":"Una guerra lunar","correcta":false}]},
      {"enunciado":"La memoria histórica es…","opciones":[{"texto":"Un debate sobre el pasado y la reconciliación","correcta":true},{"texto":"Solo deporte","correcta":false},{"texto":"Solo clima","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0017-0000-4000-8000-000000000001'::uuid, 'bbbb0006-0000-4000-8000-000000000002'::uuid,
-   'Evaluación: Transición y Constitución', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Transición y Constitución', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La Transición fue…","opciones":[{"texto":"Un proceso hacia la democracia","correcta":true},{"texto":"Una guerra lunar","correcta":false},{"texto":"Solo el siglo XV","correcta":false}]},
      {"enunciado":"La Constitución de 1978 establece…","opciones":[{"texto":"Derechos y libertades fundamentales","correcta":true},{"texto":"Solo deberes sin derechos","correcta":false},{"texto":"Eliminar el Estado","correcta":false}]},
      {"enunciado":"La monarquía parlamentaria en España…","opciones":[{"texto":"Se articula en la Constitución","correcta":true},{"texto":"No está regulada","correcta":false},{"texto":"Es igual que el Imperio romano","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0018-0000-4000-8000-000000000001'::uuid, 'bbbb0006-0000-4000-8000-000000000003'::uuid,
-   'Evaluación: España democrática', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: España democrática', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"España es…","opciones":[{"texto":"Un Estado de autonomías","correcta":true},{"texto":"Un solo municipio sin leyes","correcta":false},{"texto":"Una colonia","correcta":false}]},
      {"enunciado":"Las autonomías tienen…","opciones":[{"texto":"Competencias normativas propias","correcta":true},{"texto":"Cero poder","correcta":false},{"texto":"Solo el tiempo","correcta":false}]},
      {"enunciado":"La participación ciudadana es…","opciones":[{"texto":"Una idea de la democracia representativa y directa","correcta":true},{"texto":"Imposible","correcta":false},{"texto":"Solo para robots","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0019-0000-4000-8000-000000000001'::uuid, 'bbbb0007-0000-4000-8000-000000000001'::uuid,
-   'Evaluación: Derechos de la infancia', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Derechos de la infancia', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"Los derechos de la infancia buscan…","opciones":[{"texto":"Proteger el desarrollo","correcta":true},{"texto":"Eliminar la educación","correcta":false},{"texto":"Solo obligaciones","correcta":false}]},
      {"enunciado":"La participación infantil…","opciones":[{"texto":"Debe ser promovida","correcta":true},{"texto":"Debe prohibirse","correcta":false},{"texto":"Solo en adultos","correcta":false}]},
      {"enunciado":"La convención internacional…","opciones":[{"texto":"Reconoce derechos específicos","correcta":true},{"texto":"Elimina derechos","correcta":false},{"texto":"Solo habla del clima","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0020-0000-4000-8000-000000000001'::uuid, 'bbbb0007-0000-4000-8000-000000000002'::uuid,
-   'Evaluación: Igualdad y diversidad', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Igualdad y diversidad', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"La igualdad de trato implica…","opciones":[{"texto":"No discriminación","correcta":true},{"texto":"Discriminación arbitraria","correcta":false},{"texto":"Exclusión","correcta":false}]},
      {"enunciado":"La diversidad es…","opciones":[{"texto":"Una realidad social","correcta":true},{"texto":"Un problema","correcta":false},{"texto":"Algo ilegal","correcta":false}]},
      {"enunciado":"La mediación en conflictos…","opciones":[{"texto":"Busca acuerdos","correcta":true},{"texto":"Impone violencia","correcta":false},{"texto":"Prohibe el diálogo","correcta":false}]}
    ]'::jsonb, true, 1),
   ('dddd0021-0000-4000-8000-000000000001'::uuid, 'bbbb0007-0000-4000-8000-000000000003'::uuid,
-   'Evaluación: Participación escolar', 'Cuestionario corto (ejemplo).', 70,
+   'Evaluación: Participación escolar', 'Cuestionario corto.', 70,
    '[
      {"enunciado":"El consejo escolar…","opciones":[{"texto":"Es un órgano de participación","correcta":true},{"texto":"No existe","correcta":false},{"texto":"Solo elige el clima","correcta":false}]},
      {"enunciado":"La participación requiere…","opciones":[{"texto":"Información y espacios de diálogo","correcta":true},{"texto":"Silencio total","correcta":false},{"texto":"Solo imposiciones","correcta":false}]},
