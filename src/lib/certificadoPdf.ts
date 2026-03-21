@@ -2,8 +2,30 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import {
   buildCertificadoPrintDocument,
+  resolveCertificadoEscudoUrl,
   type CertificadoParams,
 } from './certificadoPrintHtml';
+
+/** Carga el PNG del escudo como data URL para que html2canvas lo pinte siempre (evita 404 / timing). */
+async function fetchEscudoAsDataUrl(
+  explicit?: string
+): Promise<string | undefined> {
+  const url = explicit ?? resolveCertificadoEscudoUrl();
+  if (!url) return undefined;
+  try {
+    const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
+    if (!res.ok) return undefined;
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result as string);
+      fr.onerror = () => reject(new Error('read'));
+      fr.readAsDataURL(blob);
+    });
+  } catch {
+    return undefined;
+  }
+}
 
 function safeFileNameSegment(s: string, maxLen: number): string {
   const n = s
@@ -20,10 +42,17 @@ function safeFileNameSegment(s: string, maxLen: number): string {
  * encajando el diseño en una sola página.
  */
 export async function downloadCertificadoPdf(params: CertificadoParams): Promise<void> {
-  const html = buildCertificadoPrintDocument(params, {
-    variant: 'pdf',
-    autoPrint: false,
-  });
+  const escudoDataUrl = await fetchEscudoAsDataUrl(params.escudoUrl);
+  const html = buildCertificadoPrintDocument(
+    {
+      ...params,
+      escudoUrl: escudoDataUrl ?? params.escudoUrl ?? resolveCertificadoEscudoUrl(),
+    },
+    {
+      variant: 'pdf',
+      autoPrint: false,
+    }
+  );
 
   const iframe = document.createElement('iframe');
   iframe.setAttribute('title', 'Certificado PDF');
@@ -83,6 +112,9 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
     allowTaint: false,
     logging: false,
     backgroundColor: '#fdfbf7',
+    windowWidth: 1056,
+    windowHeight: 816,
+    imageTimeout: 20000,
   });
 
   document.body.removeChild(iframe);

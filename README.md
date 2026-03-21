@@ -174,12 +174,11 @@ Guía y checklist: [`supabase/UNIDADES_MEDIA.md`](supabase/UNIDADES_MEDIA.md).
 
 ---
 
-## Certificado de progreso (PDF e impresión)
+## Certificado de progreso (PDF)
 
-El certificado de unidad completada está pensado para **una hoja carta en horizontal** (letter landscape, 11" × 8.5") e incluye el escudo del **Colegio Particular Dr. Antonio Vaca Diez** (Riberalta).
+El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5") e incluye el escudo del **Colegio Particular Dr. Antonio Vaca Diez** (Riberalta).
 
-- **Descargar certificado (PDF):** genera un archivo `.pdf` en carta horizontal.
-- **Imprimir (carta horizontal):** abre una ventana con vista previa y el diálogo de impresión (elige papel carta y orientación horizontal si tu impresora no lo detecta solo).
+- **Descargar certificado (PDF):** genera un archivo `.pdf` listo para imprimir o archivar.
 
 Coloca el archivo PNG del escudo en la raíz de `public/` con el nombre exacto:
 

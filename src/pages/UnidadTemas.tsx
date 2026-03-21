@@ -9,7 +9,6 @@ import { UnidadHero } from '../components/UnidadHero';
 import { UnidadMediaBlock } from '../components/UnidadMediaBlock';
 import { UnidadIntroExtended } from '../components/UnidadIntroExtended';
 import { resolveAccentColor } from '../lib/unidadVisual';
-import { buildCertificadoPrintDocument } from '../lib/certificadoPrintHtml';
 
 export default function UnidadTemas() {
   const { unidadId } = useParams<{ unidadId: string }>();
@@ -97,7 +96,7 @@ export default function UnidadTemas() {
       <UnidadIntroExtended text={unidad.intro_extended} />
 
       {mostrarCert && (
-        <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="mb-6">
           <button
             type="button"
             className="btn-primary min-h-touch"
@@ -114,38 +113,13 @@ export default function UnidadTemas() {
                 });
               } catch (e) {
                 console.error(e);
-                window.alert(
-                  'No se pudo generar el PDF. Puedes usar «Imprimir» y elegir «Guardar como PDF» en el cuadro de impresión.'
-                );
+                window.alert('No se pudo generar el PDF. Intenta de nuevo en unos segundos.');
               } finally {
                 setCertPdfLoading(false);
               }
             }}
           >
             {certPdfLoading ? 'Generando PDF…' : 'Descargar certificado (PDF)'}
-          </button>
-          <button
-            type="button"
-            className="btn-secondary min-h-touch"
-            disabled={certPdfLoading}
-            onClick={() => {
-              const w = window.open('', '_blank');
-              if (!w) return;
-              w.document.write(
-                buildCertificadoPrintDocument(
-                  {
-                    nombreEstudiante: nombreEstudiante,
-                    tituloUnidad: unidad.title,
-                    porcentajeUnidad: pctUnidad ?? 0,
-                    umbralCertificado: umbralCert ?? 0,
-                  },
-                  { variant: 'print', autoPrint: true }
-                )
-              );
-              w.document.close();
-            }}
-          >
-            Imprimir (carta horizontal)
           </button>
         </div>
       )}

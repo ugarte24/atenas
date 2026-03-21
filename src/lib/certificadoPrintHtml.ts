@@ -54,7 +54,10 @@ export function buildCertificadoPrintDocument(
     day: 'numeric',
   });
   const fechaEsc = escapeHtml(fecha);
-  const escudoUrl = escapeHtml(params.escudoUrl ?? resolveCertificadoEscudoUrl());
+  const escudoRaw = params.escudoUrl ?? resolveCertificadoEscudoUrl();
+  /* data:image/... no debe pasar por escapeHtml (rompe el atributo src) */
+  const escudoUrl =
+    escudoRaw.startsWith('data:') ? escudoRaw : escapeHtml(escudoRaw);
 
   const rootClass =
     variant === 'pdf'
@@ -114,13 +117,6 @@ export function buildCertificadoPrintDocument(
       justify-content: center;
       padding: 10px 12px;
     }
-    html.certificado-root--pdf .cert {
-      max-width: none;
-      width: 100%;
-      height: 100%;
-      padding: 0.65rem 0.85rem 0.55rem;
-      gap: 0.75rem 1rem;
-    }
     html.certificado-root--pdf .escudo-nombre { font-size: 0.55rem; max-width: 9.5rem; }
     html.certificado-root--pdf .escudo-lugar { font-size: 0.62rem; }
     html.certificado-root--pdf .escudo-en-esquina {
@@ -129,12 +125,11 @@ export function buildCertificadoPrintDocument(
       top: 10px;
       right: 12px;
     }
-    html.certificado-root--pdf .col-main { padding-right: 4.5rem; }
     html.certificado-root--pdf h1 { font-size: 1.05rem; margin-bottom: 0.1rem; }
     html.certificado-root--pdf .sub { font-size: 0.78rem; margin-bottom: 0.35rem; }
     html.certificado-root--pdf .brand { font-size: 0.55rem; margin-bottom: 0.1rem; }
     html.certificado-root--pdf .lead { font-size: 0.82rem; margin-bottom: 0.35rem; line-height: 1.35; }
-    html.certificado-root--pdf .name { font-size: 1.1rem; margin-bottom: 0.35rem; padding-bottom: 0.3rem; }
+    html.certificado-root--pdf .name { font-size: 1.1rem; margin-bottom: 0.35rem; padding-bottom: 0.3rem; font-variant: normal; text-transform: none; }
     html.certificado-root--pdf .detail { font-size: 0.8rem; margin: 0.25rem 0; }
     html.certificado-root--pdf .stats { margin: 0.35rem 0 0.3rem; gap: 0.5rem; }
     html.certificado-root--pdf .pill { font-size: 0.72rem; padding: 0.25rem 0.55rem; }
@@ -144,6 +139,66 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .footer-brand small { font-size: 0.55rem; }
     html.certificado-root--pdf .rule { margin-bottom: 0.35rem; }
     html.certificado-root--pdf .corner { width: 28px; height: 28px; }
+
+    /*
+     * PDF (html2canvas): CSS Grid con minmax(0,1fr) suele colapsar la columna de texto
+     * y amontonar letras. Forzamos flex + anchos en px para la variante --pdf.
+     */
+    html.certificado-root--pdf .cert {
+      display: flex !important;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 12px;
+      grid-template-columns: unset !important;
+      max-width: none;
+      width: 100%;
+      height: 100%;
+      padding: 0.65rem 0.85rem 0.55rem;
+      box-sizing: border-box;
+    }
+    html.certificado-root--pdf .col-escudo {
+      flex: 0 0 132px;
+      width: 132px;
+      min-width: 132px;
+      max-width: 132px;
+    }
+    html.certificado-root--pdf .col-main {
+      flex: 0 0 auto;
+      width: 812px;
+      min-width: 812px;
+      max-width: 812px;
+      min-height: 0;
+      padding-right: 5.25rem;
+      box-sizing: border-box;
+    }
+    html.certificado-root--pdf .col-main .brand,
+    html.certificado-root--pdf .col-main h1,
+    html.certificado-root--pdf .col-main .sub,
+    html.certificado-root--pdf .col-main .lead,
+    html.certificado-root--pdf .col-main .name,
+    html.certificado-root--pdf .col-main .detail,
+    html.certificado-root--pdf .col-main .footer-date,
+    html.certificado-root--pdf .col-main .footer-brand {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    html.certificado-root--pdf .stats {
+      width: 100%;
+      justify-content: center;
+    }
+    html.certificado-root--pdf .pill {
+      flex: 1 1 auto;
+      min-width: 120px;
+      max-width: 360px;
+      white-space: normal;
+      text-align: center;
+    }
+    html.certificado-root--pdf .escudo-en-esquina {
+      filter: none;
+    }
 
     .cert {
       background: #fdfbf7;
@@ -279,8 +334,7 @@ export function buildCertificadoPrintDocument(
       font-family: 'Cinzel', Georgia, serif;
       font-weight: 700;
       font-size: 1.18rem;
-      font-variant: small-caps;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       color: #1a2b44;
       text-align: center;
       margin: 0 0 0.4rem;
