@@ -1,7 +1,13 @@
+import { useMemo } from 'react';
 import { useMisionesAlumno } from '../hooks/useMisiones';
+import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 
 export default function Progreso() {
   const { misiones, loading, error } = useMisionesAlumno();
+  const misionesConTemas = useMemo(
+    () => misiones.filter((m) => m.totalPasos > 0),
+    [misiones]
+  );
 
   return (
     <div className="max-w-xl mx-auto">
@@ -17,7 +23,7 @@ export default function Progreso() {
         <p className="text-sm text-red-600">No se pudo cargar tu progreso.</p>
       )}
 
-      {!loading && !error && misiones.length === 0 && (
+      {!loading && !error && misionesConTemas.length === 0 && (
         <div className="rounded-2xl border border-dashed border-atenas-mist-border bg-atenas-card p-8 text-center shadow-card">
           <p className="text-atenas-muted text-sm">
             Aún no tienes progreso registrado. Cuando completes actividades, lo verás aquí.
@@ -25,19 +31,20 @@ export default function Progreso() {
         </div>
       )}
 
-      {!loading && !error && misiones.length > 0 && (
+      {!loading && !error && misionesConTemas.length > 0 && (
         <div className="space-y-4">
-          {misiones.map((m) => {
+          {misionesConTemas.map((m) => {
             const porcentaje = m.totalPasos
               ? Math.round((m.pasosCompletados / m.totalPasos) * 100)
               : 0;
+            const tituloMostrado = tituloUnidadConOrden(m.orden, m.titulo);
             return (
               <article
                 key={m.id}
                 className="card p-5 flex flex-col gap-3 bg-white border border-atenas-mist-border shadow-card"
               >
                 <div>
-                  <h2 className="text-sm font-semibold text-atenas-ink">{m.titulo}</h2>
+                  <h2 className="text-sm font-semibold text-atenas-ink">{tituloMostrado}</h2>
                   {m.descripcion && (
                     <p className="mt-0.5 text-xs text-atenas-muted line-clamp-2">
                       {m.descripcion}

@@ -22,10 +22,9 @@ export function useLogrosUsuario() {
   const [error, setError] = useState<string | null>(null);
 
   const flags = useMemo(() => {
-    const totalMisiones = misiones.length;
-    const misionesCompletas = misiones.filter(
-      (m) => m.totalPasos > 0 && m.pasosCompletados >= m.totalPasos
-    ).length;
+    const conTemas = misiones.filter((m) => m.totalPasos > 0);
+    const totalMisiones = conTemas.length;
+    const misionesCompletas = conTemas.filter((m) => m.pasosCompletados >= m.totalPasos).length;
     const hasAnyProgress = misiones.some((m) => m.pasosCompletados > 0);
     return {
       nature: hasAnyProgress,

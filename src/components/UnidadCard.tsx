@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Unidad } from '../types';
 import { resolveAccentColor, resolveCoverImageUrl } from '../lib/unidadVisual';
+import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 
 type Props = {
   unidad: Unidad;
@@ -13,6 +14,7 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
   const cover = resolveCoverImageUrl(unidad, listIndex);
   const accent = resolveAccentColor(unidad.accent_color);
   const showProgress = progressPct != null && !Number.isNaN(progressPct);
+  const tituloHero = tituloUnidadConOrden(unidad.orden ?? 0, unidad.title, listIndex);
 
   return (
     <Link
@@ -30,15 +32,9 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
           className="absolute inset-0 bg-gradient-to-t from-[#1F2D2A]/75 via-[#1F2D2A]/10 to-transparent pointer-events-none"
           aria-hidden
         />
-        <span
-          className="absolute top-3 left-3 inline-flex items-center rounded-full bg-black/45 backdrop-blur-sm px-3 py-1 text-[11px] font-bold text-white shadow-sm border border-white/20"
-          style={{ borderColor: `${accent}88` }}
-        >
-          Nivel {listIndex + 1}
-        </span>
         <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between gap-3">
           <h2 className="text-base sm:text-lg font-bold text-white leading-snug drop-shadow-sm line-clamp-2">
-            {unidad.title}
+            {tituloHero}
           </h2>
           <span className="btn-atenas-gold shrink-0 text-sm px-4 py-2 shadow-lg pointer-events-none">
             Entrar

@@ -15,68 +15,70 @@ type Level = {
   progress: number;
 };
 
-const BASE_LEVELS: Omit<Level, 'status' | 'progress'>[] = [
+/** Metadatos de los 3 mundos del mapa; las “lecciones” salen de las 3 primeras unidades por orden en BD */
+const BASE_LEVELS: Omit<Level, 'status' | 'progress' | 'lessonsLabel'>[] = [
   {
     id: 1,
     title: 'Principios de convivencia del Abya Yala',
     worldLabel: 'Mundo 1 · Convivencia',
-    lessonsLabel: '5 lecciones',
   },
   {
     id: 2,
     title: 'Organización política y social del Abya Yala',
     worldLabel: 'Mundo 2 · Organización social',
-    lessonsLabel: '5 lecciones',
   },
   {
     id: 3,
     title: 'Invasión europea al Abya Yala',
     worldLabel: 'Mundo 3 · Invasión europea',
-    lessonsLabel: '5 lecciones',
   },
 ];
 
-function buildLevelsFromMision(mision: Mision | undefined): Level[] {
-  if (!mision || mision.totalPasos === 0) {
-    return BASE_LEVELS.map((base) => ({
-      ...base,
-      status: base.id === 1 ? 'unlocked' : 'locked',
-      progress: 0,
-    }));
-  }
+function formatLeccionesLabel(totalPasos: number): string {
+  if (totalPasos === 0) return 'Sin temas publicados';
+  if (totalPasos === 1) return '1 lección';
+  return `${totalPasos} lecciones`;
+}
 
-  const stepsPerLevel = Math.max(1, Math.round(mision.totalPasos / BASE_LEVELS.length));
+/**
+ * Cada mundo = una unidad (las 3 primeras por `orden` en curso).
+ * Progreso y bloqueo en cadena: el siguiente mundo se desbloquea al completar el anterior.
+ */
+function buildWorldLevels(
+  bases: typeof BASE_LEVELS,
+  misionesPorMundo: (Mision | undefined)[]
+): Level[] {
+  let previousWorldComplete = true;
 
-  return BASE_LEVELS.map((base) => {
-    const minStepsForLevel = (base.id - 1) * stepsPerLevel + 1;
-    const maxStepsForLevel = base.id * stepsPerLevel;
-    const clampedMax = Math.min(maxStepsForLevel, mision.totalPasos);
+  return bases.map((base, i) => {
+    const m = misionesPorMundo[i];
+    const total = m?.totalPasos ?? 0;
+    const done = m?.pasosCompletados ?? 0;
+    const lessonsLabel = formatLeccionesLabel(total);
 
-    let status: LevelStatus;
-    let progress = 0;
-
-    if (mision.pasosCompletados >= clampedMax) {
-      status = 'completed';
-      progress = 100;
-    } else if (mision.pasosCompletados >= minStepsForLevel) {
-      status = 'unlocked';
-      const stepsInThisLevel =
-        Math.min(mision.pasosCompletados, clampedMax) - minStepsForLevel + 1;
-      const totalStepsThisLevel = clampedMax - minStepsForLevel + 1;
-      progress = Math.round((stepsInThisLevel / totalStepsThisLevel) * 100);
-    } else if (base.id === 1) {
-      status = 'unlocked';
-      progress = 0;
-    } else {
-      status = 'locked';
-      progress = 0;
+    if (i > 0 && !previousWorldComplete) {
+      return {
+        ...base,
+        lessonsLabel,
+        status: 'locked' as LevelStatus,
+        progress: 0,
+      };
     }
 
-    return {
-      ...base,
-      status,
-      progress,
-    };
+    if (!m || total === 0) {
+      const status: LevelStatus = i === 0 ? 'unlocked' : 'locked';
+      previousWorldComplete = false;
+      return { ...base, lessonsLabel, status, progress: 0 };
+    }
+
+    const isComplete = done >= total;
+    const progress = isComplete
+      ? 100
+      : Math.min(100, Math.round((done / total) * 100));
+    const status: LevelStatus = isComplete ? 'completed' : 'unlocked';
+    previousWorldComplete = isComplete;
+
+    return { ...base, lessonsLabel, status, progress };
   });
 }
 
@@ -86,12 +88,24 @@ export default function Home() {
   const { puntos, racha, porcentajeGlobal, energia, loading: loadingGam } = useGamificacionEstudiante();
 
   const isStudent = profile?.role === 'estudiante';
-  const abyaMision = useMemo(
-    () => misiones.find((m) => m.titulo === 'Abya Yala y mundo actual'),
-    [misiones]
-  );
 
-  const levels = useMemo(() => buildLevelsFromMision(abyaMision), [abyaMision]);
+  /** Tres primeras unidades del curso (orden editorial) = 3 mundos del mapa */
+  const misionesTresMundos = useMemo(() => {
+    const sorted = [...misiones].sort((a, b) => a.orden - b.orden);
+    return [0, 1, 2].map((i) => sorted[i]);
+  }, [misiones]);
+
+  const leccionesCard = useMemo(() => {
+    const valid = misionesTresMundos.filter((m): m is Mision => m != null);
+    const tot = valid.reduce((s, m) => s + m.totalPasos, 0);
+    const done = valid.reduce((s, m) => s + m.pasosCompletados, 0);
+    return { tot, done };
+  }, [misionesTresMundos]);
+
+  const levels = useMemo(
+    () => buildWorldLevels(BASE_LEVELS, misionesTresMundos),
+    [misionesTresMundos]
+  );
 
   if (!isStudent) return null;
 
@@ -159,7 +173,9 @@ export default function Home() {
             </span>
             <span className="font-semibold text-atenas-ink block">Lecciones</span>
             <span className="text-atenas-muted tabular-nums">
-              {abyaMision ? `${abyaMision.pasosCompletados} / ${abyaMision.totalPasos}` : '–'}
+              {leccionesCard.tot > 0
+                ? `${leccionesCard.done} / ${leccionesCard.tot}`
+                : '–'}
             </span>
           </div>
           <div className="rounded-2xl bg-white/80 border border-atenas-mist-border py-2.5 px-1">

@@ -6,6 +6,8 @@ export type Mision = {
   id: string;
   titulo: string;
   descripcion: string | null;
+  /** Orden curricular de la unidad (coincide con `unidades.orden`) */
+  orden: number;
   totalPasos: number;
   pasosCompletados: number;
 };
@@ -36,7 +38,10 @@ export function useMisionesAlumno(): EstadoMisiones {
       try {
         // Una misión por unidad: pasos = temas de la unidad
         const [unidadesRes, temasRes, actRes, evalRes] = await Promise.all([
-          supabase.from('unidades').select('id, title, description'),
+          supabase
+            .from('unidades')
+            .select('id, title, description, orden')
+            .order('orden', { ascending: true }),
           supabase.from('temas').select('id, unidad_id'),
           supabase
             .from('actividad_intentos')
@@ -57,6 +62,7 @@ export function useMisionesAlumno(): EstadoMisiones {
           id: string;
           title: string;
           description: string | null;
+          orden: number | null;
         }[];
         const temas = (temasRes.data ?? []) as { id: string; unidad_id: string }[];
 
@@ -106,10 +112,11 @@ export function useMisionesAlumno(): EstadoMisiones {
             id: u.id,
             titulo: u.title,
             descripcion: u.description,
+            orden: u.orden ?? 0,
             totalPasos,
             pasosCompletados,
           };
-        }).filter((m) => m.totalPasos > 0);
+        });
 
         setMisiones(misionesCalculadas);
       } catch (e) {
