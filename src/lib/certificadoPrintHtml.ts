@@ -152,7 +152,8 @@ export function buildCertificadoPrintDocument(
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 0.4rem;
       min-height: 0;
       width: 100%;
       max-width: 820px;
@@ -179,22 +180,16 @@ export function buildCertificadoPrintDocument(
       line-height: 1.4;
     }
     html.certificado-root--pdf .pill span { font-size: 1rem; }
-    html.certificado-root--pdf .footer-date { font-size: 0.82rem; margin-top: 0.45rem; }
+    html.certificado-root--pdf .footer-date { font-size: 0.82rem; margin-top: 0.35rem; margin-bottom: 0; }
     html.certificado-root--pdf .footer-brand { margin-top: 0.35rem; padding-top: 0.4rem; font-size: 0.78rem; }
     html.certificado-root--pdf .footer-brand small { font-size: 0.68rem; }
     html.certificado-root--pdf .rule--wide { margin: 0.85rem auto; }
     html.certificado-root--pdf .corner { width: 26px; height: 26px; }
     html.certificado-root--pdf .signatures {
-      margin-top: 0.75rem;
-      padding-top: 0.35rem;
+      margin-top: 0.25rem;
+      padding-top: 0;
     }
     html.certificado-root--pdf .signatures__label { font-size: 0.68rem; }
-    html.certificado-root--pdf .sello-css {
-      width: 68px;
-      height: 68px;
-      font-size: 0.5rem;
-      font-family: Georgia, 'Times New Roman', serif !important;
-    }
 
     /* Marco: borde dorado grueso + línea interior oscura (solo CSS) */
     .cert {
@@ -242,23 +237,25 @@ export function buildCertificadoPrintDocument(
     }
     .cert-bottom {
       flex-shrink: 0;
-      margin-top: 0.5rem;
+      margin-top: 0.15rem;
     }
 
-    /* Firmas + sello decorativo (sin imagen) */
+    /* Dos columnas de firma (sin sello central) */
     .signatures {
       display: flex;
       flex-direction: row;
       align-items: flex-end;
-      justify-content: center;
-      gap: 1.25rem 2rem;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-      padding: 0 0.25rem;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: nowrap;
+      max-width: 520px;
+      margin: 0.35rem auto 0;
+      padding: 0 0.35rem;
     }
     .signatures__col {
-      flex: 1 1 140px;
-      max-width: 220px;
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: 230px;
       text-align: center;
     }
     .signatures__line {
@@ -271,31 +268,6 @@ export function buildCertificadoPrintDocument(
       font-size: 0.72rem;
       color: #4a5568;
       line-height: 1.3;
-    }
-    .signatures__seal {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-bottom: 0.15rem;
-    }
-    .sello-css {
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      border: 3px double #b8956a;
-      box-shadow: inset 0 0 0 1px rgba(42, 42, 42, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 0.52rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      color: #6b5d4a;
-      text-transform: uppercase;
-      transform: rotate(-8deg);
-      background: radial-gradient(circle at 35% 30%, #fffefb 0%, #f5efe6 55%, #ebe4d8 100%);
     }
 
     .brand {
@@ -340,8 +312,8 @@ export function buildCertificadoPrintDocument(
       border: none;
     }
     .rule--wide--spaced {
-      margin-top: 1rem;
-      margin-bottom: 0.35rem;
+      margin-top: 0.45rem;
+      margin-bottom: 0.25rem;
     }
 
     .name {
@@ -456,9 +428,6 @@ export function buildCertificadoPrintDocument(
             <div class="signatures__col">
               <div class="signatures__line"></div>
               <p class="signatures__label">Docente de aula<br />Ciencias Sociales</p>
-            </div>
-            <div class="signatures__seal">
-              <div class="sello-css">ATENAS</div>
             </div>
             <div class="signatures__col">
               <div class="signatures__line"></div>
