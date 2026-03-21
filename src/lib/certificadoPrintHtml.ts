@@ -68,11 +68,25 @@ export function buildCertificadoPrintDocument(
     * { box-sizing: border-box; }
     @page { size: letter landscape; margin: 0.32in; }
 
+    /* Escala institucional (px) — aire, secciones, nombre, firmas */
+    :root {
+      --cert-pad-y: 60px;
+      --cert-pad-x: 80px;
+      --section-gap: 28px;
+      --section-gap-tight: 24px;
+      --name-margin-v: 30px;
+      --pill-gap: 24px;
+      --space-before-signatures: 60px;
+      --lh-body: 1.62;
+      --lh-title: 1.35;
+    }
+
     html, body { margin: 0; }
     body {
       font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
       background: #f5f0e8;
       color: #1c2433;
+      line-height: var(--lh-body);
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -101,7 +115,7 @@ export function buildCertificadoPrintDocument(
       word-spacing: 0.04em;
     }
     html.certificado-root--pdf .sub { letter-spacing: 0.02em !important; }
-    html.certificado-root--pdf .lead { letter-spacing: 0.02em !important; line-height: 1.55 !important; }
+    html.certificado-root--pdf .lead { letter-spacing: 0.02em !important; line-height: 1.65 !important; }
     html.certificado-root--pdf .name {
       letter-spacing: 0.06em !important;
       word-spacing: 0.04em;
@@ -139,12 +153,12 @@ export function buildCertificadoPrintDocument(
       display: flex;
       align-items: stretch;
       justify-content: center;
-      padding: 6px 18px 12px;
+      padding: 0;
     }
     html.certificado-root--pdf .cert {
       width: 100%;
       height: 100%;
-      padding: 0.45rem 1.15rem 0.75rem;
+      padding: var(--cert-pad-y) var(--cert-pad-x);
       display: flex;
       flex-direction: column;
     }
@@ -153,40 +167,36 @@ export function buildCertificadoPrintDocument(
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 0.45rem;
+      gap: var(--space-before-signatures);
       min-height: 0;
       width: 100%;
       max-width: 820px;
       margin: 0 auto;
-      padding: 0.15rem 0.5rem 0;
+      padding: 0;
     }
-    html.certificado-root--pdf h1 { font-size: 1.35rem; margin: 0.2rem 0 0.35rem; }
-    html.certificado-root--pdf .sub { font-size: 0.88rem; margin: 0 0 0.85rem; }
+    html.certificado-root--pdf h1 { font-size: 1.35rem; line-height: var(--lh-title); }
+    html.certificado-root--pdf .sub { font-size: 0.88rem; line-height: 1.58; }
     html.certificado-root--pdf .lead {
       font-size: 0.95rem;
-      margin: 0 0 1rem;
-      padding: 0 0.25rem;
+      padding: 0 12px;
+      line-height: 1.65;
     }
-    html.certificado-root--pdf .name {
-      font-size: 1.35rem;
-      margin: 0.85rem 0 0.65rem;
-      padding-bottom: 0.5rem;
-    }
-    html.certificado-root--pdf .detail { font-size: 0.92rem; margin: 0.45rem 0; line-height: 1.5; }
-    html.certificado-root--pdf .stats { margin: 0.55rem 0 0.5rem; gap: 1rem; }
+    html.certificado-root--pdf .name { font-size: 1.38rem; padding: 0 8px var(--section-gap-tight); }
+    html.certificado-root--pdf .detail { font-size: 0.92rem; line-height: 1.62; }
+    html.certificado-root--pdf .stats { gap: var(--pill-gap); }
     html.certificado-root--pdf .pill {
       font-size: 0.82rem;
-      padding: 0.45rem 1rem;
-      line-height: 1.4;
+      padding: 12px 18px;
+      line-height: 1.5;
     }
     html.certificado-root--pdf .pill span { font-size: 1rem; }
-    html.certificado-root--pdf .footer-date { font-size: 0.82rem; margin-top: 0.35rem; margin-bottom: 0; }
-    html.certificado-root--pdf .footer-brand { margin-top: 0.35rem; padding-top: 0.4rem; font-size: 0.78rem; }
-    html.certificado-root--pdf .footer-brand small { font-size: 0.68rem; }
-    html.certificado-root--pdf .rule--wide { margin: 0.85rem auto; }
+    html.certificado-root--pdf .footer-date { font-size: 0.82rem; margin: 0; line-height: 1.55; }
+    html.certificado-root--pdf .footer-brand { margin-top: var(--section-gap-tight); padding-top: var(--section-gap-tight); font-size: 0.78rem; }
+    html.certificado-root--pdf .footer-brand small { font-size: 0.68rem; line-height: 1.5; }
     html.certificado-root--pdf .corner { width: 26px; height: 26px; }
+    html.certificado-root--pdf .cert-bottom { margin-top: 0; }
     html.certificado-root--pdf .signatures {
-      margin-top: 0.35rem;
+      margin-top: 0;
       padding-top: 0;
     }
     html.certificado-root--pdf .signatures__col {
@@ -195,7 +205,7 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .signatures__line {
       margin-bottom: 0.55rem;
     }
-    html.certificado-root--pdf .signatures__label { font-size: 0.68rem; }
+    html.certificado-root--pdf .signatures__label { font-size: 0.68rem; line-height: 1.45; }
 
     /* Marco: borde dorado grueso + línea interior oscura (solo CSS) */
     .cert {
@@ -205,7 +215,7 @@ export function buildCertificadoPrintDocument(
       box-shadow:
         inset 0 0 0 1px #2a2a2a,
         0 2px 12px rgba(40, 35, 30, 0.08);
-      padding: 1rem 1.15rem 0.9rem;
+      padding: var(--cert-pad-y) var(--cert-pad-x);
       overflow: hidden;
     }
     .cert::after {
@@ -236,14 +246,43 @@ export function buildCertificadoPrintDocument(
       max-width: 760px;
       margin: 0 auto;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-before-signatures);
     }
 
     .cert-main {
       flex-shrink: 0;
     }
+    .cert-main .brand {
+      margin-bottom: var(--section-gap-tight);
+    }
+    .cert-main h1 {
+      margin-bottom: var(--section-gap-tight);
+    }
+    .cert-main .sub {
+      margin-bottom: var(--section-gap);
+    }
+    .cert-main .lead {
+      margin-bottom: 0;
+    }
+    .cert-main .rule--wide {
+      margin-top: var(--section-gap);
+      margin-bottom: 0;
+    }
+    .cert-main .name {
+      margin-top: var(--name-margin-v);
+      margin-bottom: var(--name-margin-v);
+    }
+    .cert-main .detail {
+      margin-bottom: var(--section-gap);
+    }
+    .cert-main .stats {
+      margin-bottom: var(--section-gap-tight);
+    }
     .cert-bottom {
       flex-shrink: 0;
-      margin-top: 0.15rem;
+      margin-top: 0;
     }
 
     /* Dos columnas: hueco superior para firmar, luego línea, luego cargo */
@@ -252,11 +291,11 @@ export function buildCertificadoPrintDocument(
       flex-direction: row;
       align-items: flex-end;
       justify-content: space-between;
-      gap: 1.5rem;
+      gap: 2rem;
       flex-wrap: nowrap;
-      max-width: 540px;
-      margin: 0.5rem auto 0;
-      padding: 0 0.35rem;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 0 8px;
     }
     .signatures__col {
       flex: 1 1 0;
@@ -283,7 +322,8 @@ export function buildCertificadoPrintDocument(
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: #5c6478;
-      margin: 0 0 0.35rem;
+      margin: 0;
+      line-height: 1.5;
     }
     h1 {
       font-family: 'Cinzel', Georgia, serif;
@@ -291,21 +331,21 @@ export function buildCertificadoPrintDocument(
       font-size: 1.45rem;
       letter-spacing: 0.05em;
       color: #141c2c;
-      margin: 0 0 0.35rem;
+      margin: 0;
       text-transform: uppercase;
-      line-height: 1.25;
+      line-height: var(--lh-title);
     }
     .sub {
       font-size: 0.9rem;
       color: #4a5568;
       font-style: italic;
-      margin: 0 0 0.75rem;
-      line-height: 1.45;
+      margin: 0;
+      line-height: 1.58;
     }
     .lead {
       font-size: 0.95rem;
-      line-height: 1.52;
-      margin: 0 0 0.25rem;
+      line-height: 1.65;
+      margin: 0;
       color: #2d3748;
       text-align: center;
     }
@@ -314,30 +354,31 @@ export function buildCertificadoPrintDocument(
       width: 80%;
       max-width: 560px;
       height: 1px;
-      margin: 0.85rem auto;
+      margin-left: auto;
+      margin-right: auto;
       background: linear-gradient(90deg, transparent, #c9a66a 15%, #c9a66a 85%, transparent);
       border: none;
     }
     .rule--wide--spaced {
-      margin-top: 0.45rem;
-      margin-bottom: 0.25rem;
+      margin-top: var(--section-gap);
+      margin-bottom: var(--section-gap-tight);
     }
 
     .name {
       font-family: 'Cinzel', Georgia, serif;
       font-weight: 700;
-      font-size: 1.42rem;
+      font-size: 1.45rem;
       letter-spacing: 0.04em;
       color: #141c2c;
-      margin: 0.5rem 0 0.5rem;
-      padding-bottom: 0.45rem;
+      margin: var(--name-margin-v) 0;
+      padding: 0 12px var(--section-gap-tight);
       border-bottom: 1px solid rgba(201, 166, 106, 0.75);
-      line-height: 1.3;
+      line-height: var(--lh-title);
     }
     .detail {
-      margin: 0.4rem 0 0.5rem;
+      margin: 0;
       font-size: 0.92rem;
-      line-height: 1.5;
+      line-height: 1.62;
       color: #2d3748;
     }
     .detail strong { color: #1a202c; font-weight: 600; }
@@ -347,17 +388,17 @@ export function buildCertificadoPrintDocument(
       display: flex;
       justify-content: center;
       align-items: stretch;
-      gap: 1rem;
+      gap: var(--pill-gap);
       flex-wrap: wrap;
-      margin: 0.35rem 0 0.45rem;
+      margin: 0;
     }
     .pill {
       background: linear-gradient(180deg, #f7f2ea, #ebe4d8);
       border: 1px solid #d4c3a1;
       border-radius: 10px;
-      padding: 0.4rem 1rem;
+      padding: 12px 20px;
       font-size: 0.84rem;
-      line-height: 1.45;
+      line-height: 1.5;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
       min-width: 200px;
       max-width: 340px;
@@ -367,13 +408,14 @@ export function buildCertificadoPrintDocument(
     .footer-date {
       font-size: 0.85rem;
       color: #5a6570;
-      margin: 0.35rem 0 0;
+      margin: 0;
       font-style: italic;
+      line-height: 1.55;
     }
 
     .footer-brand {
-      margin-top: 0.35rem;
-      padding-top: 0.4rem;
+      margin-top: var(--section-gap-tight);
+      padding-top: var(--section-gap-tight);
       font-family: 'Cinzel', Georgia, serif;
       font-size: 0.78rem;
       font-weight: 600;
