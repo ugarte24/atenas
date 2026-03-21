@@ -1,31 +1,6 @@
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import {
-  buildCertificadoPrintDocument,
-  resolveCertificadoEscudoUrl,
-  type CertificadoParams,
-} from './certificadoPrintHtml';
-
-/** Carga el PNG del escudo como data URL para que html2canvas lo pinte siempre (evita 404 / timing). */
-async function fetchEscudoAsDataUrl(
-  explicit?: string
-): Promise<string | undefined> {
-  const url = explicit ?? resolveCertificadoEscudoUrl();
-  if (!url) return undefined;
-  try {
-    const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
-    if (!res.ok) return undefined;
-    const blob = await res.blob();
-    return await new Promise((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload = () => resolve(fr.result as string);
-      fr.onerror = () => reject(new Error('read'));
-      fr.readAsDataURL(blob);
-    });
-  } catch {
-    return undefined;
-  }
-}
+import { buildCertificadoPrintDocument, type CertificadoParams } from './certificadoPrintHtml';
 
 function safeFileNameSegment(s: string, maxLen: number): string {
   const n = s
@@ -38,21 +13,14 @@ function safeFileNameSegment(s: string, maxLen: number): string {
 }
 
 /**
- * Genera y descarga un PDF en **carta horizontal** (letter landscape),
- * encajando el diseño en una sola página.
+ * PDF en **carta horizontal** (letter landscape), una página.
+ * Plantilla solo HTML/CSS (sin imágenes).
  */
 export async function downloadCertificadoPdf(params: CertificadoParams): Promise<void> {
-  const escudoDataUrl = await fetchEscudoAsDataUrl(params.escudoUrl);
-  const html = buildCertificadoPrintDocument(
-    {
-      ...params,
-      escudoUrl: escudoDataUrl ?? params.escudoUrl ?? resolveCertificadoEscudoUrl(),
-    },
-    {
-      variant: 'pdf',
-      autoPrint: false,
-    }
-  );
+  const html = buildCertificadoPrintDocument(params, {
+    variant: 'pdf',
+    autoPrint: false,
+  });
 
   const iframe = document.createElement('iframe');
   iframe.setAttribute('title', 'Certificado PDF');
@@ -83,7 +51,7 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
   } catch {
     /* ignore */
   }
-  await new Promise((r) => setTimeout(r, 350));
+  await new Promise((r) => setTimeout(r, 400));
 
   const cert = doc.querySelector('.cert') as HTMLElement | null;
   if (!cert) {
@@ -91,30 +59,14 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
     throw new Error('Certificado: no se encontró el contenido.');
   }
 
-  const imgs = Array.from(doc.images);
-  await Promise.all(
-    imgs.map(
-      (img) =>
-        new Promise<void>((res) => {
-          if (img.complete) {
-            res();
-            return;
-          }
-          img.onload = () => res();
-          img.onerror = () => res();
-        })
-    )
-  );
-
   const canvas = await html2canvas(cert, {
     scale: 2,
     useCORS: true,
     allowTaint: false,
     logging: false,
-    backgroundColor: '#fdfbf7',
+    backgroundColor: '#fffdf9',
     windowWidth: 1056,
     windowHeight: 816,
-    imageTimeout: 20000,
   });
 
   document.body.removeChild(iframe);

@@ -1,8 +1,7 @@
 /**
- * HTML/CSS para certificado de progreso.
- * Tamaño de página: carta (letter) apaisado.
- * Variante `print`: fuentes web (Google) para vista previa.
- * Variante `pdf`: sin fuentes remotas + Georgia/Times para html2canvas (evita letras amontonadas).
+ * Certificado de progreso — carta (letter) horizontal, solo CSS (sin imágenes).
+ * Variante `print`: fuentes Google.
+ * Variante `pdf`: Georgia/Times para html2canvas.
  */
 
 function escapeHtml(s: string): string {
@@ -14,23 +13,14 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#039;');
 }
 
-/** URL absoluta del escudo para ventana about:blank / iframe */
-export function resolveCertificadoEscudoUrl(): string {
-  if (typeof window === 'undefined') return '';
-  const base = import.meta.env.BASE_URL || '/';
-  return new URL('escudo-colegio-vaca-diez.png', window.location.origin + base).href;
-}
-
 export type CertificadoParams = {
   nombreEstudiante: string;
   tituloUnidad: string;
   porcentajeUnidad: number;
   umbralCertificado: number;
-  escudoUrl?: string;
 };
 
 export type CertificadoDocumentOptions = {
-  /** Por defecto true solo en variante `print` */
   autoPrint?: boolean;
   variant?: 'print' | 'pdf';
 };
@@ -54,9 +44,6 @@ export function buildCertificadoPrintDocument(
     day: 'numeric',
   });
   const fechaEsc = escapeHtml(fecha);
-  const escudoRaw = params.escudoUrl ?? resolveCertificadoEscudoUrl();
-  const escudoUrl =
-    escudoRaw.startsWith('data:') ? escudoRaw : escapeHtml(escudoRaw);
 
   const rootClass =
     variant === 'pdf'
@@ -79,20 +66,20 @@ export function buildCertificadoPrintDocument(
   ${fontLink}
   <style>
     * { box-sizing: border-box; }
-    @page { size: letter landscape; margin: 0.28in; }
+    @page { size: letter landscape; margin: 0.32in; }
+
     html, body { margin: 0; }
     body {
       font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
-      background: linear-gradient(165deg, #f8f6f1 0%, #efe9df 45%, #e8e2d6 100%);
-      color: #1a1f1c;
+      background: #f5f0e8;
+      color: #1c2433;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
 
-    /* PDF: fuentes locales + sin letter-spacing amplio (html2canvas falla con Cinzel/remotas) */
+    /* —— PDF: fuentes del sistema + espaciado legible —— */
     html.certificado-root--pdf body,
-    html.certificado-root--pdf .cert,
-    html.certificado-root--pdf .col-main {
+    html.certificado-root--pdf .cert-inner {
       font-family: Georgia, 'Times New Roman', Times, serif !important;
     }
     html.certificado-root--pdf .brand,
@@ -101,68 +88,45 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .footer-brand {
       font-family: Georgia, 'Times New Roman', Times, serif !important;
     }
-    html.certificado-root--pdf p,
-    html.certificado-root--pdf .pill,
-    html.certificado-root--pdf small {
-      font-variant: normal;
-    }
-    /* Espaciado explícito (Georgia en PDF se veía muy apretado con letter-spacing: normal en todo) */
     html.certificado-root--pdf .brand {
       text-transform: uppercase;
-      font-size: 0.62rem;
+      font-size: 0.65rem;
       letter-spacing: 0.14em !important;
-      word-spacing: 0.12em;
+      word-spacing: 0.1em;
+      color: #5c6478;
     }
     html.certificado-root--pdf h1 {
       text-transform: uppercase;
-      letter-spacing: 0.065em !important;
+      letter-spacing: 0.07em !important;
       word-spacing: 0.04em;
     }
-    html.certificado-root--pdf .sub {
-      letter-spacing: 0.02em !important;
-    }
-    html.certificado-root--pdf .lead {
-      letter-spacing: 0.018em !important;
-    }
+    html.certificado-root--pdf .sub { letter-spacing: 0.02em !important; }
+    html.certificado-root--pdf .lead { letter-spacing: 0.02em !important; line-height: 1.55 !important; }
     html.certificado-root--pdf .name {
-      letter-spacing: 0.05em !important;
-      word-spacing: 0.03em;
+      letter-spacing: 0.06em !important;
+      word-spacing: 0.04em;
       text-transform: capitalize;
     }
-    html.certificado-root--pdf .detail {
-      letter-spacing: 0.018em !important;
-    }
-    html.certificado-root--pdf .pill {
-      letter-spacing: 0.02em !important;
-    }
-    html.certificado-root--pdf .pill span {
-      letter-spacing: 0.03em !important;
-    }
-    html.certificado-root--pdf .footer-date {
-      letter-spacing: 0.015em !important;
-    }
-    html.certificado-root--pdf .footer-brand {
-      letter-spacing: 0.1em !important;
-    }
-    html.certificado-root--pdf .footer-brand small {
-      letter-spacing: 0.05em !important;
-    }
+    html.certificado-root--pdf .detail { letter-spacing: 0.02em !important; }
+    html.certificado-root--pdf .pill { letter-spacing: 0.02em !important; }
+    html.certificado-root--pdf .pill span { letter-spacing: 0.03em !important; }
+    html.certificado-root--pdf .footer-date { letter-spacing: 0.02em !important; }
+    html.certificado-root--pdf .footer-brand { letter-spacing: 0.1em !important; }
+    html.certificado-root--pdf .footer-brand small { letter-spacing: 0.05em !important; }
 
-    html.certificado-root--print, html.certificado-root--print body {
-      min-height: 100%;
-    }
     html.certificado-root--print .sheet {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0.5rem 0.65rem;
+      padding: 0.75rem 1rem;
     }
     html.certificado-root--print .cert {
       width: 100%;
-      max-width: 1024px;
+      max-width: 1040px;
     }
 
+    /* Lienzo fijo carta horizontal ≈ 11×8.5 in a 96dpi */
     html.certificado-root--pdf,
     html.certificado-root--pdf body {
       width: 1056px;
@@ -173,248 +137,205 @@ export function buildCertificadoPrintDocument(
       width: 100%;
       height: 100%;
       display: flex;
-      align-items: stretch;
+      align-items: center;
       justify-content: center;
-      padding: 10px 12px;
+      padding: 14px 18px;
     }
-    html.certificado-root--pdf .escudo-en-esquina {
-      width: 64px;
-      height: 64px;
-      top: 10px;
-      right: 12px;
+    html.certificado-root--pdf .cert {
+      width: 100%;
+      height: 100%;
+      padding: 1rem 1.25rem 0.85rem;
     }
-    html.certificado-root--pdf h1 { font-size: 1.15rem; margin-bottom: 0.15rem; }
-    html.certificado-root--pdf .sub { font-size: 0.8rem; margin-bottom: 0.4rem; }
-    html.certificado-root--pdf .brand { margin-bottom: 0.15rem; }
+    html.certificado-root--pdf .cert-inner {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 0.5rem;
+    }
+    html.certificado-root--pdf h1 { font-size: 1.35rem; margin: 0.2rem 0 0.35rem; }
+    html.certificado-root--pdf .sub { font-size: 0.88rem; margin: 0 0 0.85rem; }
     html.certificado-root--pdf .lead {
-      font-size: 0.88rem;
-      margin-bottom: 0.4rem;
-      line-height: 1.45;
+      font-size: 0.95rem;
+      margin: 0 0 1rem;
       padding: 0 0.25rem;
     }
     html.certificado-root--pdf .name {
-      font-size: 1.15rem;
-      margin-bottom: 0.4rem;
-      padding-bottom: 0.3rem;
+      font-size: 1.35rem;
+      margin: 0.85rem 0 0.65rem;
+      padding-bottom: 0.5rem;
     }
-    html.certificado-root--pdf .detail { font-size: 0.85rem; margin: 0.3rem 0; line-height: 1.45; }
-    html.certificado-root--pdf .stats { margin: 0.4rem 0 0.35rem; gap: 0.75rem; }
-    html.certificado-root--pdf .pill { font-size: 0.78rem; padding: 0.35rem 0.75rem; line-height: 1.35; }
-    html.certificado-root--pdf .pill span { font-size: 0.95rem; }
-    html.certificado-root--pdf .footer-date { font-size: 0.78rem; margin-top: 0.25rem; }
-    html.certificado-root--pdf .footer-brand { margin-top: 0.4rem; padding-top: 0.35rem; font-size: 0.68rem; }
-    html.certificado-root--pdf .footer-brand small { font-size: 0.6rem; }
-    html.certificado-root--pdf .rule { margin-bottom: 0.4rem; }
-    html.certificado-root--pdf .corner { width: 28px; height: 28px; }
-
-    html.certificado-root--pdf .cert {
-      display: block !important;
-      width: 100%;
-      height: 100%;
-      padding: 0.75rem 1rem 0.6rem;
-      box-sizing: border-box;
-    }
-    html.certificado-root--pdf .col-main {
-      display: block;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      padding: 0 5.5rem 0 0.75rem;
-      margin: 0;
-      box-sizing: border-box;
-    }
-    html.certificado-root--pdf .col-main .brand,
-    html.certificado-root--pdf .col-main h1,
-    html.certificado-root--pdf .col-main .sub,
-    html.certificado-root--pdf .col-main .lead,
-    html.certificado-root--pdf .col-main .name,
-    html.certificado-root--pdf .col-main .detail,
-    html.certificado-root--pdf .col-main .footer-date,
-    html.certificado-root--pdf .col-main .footer-brand {
-      display: block;
-      width: 100%;
-      max-width: 100%;
-      margin-left: auto;
-      margin-right: auto;
-      box-sizing: border-box;
-    }
-    html.certificado-root--pdf .stats {
-      display: flex;
-      width: 100%;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
+    html.certificado-root--pdf .detail { font-size: 0.92rem; margin: 0.45rem 0; line-height: 1.5; }
+    html.certificado-root--pdf .stats { margin: 0.55rem 0 0.5rem; gap: 1rem; }
     html.certificado-root--pdf .pill {
-      flex: 0 1 auto;
-      min-width: 200px;
-      max-width: 420px;
-      white-space: normal;
-      text-align: center;
+      font-size: 0.82rem;
+      padding: 0.45rem 1rem;
+      line-height: 1.4;
     }
-    html.certificado-root--pdf .escudo-en-esquina {
-      filter: none;
-    }
+    html.certificado-root--pdf .pill span { font-size: 1rem; }
+    html.certificado-root--pdf .footer-date { font-size: 0.82rem; margin-top: 0.45rem; }
+    html.certificado-root--pdf .footer-brand { margin-top: 0.55rem; padding-top: 0.5rem; font-size: 0.72rem; }
+    html.certificado-root--pdf .footer-brand small { font-size: 0.62rem; }
+    html.certificado-root--pdf .rule--wide { margin: 0.85rem auto; }
+    html.certificado-root--pdf .corner { width: 26px; height: 26px; }
 
+    /* Marco: borde dorado grueso + línea interior oscura (solo CSS) */
     .cert {
-      background: #fdfbf7;
-      border: 3px double #8b7355;
-      outline: 1px solid #c9a66a;
-      outline-offset: 4px;
-      box-shadow:
-        0 0 0 2px #f5efe4,
-        0 8px 28px rgba(31, 45, 42, 0.08),
-        inset 0 1px 0 rgba(255,255,255,0.85);
-      padding: 0.85rem 1rem 0.75rem;
       position: relative;
+      background: #fffdf9;
+      border: 4px solid #c4a574;
+      box-shadow:
+        inset 0 0 0 1px #2a2a2a,
+        0 2px 12px rgba(40, 35, 30, 0.08);
+      padding: 1rem 1.15rem 0.9rem;
       overflow: hidden;
     }
-    .cert::before {
+    .cert::after {
       content: '';
       position: absolute;
-      inset: 9px;
-      border: 1px solid rgba(201, 166, 106, 0.45);
+      inset: 12px;
+      border: 1px solid rgba(196, 165, 116, 0.55);
       pointer-events: none;
+      z-index: 0;
     }
     .corner {
       position: absolute;
-      width: 32px;
-      height: 32px;
-      border-color: #b8956a;
-      opacity: 0.5;
+      width: 28px;
+      height: 28px;
+      border-color: #8b7355;
+      opacity: 0.85;
       pointer-events: none;
       z-index: 1;
     }
-    .corner-tl { top: 12px; left: 12px; border-top: 2px solid; border-left: 2px solid; }
-    .corner-tr { top: 12px; right: 12px; border-top: 2px solid; border-right: 2px solid; }
-    .corner-bl { bottom: 12px; left: 12px; border-bottom: 2px solid; border-left: 2px solid; }
-    .corner-br { bottom: 12px; right: 12px; border-bottom: 2px solid; border-right: 2px solid; }
+    .corner-tl { top: 14px; left: 14px; border-top: 2px solid; border-left: 2px solid; }
+    .corner-tr { top: 14px; right: 14px; border-top: 2px solid; border-right: 2px solid; }
+    .corner-bl { bottom: 14px; left: 14px; border-bottom: 2px solid; border-left: 2px solid; }
+    .corner-br { bottom: 14px; right: 14px; border-bottom: 2px solid; border-right: 2px solid; }
 
-    .escudo-en-esquina {
-      position: absolute;
-      top: 14px;
-      right: 16px;
-      width: 82px;
-      height: 82px;
-      object-fit: contain;
-      z-index: 4;
-      pointer-events: none;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.12));
-    }
-    .escudo-en-esquina--hidden { display: none !important; }
-
-    .col-main {
+    .cert-inner {
       position: relative;
       z-index: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-width: 0;
-      padding-right: 5.75rem;
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: center;
     }
+
     .brand {
       font-family: 'Cinzel', Georgia, serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.22em;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #1a2b44;
-      text-align: center;
-      margin-bottom: 0.15rem;
+      color: #5c6478;
+      margin: 0 0 0.35rem;
     }
     h1 {
       font-family: 'Cinzel', Georgia, serif;
       font-weight: 700;
-      font-size: 1.12rem;
-      letter-spacing: 0.06em;
-      color: #1a2b44;
-      text-align: center;
-      margin: 0 0 0.15rem;
+      font-size: 1.45rem;
+      letter-spacing: 0.05em;
+      color: #141c2c;
+      margin: 0 0 0.35rem;
       text-transform: uppercase;
+      line-height: 1.25;
     }
     .sub {
-      text-align: center;
-      font-size: 0.82rem;
+      font-size: 0.9rem;
       color: #4a5568;
       font-style: italic;
-      margin: 0 0 0.45rem;
-    }
-    .rule {
-      height: 2px;
-      width: 100px;
-      margin: 0 auto 0.45rem;
-      background: linear-gradient(90deg, transparent, #d4c3a1, transparent);
+      margin: 0 0 0.75rem;
+      line-height: 1.45;
     }
     .lead {
-      text-align: center;
-      font-size: 0.88rem;
-      line-height: 1.38;
-      margin: 0 0 0.45rem;
+      font-size: 0.95rem;
+      line-height: 1.52;
+      margin: 0 0 0.25rem;
       color: #2d3748;
+      text-align: center;
     }
+
+    .rule--wide {
+      width: 80%;
+      max-width: 560px;
+      height: 1px;
+      margin: 0.85rem auto;
+      background: linear-gradient(90deg, transparent, #c9a66a 15%, #c9a66a 85%, transparent);
+      border: none;
+    }
+    .rule--wide--spaced {
+      margin-top: 1rem;
+      margin-bottom: 0.35rem;
+    }
+
     .name {
       font-family: 'Cinzel', Georgia, serif;
       font-weight: 700;
-      font-size: 1.18rem;
-      letter-spacing: 0.02em;
-      color: #1a2b44;
-      text-align: center;
-      margin: 0 0 0.4rem;
-      padding-bottom: 0.35rem;
-      border-bottom: 2px solid rgba(212, 195, 161, 0.85);
+      font-size: 1.42rem;
+      letter-spacing: 0.04em;
+      color: #141c2c;
+      margin: 0.5rem 0 0.5rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid rgba(201, 166, 106, 0.75);
+      line-height: 1.3;
     }
     .detail {
-      margin: 0.3rem 0;
-      font-size: 0.86rem;
-      line-height: 1.35;
-      text-align: center;
+      margin: 0.4rem 0 0.5rem;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: #2d3748;
     }
-    .detail strong { color: #1f2d2a; font-weight: 600; }
-    .unidad { font-style: italic; color: #2d3a36; }
+    .detail strong { color: #1a202c; font-weight: 600; }
+    .unidad { font-style: italic; color: #3d4a5c; }
+
     .stats {
       display: flex;
       justify-content: center;
-      gap: 0.65rem;
+      align-items: stretch;
+      gap: 1rem;
       flex-wrap: wrap;
-      margin: 0.4rem 0 0.32rem;
+      margin: 0.35rem 0 0.45rem;
     }
     .pill {
-      background: linear-gradient(180deg, #f0ebe3, #e8e0d4);
+      background: linear-gradient(180deg, #f7f2ea, #ebe4d8);
       border: 1px solid #d4c3a1;
-      border-radius: 8px;
-      padding: 0.28rem 0.65rem;
-      font-size: 0.78rem;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+      border-radius: 10px;
+      padding: 0.4rem 1rem;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+      min-width: 200px;
+      max-width: 340px;
     }
-    .pill span { color: #1a2b44; font-weight: 700; font-size: 0.92rem; }
+    .pill span { color: #141c2c; font-weight: 700; font-size: 1rem; }
+
     .footer-date {
-      text-align: center;
-      font-size: 0.78rem;
-      color: #718096;
-      margin-top: 0.25rem;
+      font-size: 0.85rem;
+      color: #7d8a9a;
+      margin: 0.35rem 0 0;
       font-style: italic;
     }
+
     .footer-brand {
-      margin-top: 0.4rem;
-      padding-top: 0.35rem;
-      border-top: 1px solid rgba(212, 195, 161, 0.65);
-      text-align: center;
+      margin-top: 0.45rem;
+      padding-top: 0.45rem;
       font-family: 'Cinzel', Georgia, serif;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      color: #7a847d;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      color: #8b9499;
+      text-transform: uppercase;
     }
     .footer-brand small {
       display: block;
-      margin-top: 0.15rem;
-      letter-spacing: 0.05em;
-      font-size: 0.58rem;
-      color: #a0aec0;
+      margin-top: 0.35rem;
+      letter-spacing: 0.06em;
+      font-size: 0.65rem;
+      color: #a8b0b8;
       font-family: 'Crimson Text', Georgia, serif;
+      text-transform: none;
+      font-style: normal;
     }
+
     @media print {
       body { background: #fff; }
       html.certificado-root--print .sheet { padding: 0; min-height: auto; }
-      html.certificado-root--print .cert { box-shadow: none; max-width: none; }
+      html.certificado-root--print .cert { box-shadow: inset 0 0 0 1px #2a2a2a, none; }
     }
   </style>
 </head>
@@ -426,22 +347,14 @@ export function buildCertificadoPrintDocument(
       <span class="corner corner-bl" aria-hidden="true"></span>
       <span class="corner corner-br" aria-hidden="true"></span>
 
-      <img
-        class="escudo-en-esquina"
-        src="${escudoUrl}"
-        alt="Escudo del colegio"
-        width="82"
-        height="82"
-        onerror="this.classList.add('escudo-en-esquina--hidden')"
-      />
-
-      <div class="col-main">
+      <div class="cert-inner">
         <p class="brand">Plataforma educativa · Ciencias Sociales</p>
         <h1>Certificado de progreso</h1>
         <p class="sub">6.º de Primaria - Unidad completada en ATENAS</p>
-        <div class="rule" aria-hidden="true"></div>
 
         <p class="lead">Se certifica que el alumno o alumna que se nombra ha alcanzado el progreso requerido en la unidad didáctica indicada.</p>
+
+        <div class="rule--wide" aria-hidden="true"></div>
 
         <p class="name">${nombre}</p>
 
@@ -453,6 +366,8 @@ export function buildCertificadoPrintDocument(
         </div>
 
         <p class="footer-date">${fechaEsc}</p>
+
+        <div class="rule--wide rule--wide--spaced" aria-hidden="true"></div>
 
         <div class="footer-brand">
           ATENAS

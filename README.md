@@ -176,15 +176,9 @@ Guía y checklist: [`supabase/UNIDADES_MEDIA.md`](supabase/UNIDADES_MEDIA.md).
 
 ## Certificado de progreso (PDF)
 
-El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5"). Puede mostrarse el **escudo del colegio** en una esquina (archivo PNG en `public/`, ver nombre abajo).
+El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5"). El diseño es **solo HTML/CSS** (marco, líneas y tipografía), sin imágenes embebidas.
 
 - **Descargar certificado (PDF):** genera un archivo `.pdf` listo para imprimir o archivar.
-
-Coloca el archivo PNG del escudo en la raíz de `public/` con el nombre exacto:
-
-`public/escudo-colegio-vaca-diez.png`
-
-Si falta el archivo, el texto del colegio sigue mostrándose; la imagen se oculta automáticamente.
 
 ---
 
