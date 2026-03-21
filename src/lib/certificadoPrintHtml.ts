@@ -137,14 +137,14 @@ export function buildCertificadoPrintDocument(
       width: 100%;
       height: 100%;
       display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: center;
-      padding: 14px 18px;
+      padding: 6px 18px 12px;
     }
     html.certificado-root--pdf .cert {
       width: 100%;
       height: 100%;
-      padding: 1rem 1.25rem 0.85rem;
+      padding: 0.45rem 1.15rem 0.75rem;
       display: flex;
       flex-direction: column;
     }
@@ -152,13 +152,13 @@ export function buildCertificadoPrintDocument(
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 0.4rem;
+      justify-content: flex-start;
+      gap: 0.45rem;
       min-height: 0;
       width: 100%;
       max-width: 820px;
       margin: 0 auto;
-      padding: 0 0.5rem;
+      padding: 0.15rem 0.5rem 0;
     }
     html.certificado-root--pdf h1 { font-size: 1.35rem; margin: 0.2rem 0 0.35rem; }
     html.certificado-root--pdf .sub { font-size: 0.88rem; margin: 0 0 0.85rem; }
@@ -186,8 +186,14 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .rule--wide { margin: 0.85rem auto; }
     html.certificado-root--pdf .corner { width: 26px; height: 26px; }
     html.certificado-root--pdf .signatures {
-      margin-top: 0.25rem;
+      margin-top: 0.35rem;
       padding-top: 0;
+    }
+    html.certificado-root--pdf .signatures__col {
+      padding-top: 2.25rem;
+    }
+    html.certificado-root--pdf .signatures__line {
+      margin-bottom: 0.55rem;
     }
     html.certificado-root--pdf .signatures__label { font-size: 0.68rem; }
 
@@ -240,7 +246,7 @@ export function buildCertificadoPrintDocument(
       margin-top: 0.15rem;
     }
 
-    /* Dos columnas de firma (sin sello central) */
+    /* Dos columnas: hueco superior para firmar, luego línea, luego cargo */
     .signatures {
       display: flex;
       flex-direction: row;
@@ -248,20 +254,21 @@ export function buildCertificadoPrintDocument(
       justify-content: space-between;
       gap: 1.5rem;
       flex-wrap: nowrap;
-      max-width: 520px;
-      margin: 0.35rem auto 0;
+      max-width: 540px;
+      margin: 0.5rem auto 0;
       padding: 0 0.35rem;
     }
     .signatures__col {
       flex: 1 1 0;
       min-width: 0;
-      max-width: 230px;
+      max-width: 240px;
       text-align: center;
+      padding-top: 2rem;
     }
     .signatures__line {
       height: 1px;
       background: linear-gradient(90deg, transparent, #2c2c2c 12%, #2c2c2c 88%, transparent);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.5rem;
     }
     .signatures__label {
       margin: 0;
