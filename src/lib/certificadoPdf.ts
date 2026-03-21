@@ -1,6 +1,10 @@
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { buildCertificadoPrintDocument, type CertificadoParams } from './certificadoPrintHtml';
+import {
+  buildCertificadoPrintDocument,
+  resolveCertificadoEmblemaUrl,
+  type CertificadoParams,
+} from './certificadoPrintHtml';
 
 function safeFileNameSegment(s: string, maxLen: number): string {
   const n = s
@@ -12,15 +16,40 @@ function safeFileNameSegment(s: string, maxLen: number): string {
   return n || 'x';
 }
 
+async function fetchEmblemaAsDataUrl(): Promise<string | undefined> {
+  const url = resolveCertificadoEmblemaUrl();
+  if (!url) return undefined;
+  try {
+    const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
+    if (!res.ok) return undefined;
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result as string);
+      fr.onerror = () => reject(new Error('read'));
+      fr.readAsDataURL(blob);
+    });
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * PDF en **carta horizontal** (letter landscape), una página.
- * Plantilla solo HTML/CSS (sin imágenes).
+ * Incrusta el emblema como data URL para html2canvas.
  */
 export async function downloadCertificadoPdf(params: CertificadoParams): Promise<void> {
-  const html = buildCertificadoPrintDocument(params, {
-    variant: 'pdf',
-    autoPrint: false,
-  });
+  const emblemaData = await fetchEmblemaAsDataUrl();
+  const html = buildCertificadoPrintDocument(
+    {
+      ...params,
+      emblemaUrl: emblemaData ?? params.emblemaUrl ?? resolveCertificadoEmblemaUrl(),
+    },
+    {
+      variant: 'pdf',
+      autoPrint: false,
+    }
+  );
 
   const iframe = document.createElement('iframe');
   iframe.setAttribute('title', 'Certificado PDF');
@@ -59,6 +88,21 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
     throw new Error('Certificado: no se encontró el contenido.');
   }
 
+  const imgs = Array.from(doc.images);
+  await Promise.all(
+    imgs.map(
+      (img) =>
+        new Promise<void>((res) => {
+          if (img.complete) {
+            res();
+            return;
+          }
+          img.onload = () => res();
+          img.onerror = () => res();
+        })
+    )
+  );
+
   const canvas = await html2canvas(cert, {
     scale: 2,
     useCORS: true,
@@ -67,6 +111,7 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
     backgroundColor: '#fffdf9',
     windowWidth: 1056,
     windowHeight: 816,
+    imageTimeout: 20000,
   });
 
   document.body.removeChild(iframe);

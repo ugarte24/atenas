@@ -176,7 +176,7 @@ Guía y checklist: [`supabase/UNIDADES_MEDIA.md`](supabase/UNIDADES_MEDIA.md).
 
 ## Certificado de progreso (PDF)
 
-El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5"). El diseño es **solo HTML/CSS** (marco, líneas y tipografía), sin imágenes embebidas.
+El certificado de unidad completada se descarga en **PDF** en **carta horizontal** (letter landscape, 11" × 8.5"). El diseño es HTML/CSS (marco, líneas y tipografía) y **incluye el emblema del colegio** en la esquina superior derecha (`public/emblema-colegio-vaca-diez.png`).
 
 - **Descargar certificado (PDF):** genera un archivo `.pdf` listo para imprimir o archivar.
 

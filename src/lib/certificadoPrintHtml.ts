@@ -1,8 +1,16 @@
 /**
- * Certificado de progreso — carta (letter) horizontal, solo CSS (sin imágenes).
+ * Certificado de progreso — carta (letter) horizontal.
+ * Emblema del colegio: `public/emblema-colegio-vaca-diez.png` (esquina superior derecha).
  * Variante `print`: fuentes Google.
  * Variante `pdf`: Georgia/Times para html2canvas.
  */
+
+/** URL absoluta del emblema (misma origen que la app) */
+export function resolveCertificadoEmblemaUrl(): string {
+  if (typeof window === 'undefined') return '';
+  const base = import.meta.env.BASE_URL || '/';
+  return new URL('emblema-colegio-vaca-diez.png', window.location.origin + base).href;
+}
 
 function escapeHtml(s: string): string {
   return s
@@ -18,6 +26,8 @@ export type CertificadoParams = {
   tituloUnidad: string;
   porcentajeUnidad: number;
   umbralCertificado: number;
+  /** Opcional: data URL del PNG para PDF (evita fallos de carga en iframe) */
+  emblemaUrl?: string;
 };
 
 export type CertificadoDocumentOptions = {
@@ -44,6 +54,10 @@ export function buildCertificadoPrintDocument(
     day: 'numeric',
   });
   const fechaEsc = escapeHtml(fecha);
+
+  const emblemaRaw = params.emblemaUrl ?? resolveCertificadoEmblemaUrl();
+  const emblemaUrl =
+    emblemaRaw.startsWith('data:') ? emblemaRaw : escapeHtml(emblemaRaw);
 
   const rootClass =
     variant === 'pdf'
@@ -172,7 +186,8 @@ export function buildCertificadoPrintDocument(
       width: 100%;
       max-width: 820px;
       margin: 0 auto;
-      padding: 0;
+      padding: 0 100px 0 0;
+      box-sizing: border-box;
     }
     html.certificado-root--pdf h1 { font-size: 1.35rem; line-height: var(--lh-title); }
     html.certificado-root--pdf .sub { font-size: 0.88rem; line-height: 1.58; }
@@ -194,6 +209,13 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .footer-brand { margin-top: var(--section-gap-tight); padding-top: var(--section-gap-tight); font-size: 0.78rem; }
     html.certificado-root--pdf .footer-brand small { font-size: 0.68rem; line-height: 1.5; }
     html.certificado-root--pdf .corner { width: 26px; height: 26px; }
+    html.certificado-root--pdf .cert-emblema {
+      width: 72px;
+      height: 72px;
+      top: 10px;
+      right: 14px;
+      filter: none;
+    }
     html.certificado-root--pdf .cert-bottom { margin-top: 0; }
     html.certificado-root--pdf .signatures {
       margin-top: 0;
@@ -240,6 +262,22 @@ export function buildCertificadoPrintDocument(
     .corner-bl { bottom: 14px; left: 14px; border-bottom: 2px solid; border-left: 2px solid; }
     .corner-br { bottom: 14px; right: 14px; border-bottom: 2px solid; border-right: 2px solid; }
 
+    /* Emblema institucional (PNG en public/) */
+    .cert-emblema {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      width: 88px;
+      height: 88px;
+      object-fit: contain;
+      z-index: 3;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
+    }
+    .cert-emblema--hidden {
+      display: none !important;
+    }
+
     .cert-inner {
       position: relative;
       z-index: 2;
@@ -249,6 +287,8 @@ export function buildCertificadoPrintDocument(
       display: flex;
       flex-direction: column;
       gap: var(--space-before-signatures);
+      padding-right: 100px;
+      box-sizing: border-box;
     }
 
     .cert-main {
@@ -449,6 +489,15 @@ export function buildCertificadoPrintDocument(
       <span class="corner corner-tr" aria-hidden="true"></span>
       <span class="corner corner-bl" aria-hidden="true"></span>
       <span class="corner corner-br" aria-hidden="true"></span>
+
+      <img
+        class="cert-emblema"
+        src="${emblemaUrl}"
+        alt="Emblema del Colegio Particular Dr. Antonio Vaca Diez, Riberalta"
+        width="88"
+        height="88"
+        onerror="this.classList.add('cert-emblema--hidden')"
+      />
 
       <div class="cert-inner">
         <div class="cert-main">
