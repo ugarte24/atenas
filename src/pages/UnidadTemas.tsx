@@ -20,6 +20,7 @@ export default function UnidadTemas() {
   const { temas, loading } = useTemas(unidadId ?? null);
   const [bloqueoTema, setBloqueoTema] = useState<Record<string, boolean>>({});
   const [pctUnidad, setPctUnidad] = useState<number | null>(null);
+  const [certPdfLoading, setCertPdfLoading] = useState(false);
 
   useEffect(() => {
     if (!user || profile?.role !== 'estudiante' || !temas.length) {
@@ -96,25 +97,55 @@ export default function UnidadTemas() {
       <UnidadIntroExtended text={unidad.intro_extended} />
 
       {mostrarCert && (
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap items-center gap-3">
           <button
             type="button"
-            className="btn-primary"
-            onClick={() => {
-              const w = window.open('', '_blank');
-              if (!w) return;
-              w.document.write(
-                buildCertificadoPrintDocument({
+            className="btn-primary min-h-touch"
+            disabled={certPdfLoading}
+            onClick={async () => {
+              setCertPdfLoading(true);
+              try {
+                const { downloadCertificadoPdf } = await import('../lib/certificadoPdf');
+                await downloadCertificadoPdf({
                   nombreEstudiante: nombreEstudiante,
                   tituloUnidad: unidad.title,
                   porcentajeUnidad: pctUnidad ?? 0,
                   umbralCertificado: umbralCert ?? 0,
-                })
+                });
+              } catch (e) {
+                console.error(e);
+                window.alert(
+                  'No se pudo generar el PDF. Puedes usar «Imprimir» y elegir «Guardar como PDF» en el cuadro de impresión.'
+                );
+              } finally {
+                setCertPdfLoading(false);
+              }
+            }}
+          >
+            {certPdfLoading ? 'Generando PDF…' : 'Descargar certificado (PDF)'}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary min-h-touch"
+            disabled={certPdfLoading}
+            onClick={() => {
+              const w = window.open('', '_blank');
+              if (!w) return;
+              w.document.write(
+                buildCertificadoPrintDocument(
+                  {
+                    nombreEstudiante: nombreEstudiante,
+                    tituloUnidad: unidad.title,
+                    porcentajeUnidad: pctUnidad ?? 0,
+                    umbralCertificado: umbralCert ?? 0,
+                  },
+                  { variant: 'print', autoPrint: true }
+                )
               );
               w.document.close();
             }}
           >
-            Descargar o imprimir certificado
+            Imprimir (carta horizontal)
           </button>
         </div>
       )}
