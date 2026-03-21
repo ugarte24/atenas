@@ -1,7 +1,7 @@
 /**
  * Certificado de progreso — carta (letter) horizontal.
  * Emblema del colegio: `public/emblema-colegio-vaca-diez.png` (esquina superior derecha).
- * Tras reemplazar el PNG: `npm run prepare-emblema-colegio` (fondo blanco exterior → transparente).
+ * El PNG puede llevar su propio fondo (p. ej. crema). Opcional: `npm run prepare-emblema-colegio` solo si quieres quitar el blanco del borde.
  * Variante `print`: fuentes Google.
  * Variante `pdf`: Georgia/Times para html2canvas.
  */
@@ -266,7 +266,7 @@ export function buildCertificadoPrintDocument(
     .corner-bl { bottom: 14px; left: 14px; border-bottom: 2px solid; border-left: 2px solid; }
     .corner-br { bottom: 14px; right: 14px; border-bottom: 2px solid; border-right: 2px solid; }
 
-    /* Emblema: encima del texto (no reserva espacio; el texto no se desplaza) */
+    /* Emblema: encima del texto; PNG completo (incl. fondo crema del archivo, sin recorte circular) */
     .cert-emblema-wrap {
       position: absolute;
       top: 28px;
@@ -275,7 +275,7 @@ export function buildCertificadoPrintDocument(
       height: 132px;
       z-index: 10;
       pointer-events: none;
-      border-radius: 50%;
+      border-radius: 4px;
       overflow: hidden;
       background: transparent;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
