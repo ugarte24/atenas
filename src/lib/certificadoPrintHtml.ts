@@ -187,7 +187,7 @@ export function buildCertificadoPrintDocument(
       width: 100%;
       max-width: 820px;
       margin: 0 auto;
-      padding: 0 168px 0 0;
+      padding: 0;
       box-sizing: border-box;
     }
     html.certificado-root--pdf h1 { font-size: 1.35rem; line-height: var(--lh-title); }
@@ -210,11 +210,14 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .footer-brand { margin-top: var(--section-gap-tight); padding-top: var(--section-gap-tight); font-size: 0.78rem; }
     html.certificado-root--pdf .footer-brand small { font-size: 0.68rem; line-height: 1.5; }
     html.certificado-root--pdf .corner { width: 26px; height: 26px; }
+    html.certificado-root--pdf .cert-emblema-wrap {
+      top: 26px;
+      right: 30px;
+      width: 108px;
+      height: 108px;
+      z-index: 10;
+    }
     html.certificado-root--pdf .cert-emblema {
-      width: 72px;
-      height: 72px;
-      top: 10px;
-      right: 14px;
       filter: none;
     }
     html.certificado-root--pdf .cert-bottom { margin-top: 0; }
@@ -263,14 +266,14 @@ export function buildCertificadoPrintDocument(
     .corner-bl { bottom: 14px; left: 14px; border-bottom: 2px solid; border-left: 2px solid; }
     .corner-br { bottom: 14px; right: 14px; border-bottom: 2px solid; border-right: 2px solid; }
 
-    /* Emblema institucional (PNG en public/; puede llevar transparencia) */
+    /* Emblema: encima del texto (no reserva espacio; el texto no se desplaza) */
     .cert-emblema-wrap {
       position: absolute;
       top: 28px;
       right: 36px;
       width: 132px;
       height: 132px;
-      z-index: 3;
+      z-index: 10;
       pointer-events: none;
       border-radius: 50%;
       overflow: hidden;
@@ -290,14 +293,14 @@ export function buildCertificadoPrintDocument(
 
     .cert-inner {
       position: relative;
-      z-index: 2;
+      z-index: 1;
       max-width: 760px;
       margin: 0 auto;
       text-align: center;
       display: flex;
       flex-direction: column;
       gap: var(--space-before-signatures);
-      padding-right: 168px;
+      padding-right: 0;
       box-sizing: border-box;
     }
 
