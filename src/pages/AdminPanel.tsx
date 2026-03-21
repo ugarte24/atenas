@@ -68,11 +68,11 @@ function AsignarDocenteUnidades({
   if (!docentes.length || !unidades.length) return null;
 
   return (
-    <section className="card p-5 mb-8 border border-slate-200" aria-labelledby="asig-doc-h">
-      <h2 id="asig-doc-h" className="font-semibold text-slate-900 mb-2">
+    <section className="card p-5 mb-8 border border-atenas-mist-border" aria-labelledby="asig-doc-h">
+      <h2 id="asig-doc-h" className="font-semibold text-atenas-ink mb-2">
         Docente — unidades visibles en Contenidos
       </h2>
-      <p className="text-sm text-slate-600 mb-4">
+      <p className="text-sm text-atenas-muted mb-4">
         Si no asignas ninguna unidad a un docente, verá todas. Si marcas al menos una, solo verá esas.
       </p>
       <label htmlFor="asig-docente-sel" className="label">
@@ -93,12 +93,12 @@ function AsignarDocenteUnidades({
       </select>
       {selDoc && (
         <>
-          <fieldset className="border border-slate-200 rounded-lg p-3 mb-4">
+          <fieldset className="border border-atenas-mist-border rounded-lg p-3 mb-4">
             <legend className="text-sm font-medium px-1">Unidades</legend>
             <ul className="space-y-2 list-none m-0 p-0 max-h-48 overflow-y-auto">
               {unidades.map((u) => (
                 <li key={u.id}>
-                  <label className="flex items-center gap-2 text-slate-800 cursor-pointer">
+                  <label className="flex items-center gap-2 text-atenas-ink cursor-pointer">
                     <input
                       type="checkbox"
                       checked={checks[u.id] === true}
@@ -333,29 +333,29 @@ export default function AdminPanel() {
     }
   }
 
-  if (loading) return <p className="text-slate-600">Cargando usuarios...</p>;
+  if (loading) return <p className="text-atenas-muted">Cargando usuarios...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
 
   return (
     <div className="px-1 sm:px-0">
-      <h1 className="text-page-title font-bold text-slate-900 mb-2">Gestión de usuarios</h1>
-      <p className="text-slate-600 mb-4 sm:mb-6 text-sm sm:text-base">
+      <h1 className="text-page-title font-bold text-atenas-ink mb-2">Gestión de usuarios</h1>
+      <p className="text-atenas-muted mb-4 sm:mb-6 text-sm sm:text-base">
         Dar de alta estudiantes y docentes. Solo el administrador puede editar roles y desactivar cuentas.
       </p>
 
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <div className="card p-4 border border-slate-200">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Estudiantes activos</p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{stats.estudiantesActivos}</p>
+          <div className="card p-4 border border-atenas-mist-border">
+            <p className="text-xs font-medium text-atenas-muted uppercase tracking-wide">Estudiantes activos</p>
+            <p className="text-2xl font-bold text-atenas-ink mt-1">{stats.estudiantesActivos}</p>
           </div>
-          <div className="card p-4 border border-slate-200">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Intentos hoy</p>
-            <p className="text-2xl font-bold text-[#003366] mt-1">{stats.intentosHoy}</p>
-            <p className="text-xs text-slate-500 mt-0.5">Actividades + evaluaciones</p>
+          <div className="card p-4 border border-atenas-mist-border">
+            <p className="text-xs font-medium text-atenas-muted uppercase tracking-wide">Intentos hoy</p>
+            <p className="text-2xl font-bold text-navy mt-1">{stats.intentosHoy}</p>
+            <p className="text-xs text-atenas-muted mt-0.5">Actividades + evaluaciones</p>
           </div>
-          <div className="card p-4 border border-slate-200">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Intentos (7 días)</p>
+          <div className="card p-4 border border-atenas-mist-border">
+            <p className="text-xs font-medium text-atenas-muted uppercase tracking-wide">Intentos (7 días)</p>
             <p className="text-2xl font-bold text-[#009975] mt-1">{stats.intentosSemana}</p>
           </div>
         </div>
@@ -418,7 +418,7 @@ export default function AdminPanel() {
           ))}
         </select>
       </div>
-      <p className="text-xs text-slate-500 mb-4">
+      <p className="text-xs text-atenas-muted mb-4">
         El filtro por unidad muestra usuarios que completaron al menos una actividad o evaluación de esa
         unidad.
       </p>
@@ -432,8 +432,8 @@ export default function AdminPanel() {
 
       {creating ? (
         <form onSubmit={handleCreate} className="mb-8 card p-5 sm:p-6 space-y-4 max-w-md">
-          <h3 className="font-semibold text-slate-900">Nuevo usuario</h3>
-          <p className="text-sm text-slate-500">
+          <h3 className="font-semibold text-atenas-ink">Nuevo usuario</h3>
+          <p className="text-sm text-atenas-muted">
             Si aparece &quot;límite de solicitudes&quot;, espera 1-2 minutos; Supabase limita los registros por
             minuto.
           </p>
@@ -485,27 +485,27 @@ export default function AdminPanel() {
         </button>
       )}
 
-      <p className="text-sm text-slate-600 mb-2">
+      <p className="text-sm text-atenas-muted mb-2">
         Mostrando <strong>{profilesFiltrados.length}</strong> de {profiles.length} usuarios
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-card -mx-1 sm:mx-0">
+      <div className="overflow-x-auto rounded-xl border border-atenas-mist-border shadow-card -mx-1 sm:mx-0">
         <table className="w-full border-collapse bg-white table-mobile min-w-[600px]">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-slate-800">
+            <tr className="bg-atenas-mist border-b border-atenas-mist-border">
+              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
                 Nombre
               </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-slate-800 hidden sm:table-cell">
+              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink hidden sm:table-cell">
                 Email
               </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-slate-800">
+              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
                 Rol
               </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-slate-800">
+              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
                 Estado
               </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-slate-800">
+              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
                 Acciones
               </th>
             </tr>
@@ -514,7 +514,7 @@ export default function AdminPanel() {
             {profilesFiltrados.map((p) => (
               <tr
                 key={p.id}
-                className={`border-b border-slate-100 last:border-0 ${p.activo === false ? 'bg-slate-50/80' : ''}`}
+                className={`border-b border-atenas-mist last:border-0 ${p.activo === false ? 'bg-atenas-mist/80' : ''}`}
               >
                 <td className="px-3 sm:px-4 py-2.5 sm:py-3">
                   {editingId === p.id ? (
@@ -549,18 +549,18 @@ export default function AdminPanel() {
                       </button>
                     </form>
                   ) : (
-                    <span className="font-medium text-slate-900 text-sm">{p.full_name}</span>
+                    <span className="font-medium text-atenas-ink text-sm">{p.full_name}</span>
                   )}
                   {editingId !== p.id && (
-                    <span className="sm:hidden block text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">
+                    <span className="sm:hidden block text-xs text-atenas-muted mt-0.5 truncate max-w-[200px]">
                       {p.email}
                     </span>
                   )}
                 </td>
-                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-slate-600 text-xs sm:text-sm hidden sm:table-cell">
+                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-atenas-muted text-xs sm:text-sm hidden sm:table-cell">
                   {p.email}
                 </td>
-                <td className="px-3 sm:px-4 py-2.5 sm:py-3 capitalize text-slate-700 text-sm">{p.role}</td>
+                <td className="px-3 sm:px-4 py-2.5 sm:py-3 capitalize text-atenas-muted-strong text-sm">{p.role}</td>
                 <td className="px-3 sm:px-4 py-2.5 sm:py-3">
                   {p.activo === false ? (
                     <span className="badge bg-red-100 text-red-800">Desactivado</span>
@@ -574,7 +574,7 @@ export default function AdminPanel() {
                       <button
                         type="button"
                         onClick={() => startEdit(p)}
-                        className="text-sm font-medium hover:underline text-[#003366]"
+                        className="text-sm font-medium hover:underline text-navy"
                       >
                         Editar
                       </button>
@@ -599,10 +599,10 @@ export default function AdminPanel() {
       </div>
 
       {profiles.length === 0 && !creating && (
-        <p className="text-slate-500 mt-6">No hay usuarios. Da de alta el primero con el botón anterior.</p>
+        <p className="text-atenas-muted mt-6">No hay usuarios. Da de alta el primero con el botón anterior.</p>
       )}
       {profiles.length > 0 && profilesFiltrados.length === 0 && (
-        <p className="text-slate-500 mt-4 text-sm">Ningún usuario coincide con los filtros.</p>
+        <p className="text-atenas-muted mt-4 text-sm">Ningún usuario coincide con los filtros.</p>
       )}
     </div>
   );

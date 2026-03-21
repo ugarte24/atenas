@@ -62,7 +62,7 @@ export default function EvaluacionView() {
 
   if (loading || !evaluacion) {
     return (
-      <p className="text-slate-800" role="status">
+      <p className="text-atenas-muted-strong" role="status">
         Cargando evaluación...
       </p>
     );
@@ -72,8 +72,8 @@ export default function EvaluacionView() {
   }
   if (!evaluacion.publicada) {
     return (
-      <div className="card p-6 max-w-md border border-slate-200">
-        <p className="text-slate-800">Esta evaluación no está publicada.</p>
+      <div className="card p-6 max-w-md">
+        <p className="text-atenas-muted-strong">Esta evaluación no está publicada.</p>
         <button type="button" onClick={() => navigate(-1)} className="btn-secondary mt-4">
           Volver
         </button>
@@ -94,25 +94,25 @@ export default function EvaluacionView() {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 transition-colors hover:bg-[#e6edf5] text-[#003366]"
+        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 transition-colors text-atenas-ink hover:bg-atenas-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
       >
         ← Volver al tema
       </button>
       <div className="mb-6">
-        <h1 className="text-page-title font-bold text-slate-900">{evaluacion.title}</h1>
+        <h1 className="text-page-title font-bold text-atenas-ink">{evaluacion.title}</h1>
         {evaluacion.descripcion && (
-          <p className="text-slate-700 mt-1">{evaluacion.descripcion}</p>
+          <p className="text-atenas-muted-strong mt-1">{evaluacion.descripcion}</p>
         )}
-        <p className="text-sm text-slate-700 mt-1">
+        <p className="text-sm text-atenas-muted-strong mt-1">
           Para aprobar necesitas al menos <strong>{evaluacion.umbral_aprobado}%</strong>.
         </p>
         {!ilimitado && (
-          <p className="text-sm text-slate-700 mt-1">
+          <p className="text-sm text-atenas-muted-strong mt-1">
             Intentos permitidos: <strong>{maxIntentos}</strong>. Llevas <strong>{intentosCount}</strong>.
           </p>
         )}
         {mejorPuntuacion != null && (
-          <p className="text-sm text-slate-700 mt-1">
+          <p className="text-sm text-atenas-muted-strong mt-1">
             Tu mejor nota hasta ahora: <strong>{mejorPuntuacion}%</strong>
           </p>
         )}
@@ -136,8 +136,8 @@ export default function EvaluacionView() {
       )}
 
       {soloBloqueoInicial ? (
-        <div className="card p-6 border border-slate-200">
-          <p className="text-slate-800">
+        <div className="card p-6">
+          <p className="text-atenas-muted-strong">
             Has alcanzado el máximo de intentos para esta evaluación.
             {mejorPuntuacion != null && (
               <>
@@ -151,7 +151,7 @@ export default function EvaluacionView() {
           </button>
         </div>
       ) : (
-        <div className="card p-6 border border-slate-200">
+        <div className="card p-6">
           <Cuestionario
             key={sesion}
             preguntas={preguntas}
@@ -162,7 +162,7 @@ export default function EvaluacionView() {
             minutosExamen={modoExamen ? 30 : 0}
           />
           {ultimoGuardadoOk && (ilimitado || intentosCount < maxIntentos!) && (
-            <div className="mt-6 pt-4 border-t border-slate-200">
+            <div className="mt-6 pt-4 border-t border-atenas-mist-border">
               <button
                 type="button"
                 className="btn-secondary"

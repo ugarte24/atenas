@@ -28,17 +28,17 @@ function SectionShell({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mb-10 rounded-2xl border border-slate-200/90 bg-atenas-card shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-200/80 bg-white/50 flex items-start gap-3">
+    <section className="mb-10 rounded-2xl border border-atenas-mist-border bg-atenas-card shadow-card overflow-hidden">
+      <div className="px-5 py-4 border-b border-atenas-mist-border bg-white/60 flex items-start gap-3">
         <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1F2D2A] text-white text-sm font-bold"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-atenas-ink text-white text-sm font-bold"
           aria-hidden
         >
           {step}
         </span>
         <div>
-          <h2 className="text-lg font-bold text-[#1F2D2A]">{title}</h2>
-          {description && <p className="text-sm text-slate-600 mt-0.5">{description}</p>}
+          <h2 className="text-lg font-bold text-atenas-ink">{title}</h2>
+          {description && <p className="text-sm text-atenas-muted mt-0.5">{description}</p>}
         </div>
       </div>
       <div className="p-5 sm:p-6">{children}</div>
@@ -168,14 +168,14 @@ export default function TemaView() {
   }, [user, tema?.prerequisito_tema_id, tema?.id]);
 
   if (loadingTema || !tema) {
-    return <p className="text-slate-600 text-lg">Cargando...</p>;
+    return <p className="text-atenas-muted text-lg">Cargando...</p>;
   }
   if (authLoading || !profile) {
-    return <p className="text-slate-600 text-lg">Cargando perfil...</p>;
+    return <p className="text-atenas-muted text-lg">Cargando perfil...</p>;
   }
 
   if (tema.prerequisito_tema_id && !prereqResolved) {
-    return <p className="text-slate-800">Comprobando acceso al tema…</p>;
+    return <p className="text-atenas-muted-strong">Comprobando acceso al tema…</p>;
   }
   if (!prereqOk && tema.prerequisito_tema_id) {
     return (
@@ -200,8 +200,8 @@ export default function TemaView() {
 
   function RecursoItem({ r }: { r: Recurso }) {
     return (
-      <li className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
-        {r.title && <h3 className="font-medium text-slate-900 mb-2">{r.title}</h3>}
+      <li className="rounded-xl border border-atenas-mist-border bg-white p-4 shadow-card">
+        {r.title && <h3 className="font-medium text-atenas-ink mb-2">{r.title}</h3>}
         {r.tipo === 'imagen' && (
           <img src={r.url} alt={r.title ?? ''} className="max-w-full rounded-lg mt-2" loading="lazy" />
         )}
@@ -232,7 +232,7 @@ export default function TemaView() {
       <button
         type="button"
         onClick={() => navigate(`/unidades/${tema.unidad_id}`)}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 transition-colors hover:bg-slate-100 text-[#1F2D2A]"
+        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 transition-colors text-atenas-ink hover:bg-atenas-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
       >
         ← Volver a la unidad
       </button>
@@ -245,11 +245,11 @@ export default function TemaView() {
       ) : null}
 
       {progreso && (
-        <div className="rounded-2xl border border-slate-200/90 bg-atenas-card p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="rounded-2xl border border-atenas-mist-border bg-atenas-card p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-card">
           <div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-atenas-muted">
               Progreso en este tema:&nbsp;
-              <span className="font-semibold text-slate-900">
+              <span className="font-semibold text-atenas-ink">
                 {progreso.completadas} de {progreso.total} actividades/evaluaciones
               </span>
             </p>
@@ -264,9 +264,9 @@ export default function TemaView() {
               />
             </div>
             {loadingProgreso ? (
-              <p className="text-[11px] text-slate-500 mt-1">Calculando progreso...</p>
+              <p className="text-[11px] text-atenas-muted mt-1">Calculando progreso...</p>
             ) : (
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-atenas-muted mt-1">
                 {Math.round((progreso.completadas / progreso.total) * 100)}% completado
               </p>
             )}
@@ -281,11 +281,11 @@ export default function TemaView() {
           description="Texto base y material de apoyo visual (imágenes y mapas)."
         >
           {loadingRecursos && !tema.content ? (
-            <p className="text-slate-600">Cargando…</p>
+            <p className="text-atenas-muted">Cargando…</p>
           ) : (
             <>
               {tema.content && (
-                <div className="whitespace-pre-wrap text-slate-700 leading-relaxed text-base mb-6 last:mb-0">
+                <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed text-base mb-6 last:mb-0">
                   {tema.content}
                 </div>
               )}
@@ -304,7 +304,7 @@ export default function TemaView() {
       {hasVideoBlock ? (
         <SectionShell step={stepVideo} title="Video" description="Mira el material audiovisual del tema.">
           {loadingRecursos ? (
-            <p className="text-slate-600">Cargando recursos...</p>
+            <p className="text-atenas-muted">Cargando recursos...</p>
           ) : (
             <ul className="space-y-4 list-none m-0 p-0">
               {recursosVideo.map((r) => (
@@ -316,7 +316,7 @@ export default function TemaView() {
       ) : null}
 
       {loadingActividades ? (
-        <p className="text-slate-600 mt-4">Cargando actividades...</p>
+        <p className="text-atenas-muted mt-4">Cargando actividades...</p>
       ) : hasActividades ? (
         <SectionShell
           step={stepAct}
@@ -330,12 +330,12 @@ export default function TemaView() {
                 <li key={a.id}>
                   <Link
                     to={`/actividades/${a.id}`}
-                    className="block p-4 rounded-xl border border-slate-200/90 bg-white shadow-sm card-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F2D2A] focus-visible:ring-offset-2"
+                    className="block p-4 rounded-xl border border-atenas-mist-border bg-white shadow-card card-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
                   >
                     <span className="text-xs font-semibold uppercase tracking-wide text-atenas-blue">
                       {a.tipo.replace(/_/g, ' ')}
                     </span>
-                    <h3 className="font-bold text-slate-900 mt-1">{a.title}</h3>
+                    <h3 className="font-bold text-atenas-ink mt-1">{a.title}</h3>
                   </Link>
                 </li>
               ))}
@@ -350,7 +350,7 @@ export default function TemaView() {
       ) : null}
 
       {loadingEvaluaciones ? (
-        <p className="text-slate-600 mt-4">Cargando evaluaciones...</p>
+        <p className="text-atenas-muted mt-4">Cargando evaluaciones...</p>
       ) : hasEvaluaciones ? (
         <SectionShell
           step={stepEval}
@@ -365,13 +365,13 @@ export default function TemaView() {
               <li key={e.id}>
                 <Link
                   to={`/evaluaciones/${e.id}`}
-                  className="block p-4 rounded-xl border border-slate-200/90 bg-white shadow-sm card-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F2D2A] focus-visible:ring-offset-2"
+                  className="block p-4 rounded-xl border border-atenas-mist-border bg-white shadow-card card-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
                 >
-                  <span className="text-xs font-semibold uppercase tracking-wide text-[#1F2D2A]">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-atenas-ink">
                     Cuestionario
                   </span>
-                  <h3 className="font-bold text-slate-900 mt-1">{e.title}</h3>
-                  {e.descripcion && <p className="text-slate-600 text-sm mt-1">{e.descripcion}</p>}
+                  <h3 className="font-bold text-atenas-ink mt-1">{e.title}</h3>
+                  {e.descripcion && <p className="text-atenas-muted text-sm mt-1">{e.descripcion}</p>}
                 </Link>
               </li>
             ))}

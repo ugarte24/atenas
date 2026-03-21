@@ -98,7 +98,7 @@ export default function Home() {
   const pctDisplay = loadingGam ? '…' : `${porcentajeGlobal}%`;
 
   return (
-    <div className="max-w-md sm:max-w-xl mx-auto pb-24">
+    <div className="max-w-md sm:max-w-xl mx-auto">
       {/* Hero */}
       <section className="mt-2 mb-6 rounded-3xl overflow-hidden shadow-lg border border-[#1F2D2A]/20 bg-[#1F2D2A] text-white">
         <div className="px-5 py-6 sm:px-7 sm:py-7 relative">
@@ -120,13 +120,13 @@ export default function Home() {
       </section>
 
       {/* Progreso global estilo Duolingo */}
-      <section className="mb-6 rounded-3xl bg-atenas-card border border-slate-200/80 shadow-md px-5 py-5 sm:px-6">
+      <section className="mb-6 rounded-3xl bg-atenas-card border border-atenas-mist-border shadow-card px-5 py-5 sm:px-6">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <h2 className="text-sm font-bold text-[#1F2D2A] uppercase tracking-wide">
               Progreso general
             </h2>
-            <p className="text-xs text-slate-600 mt-0.5">
+            <p className="text-xs text-atenas-muted mt-0.5">
               Suma de tus unidades · datos reales
             </p>
           </div>
@@ -146,34 +146,34 @@ export default function Home() {
         </div>
 
         <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
-          <div className="rounded-2xl bg-white/80 border border-slate-100 py-2.5 px-1">
+          <div className="rounded-2xl bg-white/80 border border-atenas-mist-border py-2.5 px-1">
             <span className="text-amber-600 text-lg block mb-0.5" aria-hidden>
               ⭐
             </span>
-            <span className="font-semibold text-slate-800 block">Puntos</span>
-            <span className="text-slate-600 tabular-nums">{loadingGam ? '–' : puntos.toLocaleString('es')}</span>
+            <span className="font-semibold text-atenas-ink block">Puntos</span>
+            <span className="text-atenas-muted tabular-nums">{loadingGam ? '–' : puntos.toLocaleString('es')}</span>
           </div>
-          <div className="rounded-2xl bg-white/80 border border-slate-100 py-2.5 px-1">
+          <div className="rounded-2xl bg-white/80 border border-atenas-mist-border py-2.5 px-1">
             <span className="text-sky-600 text-lg block mb-0.5" aria-hidden>
               📚
             </span>
-            <span className="font-semibold text-slate-800 block">Lecciones</span>
-            <span className="text-slate-600 tabular-nums">
+            <span className="font-semibold text-atenas-ink block">Lecciones</span>
+            <span className="text-atenas-muted tabular-nums">
               {abyaMision ? `${abyaMision.pasosCompletados} / ${abyaMision.totalPasos}` : '–'}
             </span>
           </div>
-          <div className="rounded-2xl bg-white/80 border border-slate-100 py-2.5 px-1">
+          <div className="rounded-2xl bg-white/80 border border-atenas-mist-border py-2.5 px-1">
             <span className="text-rose-500 text-lg block mb-0.5" aria-hidden>
               ❤️
             </span>
-            <span className="font-semibold text-slate-800 block">Energía</span>
-            <span className="text-slate-600 tabular-nums">
+            <span className="font-semibold text-atenas-ink block">Energía</span>
+            <span className="text-atenas-muted tabular-nums">
               {loadingGam ? '–' : `${energia} / 5`}
             </span>
           </div>
         </div>
         {racha > 0 && (
-          <p className="mt-3 text-[11px] text-center text-slate-600">
+          <p className="mt-3 text-[11px] text-center text-atenas-muted">
             Racha: <span className="font-semibold text-[#1F2D2A]">{racha}</span> día{racha !== 1 ? 's' : ''} seguidos
           </p>
         )}
@@ -181,14 +181,17 @@ export default function Home() {
 
       {/* CTA principal */}
       <div className="mb-8 flex justify-center">
-        <Link to="/unidades" className="btn-atenas-gold w-full max-w-sm text-center justify-center">
+        <Link
+          to="/unidades"
+          className="btn-atenas-gold w-full max-w-sm text-center justify-center shadow-elevated ring-1 ring-atenas-gold/35 text-base"
+        >
           Continuar aprendiendo
         </Link>
       </div>
 
       {/* Mapa / niveles sobre fondo neutro */}
       <section aria-label="Mapa de niveles Abya Yala" className="relative">
-        <h2 className="text-sm font-semibold text-slate-800 mb-3">Tu ruta por el Abya Yala</h2>
+        <h2 className="text-sm font-semibold text-atenas-ink mb-3">Tu ruta por el Abya Yala</h2>
         <div className="space-y-8">
           {levels.map((level, index) => {
             const isLocked = level.status === 'locked';
@@ -197,7 +200,7 @@ export default function Home() {
             return (
               <div key={level.id} className="relative pt-1">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="inline-flex items-center rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-700 shadow-sm">
+                  <span className="inline-flex items-center rounded-full bg-white border border-atenas-mist-border px-3 py-1 text-[11px] font-semibold text-atenas-muted-strong shadow-sm">
                     {level.worldLabel}
                   </span>
                 </div>
@@ -217,20 +220,20 @@ export default function Home() {
                 </div>
 
                 <div
-                  className={`ml-8 rounded-3xl bg-atenas-card border border-slate-200/90 shadow-md p-4 pr-3 flex gap-3 items-center ${
+                  className={`ml-8 rounded-3xl bg-atenas-card border border-atenas-mist-border shadow-card p-4 pr-3 flex gap-3 items-center ${
                     isLocked ? 'opacity-75' : ''
                   }`}
                 >
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-slate-900 leading-snug">{level.title}</h3>
-                    <p className="mt-0.5 text-xs text-slate-600">{level.lessonsLabel}</p>
+                    <h3 className="text-sm font-bold text-atenas-ink leading-snug">{level.title}</h3>
+                    <p className="mt-0.5 text-xs text-atenas-muted">{level.lessonsLabel}</p>
                     <div className="mt-2 h-2.5 w-full rounded-full bg-[#1F2D2A]/10 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-emerald-500 transition-all"
                         style={{ width: `${isLocked ? 0 : level.progress}%` }}
                       />
                     </div>
-                    <p className="mt-1 text-[11px] text-slate-600">
+                    <p className="mt-1 text-[11px] text-atenas-muted">
                       {isLocked
                         ? 'Completa el nivel anterior para desbloquear.'
                         : isCompleted
@@ -256,7 +259,7 @@ export default function Home() {
                       )}
                     </div>
                   </div>
-                  <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shrink-0 text-2xl">
+                  <div className="w-14 h-14 rounded-2xl bg-white border border-atenas-mist-border flex items-center justify-center shrink-0 text-2xl">
                     {index === 0 && '🌱'}
                     {index === 1 && '🏕️'}
                     {index === 2 && '⛵'}
@@ -266,49 +269,10 @@ export default function Home() {
             );
           })}
         </div>
-        <p className="mt-6 text-[11px] text-slate-500 text-right">
-          Versión del sistema <span className="font-semibold text-slate-700">v1.0.0</span>
+        <p className="mt-6 text-[11px] text-atenas-muted text-right">
+          Versión del sistema <span className="font-semibold text-atenas-ink">v1.0.0</span>
         </p>
       </section>
-
-      <nav className="fixed bottom-0 inset-x-0 z-20 md:hidden">
-        <div className="mx-auto max-w-md px-4 pb-4">
-          <div className="rounded-3xl bg-white/95 shadow-lg border border-slate-100 flex justify-around py-2">
-            <BottomNavItem to="/" label="Inicio" icon="🏠" active />
-            <BottomNavItem to="/progreso" label="Progreso" icon="📈" />
-            <BottomNavItem to="/logros" label="Logros" icon="🏆" />
-            <BottomNavItem to="/perfil" label="Perfil" icon="👤" />
-          </div>
-        </div>
-      </nav>
     </div>
-  );
-}
-
-type BottomNavItemProps = {
-  to: string;
-  label: string;
-  icon: string;
-  active?: boolean;
-};
-
-function BottomNavItem({ to, label, icon, active }: BottomNavItemProps) {
-  return (
-    <Link
-      to={to}
-      className={`flex flex-col items-center gap-0.5 text-[11px] ${
-        active ? 'text-[#1F2D2A]' : 'text-slate-500'
-      }`}
-    >
-      <span
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-base ${
-          active ? 'bg-[#D6B98C]/25' : ''
-        }`}
-        aria-hidden="true"
-      >
-        {icon}
-      </span>
-      <span className="font-medium">{label}</span>
-    </Link>
   );
 }

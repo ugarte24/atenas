@@ -58,7 +58,7 @@ export default function UnidadTemas() {
   }, [user, profile?.role, unidadId, temas.length]);
 
   if (loadingUnidad || !unidad) {
-    return <p className="text-slate-600 text-lg">Cargando...</p>;
+    return <p className="text-atenas-muted text-lg">Cargando...</p>;
   }
 
   const umbralCert = unidad.certificado_umbral_pct;
@@ -77,8 +77,7 @@ export default function UnidadTemas() {
       <button
         type="button"
         onClick={() => navigate('/unidades')}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 transition-colors hover:bg-[#e6edf5]"
-        style={{ color: '#003366' }}
+        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 transition-colors text-atenas-ink hover:bg-atenas-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
       >
         ← Volver a unidades
       </button>
@@ -116,7 +115,7 @@ export default function UnidadTemas() {
       )}
 
       {loading ? (
-        <p className="text-slate-600 text-lg">Cargando temas...</p>
+        <p className="text-atenas-muted text-lg">Cargando temas...</p>
       ) : (
         <ul className="space-y-3 list-none m-0 p-0">
           {temas.map((t, i) => {
@@ -125,15 +124,15 @@ export default function UnidadTemas() {
               <li key={t.id}>
                 {bloqueado ? (
                   <div
-                    className="flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-300 bg-slate-100 opacity-90"
+                    className="flex items-center gap-4 p-5 rounded-2xl border-2 border-atenas-mist-border bg-atenas-mist/80 opacity-95"
                     aria-disabled="true"
                   >
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-400 text-white font-bold">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-500 text-white font-bold">
                       {i + 1}
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-slate-700">{t.title}</h2>
-                      <p className="text-sm text-slate-600 mt-1">
+                      <h2 className="text-lg font-bold text-atenas-muted-strong">{t.title}</h2>
+                      <p className="text-sm text-atenas-muted mt-1">
                         Completa el tema anterior para desbloquear.
                       </p>
                     </div>
@@ -141,7 +140,7 @@ export default function UnidadTemas() {
                 ) : (
                   <Link
                     to={`/temas/${t.id}`}
-                    className="flex items-center gap-4 p-5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#003366] focus:ring-offset-2 border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow"
+                    className="flex items-center gap-4 p-5 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2 border-2 border-atenas-mist-border bg-white shadow-card hover:shadow-card-hover transition-shadow"
                   >
                     <div
                       className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-lg"
@@ -149,7 +148,7 @@ export default function UnidadTemas() {
                     >
                       {i + 1}
                     </div>
-                    <h2 className="text-lg font-bold text-slate-900">{t.title}</h2>
+                    <h2 className="text-lg font-bold text-atenas-ink">{t.title}</h2>
                   </Link>
                 )}
               </li>
@@ -159,8 +158,8 @@ export default function UnidadTemas() {
       )}
 
       {temas.length === 0 && !loading && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
-          <p className="text-slate-500 text-lg">No hay temas en esta unidad todavía.</p>
+        <div className="rounded-2xl border border-atenas-mist-border bg-atenas-card p-8 text-center shadow-card">
+          <p className="text-atenas-muted text-lg">No hay temas en esta unidad todavía.</p>
         </div>
       )}
     </div>

@@ -17,7 +17,7 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
   return (
     <Link
       to={`/unidades/${unidad.id}`}
-      className="group block rounded-3xl overflow-hidden shadow-lg border border-slate-200/90 bg-atenas-card transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F2D2A] focus-visible:ring-offset-2"
+      className="group block rounded-card overflow-hidden shadow-card hover:shadow-card-hover border border-atenas-mist-border bg-atenas-card transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
     >
       <div className="aspect-video overflow-hidden relative bg-slate-200">
         <img
@@ -47,13 +47,13 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
       </div>
       <div className="p-5 pt-4">
         {unidad.description && (
-          <p className="text-slate-600 text-sm line-clamp-2">{unidad.description}</p>
+          <p className="text-atenas-muted text-sm line-clamp-2">{unidad.description}</p>
         )}
         {showProgress && (
           <div className="mt-3">
-            <div className="flex justify-between text-[11px] text-slate-600 mb-1">
+            <div className="flex justify-between text-[11px] text-atenas-muted mb-1">
               <span>Tu progreso</span>
-              <span className="font-semibold text-slate-800">{progressPct}%</span>
+              <span className="font-semibold text-atenas-ink">{progressPct}%</span>
             </div>
             <div className="h-2.5 w-full rounded-full bg-[#1F2D2A]/10 overflow-hidden">
               <div

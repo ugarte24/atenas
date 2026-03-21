@@ -1,3 +1,15 @@
+/**
+ * ATENAS — tokens de marca (UI)
+ *
+ * Uso recomendado:
+ * - Texto principal: text-atenas-ink o text-slate-900
+ * - Texto secundario: text-atenas-muted (evitar slate-600 suelto en páginas nuevas)
+ * - Bordes UI: border-atenas-mist-border
+ * - Fondo página: bg-atenas-page
+ * - Tarjetas: bg-white border border-atenas-mist-border shadow-card rounded-2xl (o clase .card)
+ * - CTAs primarios: btn-primary (verde) · CTA dorado: btn-atenas-gold
+ * - Enlaces de navegación activos: bg-atenas-mist text-atenas-ink (ver Layout)
+ */
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -22,6 +34,10 @@ export default {
           gold: '#D6B98C',
           'gold-mid': '#c4a574',
           page: '#F5F7FA',
+          /** Texto secundario / captions (antes mezclado con slate-600) */
+          muted: '#64748b',
+          /** Texto muted más fuerte */
+          'muted-strong': '#475569',
           blue: '#4A90E2',
           card: '#FAF8F5',
           mist: '#E8EDEB',
@@ -83,6 +99,8 @@ export default {
       borderRadius: {
         'xl': '0.75rem',
         '2xl': '1rem',
+        /** Tarjetas de contenido (unidades, secciones) */
+        card: '1rem',
       },
     },
   },

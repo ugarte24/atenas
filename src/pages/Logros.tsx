@@ -42,26 +42,26 @@ function LogrosFallback() {
           key={badge.id}
           className={`flex flex-col items-center justify-between rounded-2xl border p-3 text-center shadow-sm ${
             badge.unlocked
-              ? 'bg-atenas-card border-[#D6B98C]/40'
-              : 'bg-slate-100 border-slate-200 opacity-70'
+              ? 'bg-atenas-card border-atenas-gold/40'
+              : 'bg-atenas-mist border-atenas-mist-border opacity-80'
           }`}
         >
           <div
             className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-1 ${
-              badge.unlocked ? 'bg-[#D6B98C]/20' : 'bg-slate-200'
+              badge.unlocked ? 'bg-atenas-gold/20' : 'bg-atenas-mist-border/60'
             }`}
           >
             <span aria-hidden="true">{badge.icon}</span>
           </div>
-          <h2 className="text-xs font-semibold text-slate-900">{badge.title}</h2>
-          <p className="mt-1 text-[11px] text-slate-600">{badge.description}</p>
+          <h2 className="text-xs font-semibold text-atenas-ink">{badge.title}</h2>
+          <p className="mt-1 text-[11px] text-atenas-muted">{badge.description}</p>
           {!badge.unlocked && (
-            <span className="mt-1 inline-flex items-center rounded-full bg-slate-300 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+            <span className="mt-1 inline-flex items-center rounded-full bg-atenas-mist-border/80 px-2 py-0.5 text-[10px] font-semibold text-atenas-muted-strong">
               🔒 Bloqueado
             </span>
           )}
           {badge.unlocked && (
-            <span className="mt-1 inline-flex items-center rounded-full bg-[#1F2D2A]/10 px-2 py-0.5 text-[10px] font-semibold text-[#1F2D2A]">
+            <span className="mt-1 inline-flex items-center rounded-full bg-atenas-ink/10 px-2 py-0.5 text-[10px] font-semibold text-atenas-ink">
               ✔ Desbloqueado
             </span>
           )}
@@ -76,15 +76,15 @@ export default function Logros() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl font-extrabold text-[#1F2D2A]">Tus logros</h1>
-        <p className="text-sm text-slate-600">
+      <header className="mb-6 border-b border-atenas-mist-border pb-5">
+        <h1 className="text-2xl font-extrabold text-atenas-ink">Tus logros</h1>
+        <p className="text-sm text-atenas-muted">
           Desbloquea insignias mientras aprendes sobre el Abya Yala.
         </p>
       </header>
 
       {loading ? (
-        <p className="text-slate-600 text-sm">Cargando logros…</p>
+        <p className="text-atenas-muted text-sm">Cargando logros…</p>
       ) : error || logros.length === 0 ? (
         <LogrosFallback />
       ) : (
@@ -94,26 +94,26 @@ export default function Logros() {
               key={badge.id}
               className={`flex flex-col items-center justify-between rounded-2xl border p-3 text-center shadow-sm ${
                 badge.unlocked
-                  ? 'bg-atenas-card border-[#D6B98C]/40'
-                  : 'bg-slate-100 border-slate-200 opacity-70'
+                  ? 'bg-atenas-card border-atenas-gold/40'
+                  : 'bg-atenas-mist border-atenas-mist-border opacity-80'
               }`}
             >
               <div
                 className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-1 ${
-                  badge.unlocked ? 'bg-[#D6B98C]/20' : 'bg-slate-200'
+                  badge.unlocked ? 'bg-atenas-gold/20' : 'bg-atenas-mist-border/60'
                 }`}
               >
                 <span aria-hidden="true">{badge.icon}</span>
               </div>
-              <h2 className="text-xs font-semibold text-slate-900">{badge.title}</h2>
-              <p className="mt-1 text-[11px] text-slate-600">{badge.description}</p>
+              <h2 className="text-xs font-semibold text-atenas-ink">{badge.title}</h2>
+              <p className="mt-1 text-[11px] text-atenas-muted">{badge.description}</p>
               {!badge.unlocked && (
-                <span className="mt-1 inline-flex items-center rounded-full bg-slate-300 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                <span className="mt-1 inline-flex items-center rounded-full bg-atenas-mist-border/80 px-2 py-0.5 text-[10px] font-semibold text-atenas-muted-strong">
                   🔒 Bloqueado
                 </span>
               )}
               {badge.unlocked && (
-                <span className="mt-1 inline-flex items-center rounded-full bg-[#1F2D2A]/10 px-2 py-0.5 text-[10px] font-semibold text-[#1F2D2A]">
+                <span className="mt-1 inline-flex items-center rounded-full bg-atenas-ink/10 px-2 py-0.5 text-[10px] font-semibold text-atenas-ink">
                   ✔ Desbloqueado
                 </span>
               )}

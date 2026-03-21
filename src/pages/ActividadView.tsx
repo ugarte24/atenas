@@ -21,7 +21,7 @@ export default function ActividadView() {
   };
 
   if (loading || !actividad) {
-    return <p className="text-slate-600">Cargando actividad...</p>;
+    return <p className="text-atenas-muted">Cargando actividad...</p>;
   }
   if (error) {
     return <p className="text-red-600">{error}</p>;
@@ -29,7 +29,7 @@ export default function ActividadView() {
   if (!actividad.publicada) {
     return (
       <div className="card p-6 max-w-md">
-        <p className="text-slate-600">Esta actividad no está publicada.</p>
+        <p className="text-atenas-muted">Esta actividad no está publicada.</p>
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -48,12 +48,11 @@ export default function ActividadView() {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 transition-colors hover:bg-[#e6edf5]"
- style={{ color: '#003366' }}
+        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 transition-colors text-atenas-ink hover:bg-atenas-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
       >
         ← Volver al tema
       </button>
-      <h1 className="text-page-title font-bold text-slate-900 mb-6">{actividad.title}</h1>
+      <h1 className="text-page-title font-bold text-atenas-ink mb-6">{actividad.title}</h1>
       <div className="card p-6">
         {actividad.tipo === 'seleccion_multiple' && (
           <SeleccionMultiple
