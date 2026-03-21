@@ -145,8 +145,16 @@ export function buildCertificadoPrintDocument(
       width: 100%;
       height: 100%;
       padding: 1rem 1.25rem 0.85rem;
+      display: flex;
+      flex-direction: column;
     }
     html.certificado-root--pdf .cert-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 0;
+      width: 100%;
       max-width: 820px;
       margin: 0 auto;
       padding: 0 0.5rem;
@@ -172,10 +180,21 @@ export function buildCertificadoPrintDocument(
     }
     html.certificado-root--pdf .pill span { font-size: 1rem; }
     html.certificado-root--pdf .footer-date { font-size: 0.82rem; margin-top: 0.45rem; }
-    html.certificado-root--pdf .footer-brand { margin-top: 0.55rem; padding-top: 0.5rem; font-size: 0.72rem; }
-    html.certificado-root--pdf .footer-brand small { font-size: 0.62rem; }
+    html.certificado-root--pdf .footer-brand { margin-top: 0.35rem; padding-top: 0.4rem; font-size: 0.78rem; }
+    html.certificado-root--pdf .footer-brand small { font-size: 0.68rem; }
     html.certificado-root--pdf .rule--wide { margin: 0.85rem auto; }
     html.certificado-root--pdf .corner { width: 26px; height: 26px; }
+    html.certificado-root--pdf .signatures {
+      margin-top: 0.75rem;
+      padding-top: 0.35rem;
+    }
+    html.certificado-root--pdf .signatures__label { font-size: 0.68rem; }
+    html.certificado-root--pdf .sello-css {
+      width: 68px;
+      height: 68px;
+      font-size: 0.5rem;
+      font-family: Georgia, 'Times New Roman', serif !important;
+    }
 
     /* Marco: borde dorado grueso + línea interior oscura (solo CSS) */
     .cert {
@@ -213,9 +232,70 @@ export function buildCertificadoPrintDocument(
     .cert-inner {
       position: relative;
       z-index: 2;
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       text-align: center;
+    }
+
+    .cert-main {
+      flex-shrink: 0;
+    }
+    .cert-bottom {
+      flex-shrink: 0;
+      margin-top: 0.5rem;
+    }
+
+    /* Firmas + sello decorativo (sin imagen) */
+    .signatures {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 1.25rem 2rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+      padding: 0 0.25rem;
+    }
+    .signatures__col {
+      flex: 1 1 140px;
+      max-width: 220px;
+      text-align: center;
+    }
+    .signatures__line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #2c2c2c 12%, #2c2c2c 88%, transparent);
+      margin-bottom: 0.35rem;
+    }
+    .signatures__label {
+      margin: 0;
+      font-size: 0.72rem;
+      color: #4a5568;
+      line-height: 1.3;
+    }
+    .signatures__seal {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 0.15rem;
+    }
+    .sello-css {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      border: 3px double #b8956a;
+      box-shadow: inset 0 0 0 1px rgba(42, 42, 42, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #6b5d4a;
+      text-transform: uppercase;
+      transform: rotate(-8deg);
+      background: radial-gradient(circle at 35% 30%, #fffefb 0%, #f5efe6 55%, #ebe4d8 100%);
     }
 
     .brand {
@@ -307,29 +387,31 @@ export function buildCertificadoPrintDocument(
 
     .footer-date {
       font-size: 0.85rem;
-      color: #7d8a9a;
+      color: #5a6570;
       margin: 0.35rem 0 0;
       font-style: italic;
     }
 
     .footer-brand {
-      margin-top: 0.45rem;
-      padding-top: 0.45rem;
+      margin-top: 0.35rem;
+      padding-top: 0.4rem;
       font-family: 'Cinzel', Georgia, serif;
-      font-size: 0.72rem;
-      letter-spacing: 0.14em;
-      color: #8b9499;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      color: #4a5568;
       text-transform: uppercase;
     }
     .footer-brand small {
       display: block;
-      margin-top: 0.35rem;
-      letter-spacing: 0.06em;
-      font-size: 0.65rem;
-      color: #a8b0b8;
+      margin-top: 0.4rem;
+      letter-spacing: 0.05em;
+      font-size: 0.68rem;
+      color: #64748b;
       font-family: 'Crimson Text', Georgia, serif;
       text-transform: none;
       font-style: normal;
+      font-weight: 400;
     }
 
     @media print {
@@ -348,30 +430,48 @@ export function buildCertificadoPrintDocument(
       <span class="corner corner-br" aria-hidden="true"></span>
 
       <div class="cert-inner">
-        <p class="brand">Plataforma educativa · Ciencias Sociales</p>
-        <h1>Certificado de progreso</h1>
-        <p class="sub">6.º de Primaria - Unidad completada en ATENAS</p>
+        <div class="cert-main">
+          <p class="brand">Plataforma educativa · Ciencias Sociales</p>
+          <h1>Certificado de progreso</h1>
+          <p class="sub">6.º de Primaria - Unidad completada en ATENAS</p>
 
-        <p class="lead">Se certifica que el alumno o alumna que se nombra ha alcanzado el progreso requerido en la unidad didáctica indicada.</p>
+          <p class="lead">Se certifica que el alumno o alumna que se nombra ha alcanzado el progreso requerido en la unidad didáctica indicada.</p>
 
-        <div class="rule--wide" aria-hidden="true"></div>
+          <div class="rule--wide" aria-hidden="true"></div>
 
-        <p class="name">${nombre}</p>
+          <p class="name">${nombre}</p>
 
-        <p class="detail"><strong>Unidad:</strong> <span class="unidad">${unidad}</span></p>
+          <p class="detail"><strong>Unidad:</strong> <span class="unidad">${unidad}</span></p>
 
-        <div class="stats">
-          <div class="pill">Progreso en la unidad: <span>${pct}%</span></div>
-          <div class="pill">Mínimo exigido: <span>${umbral}%</span></div>
+          <div class="stats">
+            <div class="pill">Progreso en la unidad: <span>${pct}%</span></div>
+            <div class="pill">Mínimo exigido: <span>${umbral}%</span></div>
+          </div>
+
+          <p class="footer-date">${fechaEsc}</p>
         </div>
 
-        <p class="footer-date">${fechaEsc}</p>
+        <div class="cert-bottom">
+          <div class="signatures" role="group" aria-label="Espacios para firmas">
+            <div class="signatures__col">
+              <div class="signatures__line"></div>
+              <p class="signatures__label">Docente de aula<br />Ciencias Sociales</p>
+            </div>
+            <div class="signatures__seal">
+              <div class="sello-css">ATENAS</div>
+            </div>
+            <div class="signatures__col">
+              <div class="signatures__line"></div>
+              <p class="signatures__label">Dirección académica<br />Plataforma educativa</p>
+            </div>
+          </div>
 
-        <div class="rule--wide rule--wide--spaced" aria-hidden="true"></div>
+          <div class="rule--wide rule--wide--spaced" aria-hidden="true"></div>
 
-        <div class="footer-brand">
-          ATENAS
-          <small>Aprendizaje de Ciencias Sociales</small>
+          <div class="footer-brand">
+            ATENAS
+            <small>Aprendizaje de Ciencias Sociales</small>
+          </div>
         </div>
       </div>
     </article>
