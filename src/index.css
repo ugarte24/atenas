@@ -48,14 +48,26 @@
 }
 
 @layer components {
+  /* Marca ATENAS: mismo degradado y sombra que Login (título principal) */
   .atenas-logo {
     font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
     font-weight: 700;
     letter-spacing: 0.1em;
     font-size: 1.15rem;
     white-space: nowrap;
-    /* Marca ATENAS: dorado/beige #D6B98C */
-    color: #d6b98c;
+    text-transform: uppercase;
+    background-image: linear-gradient(to bottom, #f0e6d4, #d6b98c 50%, #a88b5c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.55));
+  }
+  @supports not (background-clip: text) {
+    .atenas-logo {
+      color: #d6b98c;
+      background-image: none;
+      filter: none;
+    }
   }
   @media (max-width: 640px) {
     .atenas-logo {

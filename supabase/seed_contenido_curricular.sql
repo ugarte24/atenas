@@ -1,8 +1,9 @@
 -- =============================================================================
 -- ATENAS · Seed de contenido curricular (Ciencias Sociales 6.º Primaria)
 -- =============================================================================
--- Carga: unidades, temas (con prerequisito en cadena por unidad), 1 actividad
--- publicada y 1 evaluación publicada por tema.
+-- Carga: unidades (con portada, vídeo, color, intro y tema visual), temas
+-- (prerequisito en cadena por unidad), 1 actividad publicada y 1 evaluación
+-- publicada por tema.
 --
 -- Cómo ejecutar:
 --   1) Supabase Dashboard → SQL Editor → pegar y ejecutar (rol postgres: ignora RLS).
@@ -22,22 +23,60 @@
 -- ---------------------------------------------------------------------------
 -- UNIDADES
 -- ---------------------------------------------------------------------------
-INSERT INTO public.unidades (id, title, description, orden, certificado_umbral_pct)
+INSERT INTO public.unidades (
+  id, title, description, orden, certificado_umbral_pct,
+  cover_image_url, cover_video_url, accent_color, intro_extended, visual_theme
+)
 VALUES
   ('aaaa0001-0000-4000-8000-000000000001'::uuid, 'Unidad 1 · El planeta Tierra y su representación',
-   'Forma de la Tierra, mapas y climas. Contenido de ejemplo para ATENAS.', 1, 70),
+   'Forma de la Tierra, mapas y climas. Contenido de ejemplo para ATENAS.', 1, 70,
+   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/1280px-The_Earth_seen_from_Apollo_17.jpg',
+   'https://www.youtube.com/watch?v=th79sDCAh0Q',
+   '#0B5394',
+   'Conocerás la forma de la Tierra, la rotación y la traslación, cómo leer mapas con escala y coordenadas, y las grandes zonas climáticas. Cada tema incluye actividades y una evaluación corta.',
+   NULL),
   ('aaaa0002-0000-4000-8000-000000000001'::uuid, 'Unidad 2 · España: relieve, ríos y clima',
-   'Relieve, hidrografía y climas de España.', 2, 70),
+   'Relieve, hidrografía y climas de España.', 2, 70,
+   'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1200&q=80',
+   'https://www.youtube.com/watch?v=Qq1TbP2OqRk',
+   '#009975',
+   'Estudiarás el relieve peninsular, las vertientes hidrográficas y los climas de España, relacionando paisaje y actividades humanas. Practica con mapas físicos y climáticos en cada tema.',
+   NULL),
   ('aaaa0003-0000-4000-8000-000000000001'::uuid, 'Unidad 3 · Europa y la Unión Europea',
-   'Europa física y política; UE y ciudadanía.', 3, 70),
+   'Europa física y política; UE y ciudadanía.', 3, 70,
+   'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&q=80',
+   'https://www.youtube.com/watch?v=iecjWKviIvo',
+   '#003399',
+   'Trabajarás el mapa físico y político de Europa, las instituciones de la Unión Europea y la ciudadanía europea. Reflexionarás sobre derechos y convivencia en el espacio común.',
+   'europa'),
   ('aaaa0004-0000-4000-8000-000000000001'::uuid, 'Unidad 4 · La población y las actividades económicas',
-   'Población, sectores económicos y globalización.', 4, 70),
+   'Población, sectores económicos y globalización.', 4, 70,
+   'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80',
+   'https://www.youtube.com/watch?v=TDw7Obp5RS8',
+   '#2E7D32',
+   'Analizarás distribución de la población, pirámides de edad, sectores económicos y efectos de la globalización. Relacionarás datos con el entorno y el consumo responsable.',
+   NULL),
   ('aaaa0005-0000-4000-8000-000000000001'::uuid, 'Unidad 5 · Historia: de la Prehistoria a la Edad Moderna (repaso)',
-   'Síntesis histórica y patrimonio en España.', 5, 70),
+   'Síntesis histórica y patrimonio en España.', 5, 70,
+   'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&q=80',
+   'https://www.youtube.com/watch?v=NKdHlkolGBM',
+   '#6D4C41',
+   'Repasarás etapas desde la Prehistoria hasta la Edad Moderna y el patrimonio histórico en España. Construirás una línea del tiempo coherente con ejemplos de monumentos y cultura material.',
+   'historia'),
   ('aaaa0006-0000-4000-8000-000000000001'::uuid, 'Unidad 6 · Historia contemporánea de España',
-   'Siglo XIX, Guerra Civil, Transición y democracia.', 6, 70),
+   'Siglo XIX, Guerra Civil, Transición y democracia.', 6, 70,
+   'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=1200&q=80',
+   'https://www.youtube.com/watch?v=ofMR4HhaqBQ',
+   '#C62828',
+   'Estudiarás procesos del siglo XIX, la Guerra Civil, la dictadura, la Transición y la Constitución de 1978, hasta la organización territorial del Estado autonómico y la participación ciudadana.',
+   'historia'),
   ('aaaa0007-0000-4000-8000-000000000001'::uuid, 'Unidad 7 · Convivencia, derechos y participación',
-   'Derechos, igualdad y participación ciudadana.', 7, 70)
+   'Derechos, igualdad y participación ciudadana.', 7, 70,
+   'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80',
+   'https://www.youtube.com/watch?v=mMJ6Yy0N-I8',
+   '#00897B',
+   'Reflexionarás sobre derechos de la infancia, igualdad, diversidad, mediación y participación en el centro y en el barrio. Conectarás normas, valores y acciones cotidianas de convivencia.',
+   'ciudadania')
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------

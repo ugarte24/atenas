@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useUnidades } from '../../hooks/useUnidades';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { isOptionalHexColor, isOptionalHttpUrl } from '../../lib/unidadVisual';
+import { tituloUnidadConOrden } from '../../lib/unidadTitulo';
 import type { Unidad } from '../../types';
 
 const VISUAL_THEME_OPTIONS: { value: string; label: string }[] = [
@@ -303,7 +304,7 @@ export default function DocenteContenidos() {
       )}
 
       <ul className="space-y-2 list-none m-0 p-0">
-        {unidadesFiltradas.map((u) => (
+        {unidadesFiltradas.map((u, i) => (
           <li key={u.id} className="card p-4">
             {editingId === u.id ? (
               <form onSubmit={(e) => handleUpdate(e, u.id)} className="space-y-3 max-w-2xl">
@@ -351,7 +352,9 @@ export default function DocenteContenidos() {
               </form>
             ) : (
               <div className="flex flex-wrap items-center gap-3">
-                <span className="flex-1 min-w-[140px] font-medium text-slate-900">{u.title}</span>
+                <span className="flex-1 min-w-[140px] font-medium text-atenas-ink">
+                  {tituloUnidadConOrden(u.orden ?? 0, u.title, i)}
+                </span>
                 <Link
                   to={`/docente/unidades/${u.id}`}
                   className="text-sm font-medium hover:underline"

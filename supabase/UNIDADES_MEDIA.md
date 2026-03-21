@@ -18,9 +18,15 @@ Campos en `public.unidades` (migración `20260321_unidades_cover_media.sql`):
 
 Si la URL no coincide con ninguno de los formatos anteriores, la app muestra un aviso en la ficha de unidad.
 
+## Datos de ejemplo en el repositorio
+
+- El seed **`seed_contenido_curricular.sql`** inserta las siete unidades del currículo de ejemplo con `cover_image_url`, `cover_video_url`, `accent_color`, `intro_extended` y `visual_theme` ya rellenados.
+- El script **`seed_unidades_media.sql`** vuelve a aplicar esos mismos valores (útil si la base ya existía sin medios). También actualiza la fila con **`orden = 8`** (p. ej. «Abya Yala y mundo actual») si existe.
+- Los **`cover_video_url`** de ejemplo enlazan a vídeos de YouTube **en español** (narración educativa de canales como Happy Learning, Kurzgesagt en español, Smile and Learn, UNICEF España, Aula365, etc.). Puedes sustituirlos en Docente → Contenidos si lo necesitas.
+
 ## Docente
 
-Rellenar en **Docente → Contenidos** al crear o editar una unidad.
+Rellenar o sustituir en **Docente → Contenidos** al crear o editar una unidad.
 
 ## Checklist manual
 
