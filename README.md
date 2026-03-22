@@ -205,8 +205,12 @@ Para producción, genera el build con `npm run build` y sirve la carpeta **`dist
 
 Si en **Settings → Pages** tienes **“Deploy from a branch”** y carpeta **`/` (root)** del repo, el sitio sirve el **código fuente** (`index.html` con `/src/main.tsx`), no el build: por eso ves errores **MIME `text/html`** en los `.js`.
 
-1. En **Settings → Pages → Build and deployment → Source**, elige **GitHub Actions** (no “branch”).
-2. En el repo: **Settings → Secrets and variables → Actions**, añade **`VITE_SUPABASE_URL`** y **`VITE_SUPABASE_ANON_KEY`** (mismos valores que en `.env` local).
-3. Haz push a **`main`**: el workflow **`.github/workflows/deploy-github-pages.yml`** ejecuta `npm run build` con `VITE_BASE_PATH=/<nombre-del-repo>/` y publica solo **`dist/`** (incluye **`404.html`** y **`.nojekyll`**).
+**Activar Pages (si el job `deploy` falla con `Not Found` / 404):** entra en **Settings → Pages** → [tu repo](https://github.com/ugarte24/atenas/settings/pages) y en **Source** elige **GitHub Actions** y guarda. Sin activar Pages así, GitHub no puede crear el deployment y el workflow falla.
+
+1. **Settings → Pages → Build and deployment → Source** → **GitHub Actions** (no “Deploy from a branch”).
+2. **Settings → Secrets and variables → Actions** → **`VITE_SUPABASE_URL`** y **`VITE_SUPABASE_ANON_KEY`** (como en tu `.env` local).
+3. Push a **`main`** o **Re-run** del workflow en **Actions**.
+
+El workflow **`.github/workflows/deploy-github-pages.yml`** ejecuta `npm run build` con `VITE_BASE_PATH=/<nombre-del-repo>/` y publica **`dist/`** (`404.html`, `.nojekyll` incluidos).
 
 **Manual:** si subes `dist/` a otra rama o hosting, el build debe generar rutas **`/<tu-repo>/assets/...`**: en local usa **`.env.production`** (`VITE_BASE_PATH=/atenas/` si el repo se llama `atenas`). En la **raíz** de un dominio (Vercel), usa `VITE_BASE_PATH=/` o borra esa variable antes del build.
