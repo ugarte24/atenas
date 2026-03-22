@@ -6,11 +6,20 @@
  * Variante `pdf`: Georgia/Times para html2canvas.
  */
 
-/** URL absoluta del emblema (`public/`). Compatible con `base: './'` y subcarpetas. */
+import { getAppPathPrefix } from './deployBaseUrl';
+
+/** URL absoluta del emblema (`public/`). No usar solo `BASE_URL` + `location`: en rutas profundas el path sería incorrecto. */
 export function resolveCertificadoEmblemaUrl(): string {
   if (typeof window === 'undefined') return '';
-  const baseResolved = new URL(import.meta.env.BASE_URL, window.location.href);
-  return new URL('emblema-colegio-vaca-diez.png', baseResolved).href;
+  const base = import.meta.env.BASE_URL;
+  if (base && base !== './') {
+    const normalized = base.endsWith('/') ? base : `${base}/`;
+    return new URL('emblema-colegio-vaca-diez.png', window.location.origin + normalized).href;
+  }
+  const prefix = getAppPathPrefix();
+  const path =
+    prefix === '/' ? '/emblema-colegio-vaca-diez.png' : `${prefix}/emblema-colegio-vaca-diez.png`;
+  return `${window.location.origin}${path}`;
 }
 
 function escapeHtml(s: string): string {

@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { getRouterBasename } from './lib/deployBaseUrl';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -49,17 +50,9 @@ function WithPageSuspense({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
 
-/** `basename` alineado con la carpeta pública real (incl. `base: './'` en GitHub Pages). */
-function routerBasename(): string {
-  if (typeof window === 'undefined') return '/';
-  const baseResolved = new URL(import.meta.env.BASE_URL, window.location.href);
-  const p = baseResolved.pathname.replace(/\/$/, '');
-  return p === '' ? '/' : p;
-}
-
 function App() {
   return (
-    <BrowserRouter basename={routerBasename()}>
+    <BrowserRouter basename={getRouterBasename()}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
