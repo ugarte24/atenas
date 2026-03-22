@@ -200,3 +200,5 @@ El certificado de unidad completada se descarga en **PDF** en **carta horizontal
 ## Despliegue
 
 Para producción, genera el build con `npm run build` y sirve la carpeta `dist/` desde tu hosting (Vercel, Netlify, etc.). Las variables de entorno `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` deben configurarse en el entorno de despliegue. El backend (Auth, base de datos, Storage) sigue en tu proyecto Supabase.
+
+**GitHub Pages** (`https://<usuario>.github.io/atenas/`): el repositorio incluye `.env.production` con `VITE_BASE_PATH=/atenas/` para que los assets (incluido `emblema-colegio-vaca-diez.png`) y React Router usen la misma base. Si despliegas en la **raíz** de un dominio, quita o ajusta `VITE_BASE_PATH` (o déjalo vacío) antes del build.
