@@ -1,10 +1,20 @@
 /**
- * Con `vite` `base: './'`, la raíz de despliegue no está en `import.meta.env` como path absoluto.
- * La deducimos del `<script src=".../assets/index-*.js">` del documento (misma en localhost y en producción).
+ * Base de la app para rutas públicas y React Router.
+ * Si Vite usa base absoluta (`/atenas/`), viene en `import.meta.env.BASE_URL`.
+ * Si no (base `/` en dev), el script en `/assets/` basta.
  */
 
 /** Prefijo de ruta de la app: `/` o `/<repo>` (ej. `/atenas`). */
 export function getAppPathPrefix(): string {
+  const fromVite = import.meta.env.BASE_URL;
+  if (fromVite && fromVite !== './') {
+    const p = fromVite.replace(/\/$/, '') || '/';
+    return p;
+  }
+  return getAppPathPrefixFromScript();
+}
+
+function getAppPathPrefixFromScript(): string {
   if (typeof document === 'undefined') return '/';
   const el =
     (document.querySelector('script[type="module"][src*="/assets/"]') as HTMLScriptElement | null) ??
