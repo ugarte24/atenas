@@ -2,11 +2,12 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
-// GitHub Pages (proyecto): la app vive en https://<usuario>.github.io/<repo>/
-// → VITE_BASE_PATH=/<repo>/ en .env.production para que emblema, assets y rutas coincidan.
+// `base: './'` → scripts como `./assets/*.js`: funcionan en GitHub Pages (/repo/) y en raíz (Vercel)
+// sin mezclar `/atenas/` con un host que sirve solo en `/`.
+// Opcional: VITE_BASE_PATH=/algo/ sobrescribe (p. ej. CI).
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const base = env.VITE_BASE_PATH || '/';
+  const base = env.VITE_BASE_PATH || './';
 
   return {
     plugins: [react()],

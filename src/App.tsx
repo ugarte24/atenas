@@ -49,13 +49,17 @@ function WithPageSuspense({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
 
-/** Coincide con `base` de Vite (GitHub Pages en subcarpeta). */
-const routerBasename =
-  import.meta.env.BASE_URL === '/' ? '/' : import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+/** `basename` alineado con la carpeta pública real (incl. `base: './'` en GitHub Pages). */
+function routerBasename(): string {
+  if (typeof window === 'undefined') return '/';
+  const baseResolved = new URL(import.meta.env.BASE_URL, window.location.href);
+  const p = baseResolved.pathname.replace(/\/$/, '');
+  return p === '' ? '/' : p;
+}
 
 function App() {
   return (
-    <BrowserRouter basename={routerBasename}>
+    <BrowserRouter basename={routerBasename()}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
