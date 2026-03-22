@@ -7,7 +7,8 @@ import react from '@vitejs/plugin-react';
 // `npm run dev` no carga .env.production → base `/`.
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const raw = env.VITE_BASE_PATH || '/';
+  // CI (GitHub Actions) puede fijar VITE_BASE_PATH=/repo/ y debe ganar a .env.production
+  const raw = process.env.VITE_BASE_PATH || env.VITE_BASE_PATH || '/';
   const base = raw === '/' ? '/' : raw.endsWith('/') ? raw : `${raw}/`;
 
   return {
