@@ -1,4 +1,9 @@
 {
+  "build": {
+    "env": {
+      "VITE_BASE_PATH": "/"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
