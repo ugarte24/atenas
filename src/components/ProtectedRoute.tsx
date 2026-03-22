@@ -13,7 +13,7 @@ export function ProtectedRoute({ children, allowedRoles }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 gap-4 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-atenas-ink gap-4 px-4">
         <div className="card p-8 text-center max-w-sm">
           <h1 className="atenas-logo">ATENAS</h1>
           <p className="atenas-subtitle mt-1">Ciencias Sociales · 6.º Primaria</p>
