@@ -31,11 +31,17 @@ jobs:
 
       - name: Build
         env:
-          # Debe coincidir con la URL del sitio: …/github.io/<nombre-repo>/
+          # Debe coincidir con la URL: https://<usuario>.github.io/<nombre-repo>/
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: npm run build
+        run: |
+          npm run build
+          echo "{\"viteBase\":\"$VITE_BASE_PATH\",\"repo\":\"${{ github.event.repository.name }}\"}" > dist/build-info.json
+
+      - name: Comprobar rutas en index.html (debe ser /${{ github.event.repository.name }}/assets/…)
+        run: |
+          grep -E 'src="/${{ github.event.repository.name }}/assets/' dist/index.html || (echo "ERROR: index.html no usa la base esperada"; head -30 dist/index.html; exit 1)
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

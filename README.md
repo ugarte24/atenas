@@ -214,3 +214,10 @@ Si en **Settings → Pages** tienes **“Deploy from a branch”** y carpeta **`
 El workflow **`.github/workflows/deploy-github-pages.yml`** ejecuta `npm run build` con `VITE_BASE_PATH=/<nombre-del-repo>/` y publica **`dist/`** (`404.html`, `.nojekyll` incluidos).
 
 **Manual:** si subes `dist/` a otra rama o hosting, el build debe generar rutas **`/<tu-repo>/assets/...`**: en local usa **`.env.production`** (`VITE_BASE_PATH=/atenas/` si el repo se llama `atenas`). En la **raíz** de un dominio (Vercel), usa `VITE_BASE_PATH=/` o borra esa variable antes del build.
+
+**Si en producción siguen errores MIME (`text/html` en los `.js` o en `manifest.webmanifest`):**
+
+1. Entra solo por **`https://<usuario>.github.io/<repo>/`** (el `<repo>` debe coincidir con el nombre del repositorio). Si usas otro dominio o hosting en la **raíz**, el build no puede llevar `/repo/` en las rutas: ahí hace falta **`VITE_BASE_PATH=/`** y un build nuevo.
+2. **Ctrl+F5** o ventana privada (caché pidiendo hashes viejos).
+3. Abre **`…/build-info.json`** en el sitio desplegado: debe verse `"viteBase":"/<repo>/"`. Si no cuadra con la URL, el despliegue no es el del workflow o la base es incorrecta.
+4. En **Actions**, el paso **“Comprobar rutas en index.html”** valida que `index.html` referencia `/repo/assets/…`.
