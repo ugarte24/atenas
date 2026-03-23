@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthContext } from '../contexts/AuthContext';
+import { ClassicalBackdrop } from '../components/ClassicalBackdrop';
 
 function IconEnvelope({ className }: { className?: string }) {
   return (
@@ -53,15 +54,6 @@ function IconLock({ className }: { className?: string }) {
   );
 }
 
-/** Textura pantalla: moteado tipo pizarra/cuero (sin feColorMatrix → sin static RGB) */
-const LOGIN_BG_SLATE = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><defs><filter id="b" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.026 0.034" numOctaves="4" seed="13" stitchTiles="stitch" result="t"/><feGaussianBlur in="t" stdDeviation="1.05"/></filter></defs><rect width="100%" height="100%" filter="url(#b)" opacity="0.58"/></svg>`
-)}")`;
-
-const LOGIN_BG_FINE = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><defs><filter id="f" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.58" numOctaves="2" seed="29" stitchTiles="stitch" result="t"/><feGaussianBlur in="t" stdDeviation="0.38"/></filter></defs><rect width="100%" height="100%" filter="url(#f)" opacity="0.3"/></svg>`
-)}")`;
-
 /** Grano muy sutil en la tarjeta (pergamino) */
 const CARD_GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
   `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#g)" opacity="0.045"/></svg>`
@@ -98,46 +90,7 @@ export default function Login() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center px-4 pt-8 pb-10 sm:pt-10 sm:pb-14 relative overflow-x-hidden overflow-y-auto isolate font-login">
-      {/* Capa 1: color base + degradado radial (esquina superior izquierda) */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0"
-        style={{
-          backgroundColor: '#1F2D2A',
-          backgroundImage:
-            'radial-gradient(ellipse 155% 135% at 24% 14%, #2F423D 0%, #2a3d38 18%, #253933 36%, #21332f 54%, #1c2e2b 72%, #1a2b28 86%, #1F2D2A 100%)',
-        }}
-        aria-hidden
-      />
-      {/* Capa 2–3: textura orgánica (luminosity) + grano fino (muy suave) */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0 mix-blend-luminosity opacity-[0.42]"
-        style={{
-          backgroundImage: LOGIN_BG_SLATE,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-0 z-0 mix-blend-soft-light opacity-[0.07]"
-        style={{
-          backgroundImage: LOGIN_BG_FINE,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-        aria-hidden
-      />
-      {/* Capa 4: viñeta — centro un poco más claro, bordes hacia negro */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 128% 118% at 50% 46%, transparent 26%, rgba(0, 0, 0, 0.28) 62%, rgba(0, 0, 0, 0.68) 100%)',
-        }}
-        aria-hidden
-      />
+      <ClassicalBackdrop />
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         {/* Marca sobre el fondo oscuro (como mockup) */}
