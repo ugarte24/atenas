@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthContext } from '../contexts/AuthContext';
-import { ClassicalBackdrop } from '../components/ClassicalBackdrop';
+
+const LOGIN_BACKGROUND_URL = `${import.meta.env.BASE_URL}login-background.png`;
 
 function IconEnvelope({ className }: { className?: string }) {
   return (
@@ -90,7 +91,17 @@ export default function Login() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center px-4 pt-8 pb-10 sm:pt-10 sm:pb-14 relative overflow-x-hidden overflow-y-auto isolate font-login">
-      <ClassicalBackdrop />
+      {/* Fondo fijo: imagen a pantalla completa */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${LOGIN_BACKGROUND_URL})` }}
+      />
+      {/* Velo para leer bien el formulario sobre la luz dorada */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-b from-black/45 via-black/30 to-black/55"
+      />
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         {/* Marca sobre el fondo oscuro (como mockup) */}
