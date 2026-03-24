@@ -12,13 +12,15 @@
     "preview": "vite preview",
     "prepare-athena-icon": "node scripts/clean-athena-logo-png.mjs && node scripts/embed-favicon-png-in-svg.mjs",
     "prepare-emblema-colegio": "node scripts/make-emblema-colegio-transparent.mjs",
-    "fix-emblema-black": "node scripts/fix-emblema-black-edge.mjs"
+    "fix-emblema-black": "node scripts/fix-emblema-black-edge.mjs",
+    "splash-lottie": "node scripts/generate-splash-lottie.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
+    "lottie-react": "^2.4.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1"

@@ -1,9 +1,12 @@
+import { lazy, Suspense } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ClassicalBackdrop } from './ClassicalBackdrop';
 
+const SplashLottieFavicon = lazy(() => import('./SplashLottieFavicon'));
+
 /**
- * Pantalla de carga de sesión (splash): entrada con resorte y pulso suave en el logo.
- * Respeta prefers-reduced-motion.
+ * Pantalla de carga de sesión: Lottie con favicon (latido) + marca ATENAS.
+ * Respeta prefers-reduced-motion (imagen estática en lugar del Lottie).
  */
 export function AuthLoadingSplash() {
   const reduceMotion = useReducedMotion();
@@ -12,6 +15,8 @@ export function AuthLoadingSplash() {
   const cardTransition = soft
     ? { duration: 0 }
     : { type: 'spring' as const, stiffness: 320, damping: 28, mass: 0.85 };
+
+  const faviconSrc = `${import.meta.env.BASE_URL}favicon.png`;
 
   return (
     <div className="relative isolate min-h-screen min-h-[100dvh] overflow-hidden flex flex-col items-center justify-center gap-4 px-4">
@@ -22,14 +27,37 @@ export function AuthLoadingSplash() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={cardTransition}
       >
+        <motion.div
+          className="mx-auto w-[5.5rem] h-[5.5rem] flex items-center justify-center"
+          initial={soft ? false : { opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={
+            soft
+              ? { duration: 0 }
+              : { type: 'spring', stiffness: 380, damping: 26, delay: 0.02 }
+          }
+          aria-hidden
+        >
+          {soft ? (
+            <img src={faviconSrc} alt="" className="w-full h-full object-contain drop-shadow-md" width={88} height={88} />
+          ) : (
+            <Suspense
+              fallback={
+                <img src={faviconSrc} alt="" className="w-full h-full object-contain drop-shadow-md" width={88} height={88} />
+              }
+            >
+              <SplashLottieFavicon className="w-full h-full" />
+            </Suspense>
+          )}
+        </motion.div>
         <motion.h1
-          className="atenas-logo"
+          className="atenas-logo mt-4"
           initial={soft ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={
             soft
               ? { duration: 0 }
-              : { delay: 0.06, type: 'spring', stiffness: 400, damping: 30 }
+              : { delay: 0.08, type: 'spring', stiffness: 400, damping: 30 }
           }
         >
           ATENAS
