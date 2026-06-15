@@ -4,6 +4,8 @@ import type { Recurso } from '../types';
 
 const BUCKET = 'recursos';
 
+export type RecursoTipo = 'texto' | 'pdf' | 'imagen' | 'mapa' | 'video' | 'audio';
+
 export function useRecursos(temaId: string | null) {
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +37,39 @@ export function useRecursos(temaId: string | null) {
     fetch();
   }, [temaId]);
 
-  async function addFromUrl(temaId: string, tipo: 'imagen' | 'mapa' | 'video', url: string, title?: string) {
+  async function addFromUrl(
+    temaId: string,
+    tipo: RecursoTipo,
+    url: string,
+    title?: string,
+    contenido?: string
+  ) {
     const { data, error: e } = await supabase
       .from('recursos')
-      .insert({ tema_id: temaId, tipo, url, title: title ?? null })
+      .insert({
+        tema_id: temaId,
+        tipo,
+        url,
+        title: title ?? null,
+        contenido: contenido ?? null,
+      })
+      .select()
+      .single();
+    if (e) throw e;
+    setRecursos((prev) => [...prev, data as Recurso]);
+    return data as Recurso;
+  }
+
+  async function addFromTexto(temaId: string, contenido: string, title?: string) {
+    const { data, error: e } = await supabase
+      .from('recursos')
+      .insert({
+        tema_id: temaId,
+        tipo: 'texto',
+        url: '',
+        contenido,
+        title: title ?? null,
+      })
       .select()
       .single();
     if (e) throw e;
@@ -48,7 +79,7 @@ export function useRecursos(temaId: string | null) {
 
   async function addFromFile(
     temaId: string,
-    tipo: 'imagen' | 'mapa' | 'video',
+    tipo: RecursoTipo,
     file: File,
     title?: string
   ) {
@@ -62,7 +93,12 @@ export function useRecursos(temaId: string | null) {
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
     const { data, error: e } = await supabase
       .from('recursos')
-      .insert({ tema_id: temaId, tipo, url: urlData.publicUrl, title: title ?? null })
+      .insert({
+        tema_id: temaId,
+        tipo,
+        url: urlData.publicUrl,
+        title: title ?? null,
+      })
       .select()
       .single();
     if (e) throw e;
@@ -76,5 +112,14 @@ export function useRecursos(temaId: string | null) {
     setRecursos((prev) => prev.filter((r) => r.id !== id));
   }
 
-  return { recursos, loading, error, refetch: fetch, addFromUrl, addFromFile, remove };
+  return {
+    recursos,
+    loading,
+    error,
+    refetch: fetch,
+    addFromUrl,
+    addFromTexto,
+    addFromFile,
+    remove,
+  };
 }

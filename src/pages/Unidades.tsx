@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
 import { useUnidades } from '../hooks/useUnidades';
 import { useAuthContext } from '../contexts/AuthContext';
 import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { UnidadCard } from '../components/UnidadCard';
+import { PageHeader } from '../components/ui/PageHeader';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonCard } from '../components/ui/Skeleton';
 
 export default function Unidades() {
   const { user, profile } = useAuthContext();
@@ -30,36 +34,53 @@ export default function Unidades() {
     };
   }, [user, profile?.role, unidades]);
 
-  if (loading) return <p className="text-atenas-muted text-lg">Cargando unidades...</p>;
-  if (error) return <p className="text-red-600 text-lg">Algo salió mal. Vuelve a intentarlo.</p>;
-
   const esEstudiante = profile?.role === 'estudiante';
   const esDocenteOAdmin = profile?.role === 'docente' || profile?.role === 'admin';
 
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <PageHeader eyebrow="Plataforma ATENAS" title="Contenidos" />
+        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none m-0 p-0">
+          {[1, 2, 3].map((i) => (
+            <li key={i}>
+              <SkeletonCard />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="text-red-600 text-lg" role="alert">
+        Algo salió mal. Vuelve a intentarlo.
+      </p>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto pb-8">
-      <section className="mb-8 border-b border-atenas-mist-border pb-6">
-        <p className="text-sm font-semibold text-atenas-muted">Plataforma ATENAS</p>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-atenas-ink mt-1">Contenidos</h1>
-        {esDocenteOAdmin ? (
-          <div className="text-atenas-muted mt-2 max-w-2xl text-sm sm:text-base space-y-2">
-            <p>
-              Vista previa del recorrido del alumno. Entra a una unidad para revisar temas y materiales; para
-              <strong className="text-atenas-ink font-semibold"> crear o editar </strong>
-              contenido usa el{' '}
-              <Link to="/docente/contenidos" className="text-navy font-semibold underline underline-offset-2">
-                panel docente
-              </Link>
-              .
-            </p>
-          </div>
-        ) : (
-          <p className="text-atenas-muted mt-2 max-w-xl text-sm sm:text-base">
-            Elige una unidad y sigue tu ruta: cada una tiene temas, actividades y retos para aprender Ciencias
-            Sociales.
-          </p>
-        )}
-      </section>
+      <PageHeader
+        eyebrow="Plataforma ATENAS"
+        title="Contenidos"
+        description={
+          esDocenteOAdmin
+            ? undefined
+            : 'Elige una unidad y sigue tu ruta: cada una tiene temas, actividades y retos para aprender Ciencias Sociales.'
+        }
+      />
+      {esDocenteOAdmin && (
+        <p className="text-atenas-muted -mt-4 mb-6 max-w-2xl text-sm sm:text-base">
+          Vista previa del recorrido del alumno. Para{' '}
+          <strong className="text-atenas-ink font-semibold">crear o editar</strong> contenido usa el{' '}
+          <Link to="/docente/contenidos" className="text-atenas-ink font-semibold underline underline-offset-2">
+            panel docente
+          </Link>
+          .
+        </p>
+      )}
 
       <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none m-0 p-0">
         {unidades.map((u, i) => (
@@ -74,16 +95,15 @@ export default function Unidades() {
       </ul>
 
       {unidades.length === 0 && (
-        <div className="rounded-2xl border-2 border-dashed border-atenas-mist-border bg-atenas-card p-12 text-center shadow-card">
-          <p className="text-4xl mb-3" aria-hidden>
-            📚
-          </p>
-          <p className="text-atenas-muted text-lg">
-            {esDocenteOAdmin
+        <EmptyState
+          icon={<BookOpen className="w-8 h-8" />}
+          title="Sin unidades"
+          description={
+            esDocenteOAdmin
               ? 'Aún no hay unidades cargadas. Créalas desde el panel docente.'
-              : 'Aún no hay unidades. Tu profesor las publicará pronto.'}
-          </p>
-        </div>
+              : 'Aún no hay unidades. Tu profesor las publicará pronto.'
+          }
+        />
       )}
     </div>
   );

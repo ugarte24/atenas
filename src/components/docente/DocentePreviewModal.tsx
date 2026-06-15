@@ -35,17 +35,17 @@ export function DocentePreviewModal({ title, onClose, children }: Props) {
     >
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/60 min-h-full w-full cursor-default border-0"
+        className="absolute inset-0 bg-atenas-ink/60 min-h-full w-full cursor-default border-0"
         aria-label="Cerrar vista previa"
         onClick={onClose}
       />
       <div
         ref={panelRef}
-        className="relative bg-white rounded-t-2xl sm:rounded-xl shadow-xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col z-10 outline-none border border-slate-200"
+        className="relative bg-white rounded-t-3xl sm:rounded-xl shadow-elevated w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col z-10 outline-none border border-atenas-mist-border pb-safe"
         tabIndex={-1}
       >
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 shrink-0">
-          <h2 id="preview-modal-title" className="text-base font-bold text-slate-900 truncate pr-2">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-atenas-mist-border shrink-0">
+          <h2 id="preview-modal-title" className="text-base font-bold text-atenas-ink truncate pr-2">
             {title}
           </h2>
           <button

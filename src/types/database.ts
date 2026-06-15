@@ -41,6 +41,7 @@ export interface Database {
           title: string;
           description: string | null;
           orden: number;
+          publicada: boolean;
           certificado_umbral_pct?: number | null;
           cover_image_url?: string | null;
           cover_video_url?: string | null;
@@ -55,6 +56,7 @@ export interface Database {
           title: string;
           description?: string | null;
           orden: number;
+          publicada?: boolean;
           certificado_umbral_pct?: number | null;
           cover_image_url?: string | null;
           cover_video_url?: string | null;
@@ -69,6 +71,7 @@ export interface Database {
           title?: string;
           description?: string | null;
           orden?: number;
+          publicada?: boolean;
           certificado_umbral_pct?: number | null;
           cover_image_url?: string | null;
           cover_video_url?: string | null;
@@ -113,8 +116,9 @@ export interface Database {
         Row: {
           id: string;
           tema_id: string;
-          tipo: 'imagen' | 'mapa' | 'video';
+          tipo: 'texto' | 'pdf' | 'imagen' | 'mapa' | 'video' | 'audio';
           url: string;
+          contenido: string | null;
           title: string | null;
           created_at: string;
           updated_at: string;
@@ -122,8 +126,9 @@ export interface Database {
         Insert: {
           id?: string;
           tema_id: string;
-          tipo: 'imagen' | 'mapa' | 'video';
+          tipo: 'texto' | 'pdf' | 'imagen' | 'mapa' | 'video' | 'audio';
           url: string;
+          contenido?: string | null;
           title?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -131,8 +136,9 @@ export interface Database {
         Update: {
           id?: string;
           tema_id?: string;
-          tipo?: 'imagen' | 'mapa' | 'video';
+          tipo?: 'texto' | 'pdf' | 'imagen' | 'mapa' | 'video' | 'audio';
           url?: string;
+          contenido?: string | null;
           title?: string | null;
           created_at?: string;
           updated_at?: string;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { PreguntaEvaluacion } from '../types';
 
 export type FeedbackEvaluacion = 'completo' | 'errores_sin_solucion' | 'solo_nota';
@@ -9,7 +9,8 @@ type Props = {
   onSubmit: (
     respuestas: Record<string, unknown>,
     puntuacion: number,
-    aprobado: boolean
+    aprobado: boolean,
+    tiempoSegundos?: number
   ) => void | Promise<void>;
   disabled?: boolean;
   /** completo: muestra respuesta correcta si falló; errores_sin_solucion: solo "incorrecto"; solo_nota: sin detalle por pregunta */
@@ -33,13 +34,15 @@ export function Cuestionario({
   const [segRestantes, setSegRestantes] = useState<number | null>(
     minutosExamen > 0 ? minutosExamen * 60 : null
   );
+  const startedAtRef = useRef(Date.now());
 
   const enviarAutomatico = useCallback(async () => {
     if (enviado || disabled) return;
+    const tiempoSegundos = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
     const total = preguntas.length;
     if (total === 0) {
       setEnviado(true);
-      await Promise.resolve(onSubmit({}, 0, false));
+      await Promise.resolve(onSubmit({}, 0, false, tiempoSegundos));
       return;
     }
     let aciertos = 0;
@@ -54,7 +57,9 @@ export function Cuestionario({
     setPuntuacion(puntuacionFinal);
     setAprobado(aprobadoFinal);
     setEnviado(true);
-    await Promise.resolve(onSubmit({ respuestas: detalle }, puntuacionFinal, aprobadoFinal));
+    await Promise.resolve(
+      onSubmit({ respuestas: detalle }, puntuacionFinal, aprobadoFinal, tiempoSegundos)
+    );
   }, [enviado, disabled, preguntas, respuestas, umbralAprobado, onSubmit]);
 
   useEffect(() => {
@@ -88,7 +93,7 @@ export function Cuestionario({
 
   if (preguntas.length === 0) {
     return (
-      <p className="text-slate-800 text-lg" role="status">
+      <p className="text-atenas-muted-strong text-lg" role="status">
         Esta evaluación aún no tiene preguntas.
       </p>
     );
@@ -104,12 +109,17 @@ export function Cuestionario({
     <div className="space-y-6">
       {segRestantes != null && segRestantes > 0 && !enviado && (
         <div
-          className="p-4 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-950 font-semibold text-center"
-          role="timer"
-          aria-live="polite"
-          aria-atomic="true"
+          className="sticky top-0 z-20 -mx-1 px-1 py-2 sm:static sm:mx-0 sm:px-0 sm:py-0 mb-2 sm:mb-0"
+          role="presentation"
         >
-          Tiempo restante: {fmtTiempo(segRestantes)}
+          <div
+            className="p-3 sm:p-4 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-950 font-semibold text-center shadow-card"
+            role="timer"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            Tiempo restante: {fmtTiempo(segRestantes)}
+          </div>
         </div>
       )}
 
@@ -118,9 +128,9 @@ export function Cuestionario({
           {preguntas.map((p, preguntaIdx) => (
             <fieldset
               key={preguntaIdx}
-              className="card p-5 sm:p-6 border border-slate-200"
+              className="card p-5 sm:p-6 border border-atenas-mist-border"
             >
-              <legend className="font-semibold text-slate-900 mb-4 text-lg px-1">
+              <legend className="font-semibold text-atenas-ink mb-4 text-lg px-1">
                 Pregunta {preguntaIdx + 1} de {preguntas.length}: {p.enunciado}
               </legend>
               <ul className="space-y-3 list-none m-0 p-0" role="radiogroup" aria-labelledby={`q-${preguntaIdx}-legend`}>
@@ -137,8 +147,8 @@ export function Cuestionario({
                       disabled={disabled}
                       className={`w-full text-left px-4 py-4 min-h-touch rounded-xl border-2 transition text-base disabled:opacity-70 ${
                         respuestas[preguntaIdx] === opcionIdx
-                          ? 'border-[#003366] bg-[#e6edf5] text-slate-900'
-                          : 'border-slate-300 bg-white hover:border-[#003366]/50 text-slate-900'
+                          ? 'border-atenas-ink bg-atenas-mist text-atenas-ink'
+                          : 'border-atenas-mist-border bg-white hover:border-atenas-ink/40 text-atenas-ink'
                       }`}
                     >
                       {op.texto}
@@ -148,14 +158,16 @@ export function Cuestionario({
               </ul>
             </fieldset>
           ))}
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={disabled || !todasRespondidas}
-            className="btn-primary w-full sm:w-auto min-h-touch px-8 py-4 text-lg disabled:opacity-50"
-          >
-            Enviar evaluación
-          </button>
+          <div className="sticky bottom-0 z-10 -mx-1 px-1 pt-3 pb-safe bg-gradient-to-t from-white via-white to-transparent sm:static sm:mx-0 sm:px-0 sm:pt-0 sm:pb-0 sm:bg-transparent">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={disabled || !todasRespondidas}
+              className="btn-primary w-full min-h-touch px-8 py-4 text-lg disabled:opacity-50 shadow-elevated sm:shadow-none sm:w-auto"
+            >
+              Enviar evaluación
+            </button>
+          </div>
         </>
       ) : (
         <div className="space-y-5">
@@ -176,12 +188,12 @@ export function Cuestionario({
           </div>
 
           {feedback === 'solo_nota' ? (
-            <p className="text-slate-700 text-sm">
+            <p className="text-atenas-muted text-sm">
               En modo examen no se muestra el detalle por pregunta.
             </p>
           ) : (
             <>
-              <h4 className="font-semibold text-slate-900 text-lg">Revisión</h4>
+              <h4 className="font-semibold text-atenas-ink text-lg">Revisión</h4>
               {preguntas.map((p, preguntaIdx) => {
                 const sel = respuestas[preguntaIdx];
                 const correcta = sel !== undefined && p.opciones[sel]?.correcta;
@@ -195,10 +207,10 @@ export function Cuestionario({
                         : 'border-red-300 bg-red-50/80'
                     }`}
                   >
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-atenas-ink">
                       {preguntaIdx + 1}. {p.enunciado}
                     </p>
-                    <p className="text-sm mt-2 text-slate-800">
+                    <p className="text-sm mt-2 text-atenas-muted-strong">
                       {correcta ? (
                         <span className="text-emerald-800 font-medium">Correcto.</span>
                       ) : feedback === 'errores_sin_solucion' ? (

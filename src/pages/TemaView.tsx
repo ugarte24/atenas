@@ -9,42 +9,15 @@ import { supabase } from '../lib/supabase';
 import { usuarioCumplePrerequisitoTema } from '../lib/prerequisitoTema';
 import { TemaMensajes } from '../components/TemaMensajes';
 import { MicroQuizCard } from '../components/MicroQuizCard';
+import { useTiempoEstudio } from '../hooks/useTiempoEstudio';
+import { SectionAccordion } from '../components/SectionAccordion';
+import { SkeletonLines } from '../components/ui/Skeleton';
 import type { Recurso } from '../types';
 
 type ProgresoTema = {
   total: number;
   completadas: number;
 };
-
-function SectionShell({
-  step,
-  title,
-  description,
-  children,
-}: {
-  step: number;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mb-10 rounded-2xl border border-atenas-mist-border bg-atenas-card shadow-card overflow-hidden">
-      <div className="px-5 py-4 border-b border-atenas-mist-border bg-white/60 flex items-start gap-3">
-        <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-atenas-ink text-white text-sm font-bold"
-          aria-hidden
-        >
-          {step}
-        </span>
-        <div>
-          <h2 className="text-lg font-bold text-atenas-ink">{title}</h2>
-          {description && <p className="text-sm text-atenas-muted mt-0.5">{description}</p>}
-        </div>
-      </div>
-      <div className="p-5 sm:p-6">{children}</div>
-    </section>
-  );
-}
 
 export default function TemaView() {
   const { temaId } = useParams<{ temaId: string }>();
@@ -69,6 +42,8 @@ export default function TemaView() {
   const { actividades, loading: loadingActividades } = useActividades(temaIdContenido);
   const { evaluaciones, loading: loadingEvaluaciones } = useEvaluaciones(temaIdContenido);
 
+  useTiempoEstudio(temaIdContenido);
+
   const microQuizEvaluacion =
     !loadingEvaluaciones && Array.isArray(evaluaciones)
       ? evaluaciones.find((e) => e.publicada && e.es_micro_quiz === true)
@@ -79,9 +54,11 @@ export default function TemaView() {
     [recursos]
   );
   const recursosTeoria = useMemo(
-    () => recursos.filter((r) => r.tipo === 'imagen' || r.tipo === 'mapa'),
+    () => recursos.filter((r) => r.tipo === 'imagen' || r.tipo === 'mapa' || r.tipo === 'texto'),
     [recursos]
   );
+  const recursosPdf = useMemo(() => recursos.filter((r) => r.tipo === 'pdf'), [recursos]);
+  const recursosAudio = useMemo(() => recursos.filter((r) => r.tipo === 'audio'), [recursos]);
 
   useEffect(() => {
     let cancelled = false;
@@ -168,7 +145,7 @@ export default function TemaView() {
   }, [user, tema?.prerequisito_tema_id, tema?.id]);
 
   if (loadingTema || !tema) {
-    return <p className="text-atenas-muted text-lg">Cargando...</p>;
+    return <SkeletonLines lines={5} />;
   }
   if (authLoading || !profile) {
     return <p className="text-atenas-muted text-lg">Cargando perfil...</p>;
@@ -202,6 +179,11 @@ export default function TemaView() {
     return (
       <li className="rounded-xl border border-atenas-mist-border bg-white p-4 shadow-card">
         {r.title && <h3 className="font-medium text-atenas-ink mb-2">{r.title}</h3>}
+        {r.tipo === 'texto' && (
+          <div className="text-atenas-ink whitespace-pre-wrap text-base leading-relaxed">
+            {r.contenido || r.url}
+          </div>
+        )}
         {r.tipo === 'imagen' && (
           <img src={r.url} alt={r.title ?? ''} className="max-w-full rounded-lg mt-2" loading="lazy" />
         )}
@@ -209,12 +191,30 @@ export default function TemaView() {
           <img src={r.url} alt={r.title ?? 'Mapa'} className="max-w-full rounded-lg mt-2" loading="lazy" />
         )}
         {r.tipo === 'video' && <video src={r.url} controls className="max-w-full rounded-lg mt-2" />}
+        {r.tipo === 'audio' && <audio src={r.url} controls className="w-full mt-2" />}
+        {r.tipo === 'pdf' && r.url && (
+          <div className="mt-2 space-y-2">
+            <a
+              href={r.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-atenas-blue hover:underline"
+            >
+              Descargar PDF
+            </a>
+            <iframe
+              src={r.url}
+              title={r.title ?? 'Documento PDF'}
+              className="hidden sm:block w-full min-h-[320px] rounded-lg border border-atenas-mist-border"
+            />
+          </div>
+        )}
       </li>
     );
   }
 
-  const hasTheoryBlock = !!(tema.content || recursosTeoria.length > 0);
-  const hasVideoBlock = recursosVideo.length > 0;
+  const hasTheoryBlock = !!(tema.content || recursosTeoria.length > 0 || recursosPdf.length > 0);
+  const hasVideoBlock = recursosVideo.length > 0 || recursosAudio.length > 0;
   const hasActividades = actividades.filter((a) => a.publicada).length > 0;
   const hasEvaluaciones =
     evaluaciones.filter((e) =>
@@ -275,7 +275,7 @@ export default function TemaView() {
       )}
 
       {hasTheoryBlock ? (
-        <SectionShell
+        <SectionAccordion
           step={stepTheory}
           title="Teoría"
           description="Texto base y material de apoyo visual (imágenes y mapas)."
@@ -296,13 +296,24 @@ export default function TemaView() {
                   ))}
                 </ul>
               )}
+              {recursosPdf.length > 0 && (
+                <ul className="space-y-4 list-none m-0 p-0 mt-6">
+                  {recursosPdf.map((r) => (
+                    <RecursoItem key={r.id} r={r} />
+                  ))}
+                </ul>
+              )}
             </>
           )}
-        </SectionShell>
+        </SectionAccordion>
       ) : null}
 
       {hasVideoBlock ? (
-        <SectionShell step={stepVideo} title="Video" description="Mira el material audiovisual del tema.">
+        <SectionAccordion
+          step={stepVideo}
+          title="Video y audio"
+          description="Mira y escucha el material audiovisual del tema."
+        >
           {loadingRecursos ? (
             <p className="text-atenas-muted">Cargando recursos...</p>
           ) : (
@@ -310,15 +321,18 @@ export default function TemaView() {
               {recursosVideo.map((r) => (
                 <RecursoItem key={r.id} r={r} />
               ))}
+              {recursosAudio.map((r) => (
+                <RecursoItem key={r.id} r={r} />
+              ))}
             </ul>
           )}
-        </SectionShell>
+        </SectionAccordion>
       ) : null}
 
       {loadingActividades ? (
         <p className="text-atenas-muted mt-4">Cargando actividades...</p>
       ) : hasActividades ? (
-        <SectionShell
+        <SectionAccordion
           step={stepAct}
           title="Actividades"
           description="Practica con ejercicios interactivos publicados."
@@ -340,7 +354,7 @@ export default function TemaView() {
                 </li>
               ))}
           </ul>
-        </SectionShell>
+        </SectionAccordion>
       ) : null}
 
       {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion !== 'inicio' && esEstudiante ? (
@@ -352,7 +366,7 @@ export default function TemaView() {
       {loadingEvaluaciones ? (
         <p className="text-atenas-muted mt-4">Cargando evaluaciones...</p>
       ) : hasEvaluaciones ? (
-        <SectionShell
+        <SectionAccordion
           step={stepEval}
           title="Evaluación"
           description="Demuestra lo aprendido con cuestionarios o retos."
@@ -376,7 +390,7 @@ export default function TemaView() {
               </li>
             ))}
           </ul>
-        </SectionShell>
+        </SectionAccordion>
       ) : null}
 
       {esEstudiante ? null : <TemaMensajes temaId={tema.id} />}

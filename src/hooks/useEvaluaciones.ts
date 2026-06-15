@@ -42,6 +42,7 @@ export function useEvaluaciones(temaId: string | null) {
     publicada?: boolean;
     orden?: number;
     max_intentos?: number | null;
+    minutos_limite?: number | null;
     modo_examen?: boolean;
     ocultar_respuesta_correcta?: boolean;
     es_micro_quiz?: boolean;
@@ -59,6 +60,7 @@ export function useEvaluaciones(temaId: string | null) {
         orden: values.orden ?? 0,
         max_intentos: values.max_intentos ?? null,
         modo_examen: values.modo_examen ?? false,
+        minutos_limite: values.minutos_limite ?? null,
         ocultar_respuesta_correcta: values.ocultar_respuesta_correcta ?? false,
         es_micro_quiz: values.es_micro_quiz ?? false,
         micro_ubicacion: values.micro_ubicacion ?? 'post_contenido',
@@ -82,6 +84,7 @@ export function useEvaluaciones(temaId: string | null) {
       tema_id: string;
       max_intentos: number | null;
       modo_examen: boolean;
+      minutos_limite: number | null;
       ocultar_respuesta_correcta: boolean;
       es_micro_quiz: boolean;
       micro_ubicacion: string;

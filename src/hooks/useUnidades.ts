@@ -51,6 +51,7 @@ export function useUnidades(filtroDocente?: FiltroUnidadesDocente | null) {
     title: string;
     description?: string;
     orden?: number;
+    publicada?: boolean;
     certificado_umbral_pct?: number | null;
     cover_image_url?: string | null;
     cover_video_url?: string | null;
@@ -64,6 +65,7 @@ export function useUnidades(filtroDocente?: FiltroUnidadesDocente | null) {
         title: values.title,
         description: values.description ?? null,
         orden: values.orden ?? 0,
+        publicada: values.publicada ?? false,
         certificado_umbral_pct: values.certificado_umbral_pct ?? null,
         cover_image_url: values.cover_image_url ?? null,
         cover_video_url: values.cover_video_url ?? null,
@@ -91,6 +93,7 @@ export function useUnidades(filtroDocente?: FiltroUnidadesDocente | null) {
       title: string;
       description: string | null;
       orden: number;
+      publicada: boolean;
       certificado_umbral_pct: number | null;
       cover_image_url: string | null;
       cover_video_url: string | null;

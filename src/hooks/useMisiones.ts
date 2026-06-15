@@ -10,6 +10,7 @@ export type Mision = {
   orden: number;
   totalPasos: number;
   pasosCompletados: number;
+  tiempoEstudioSegundos: number;
 };
 
 type EstadoMisiones = {
@@ -37,7 +38,7 @@ export function useMisionesAlumno(): EstadoMisiones {
       setError(null);
       try {
         // Una misión por unidad: pasos = temas de la unidad
-        const [unidadesRes, temasRes, actRes, evalRes] = await Promise.all([
+        const [unidadesRes, temasRes, actRes, evalRes, progresoRes] = await Promise.all([
           supabase
             .from('unidades')
             .select('id, title, description, orden')
@@ -51,12 +52,17 @@ export function useMisionesAlumno(): EstadoMisiones {
             .from('evaluacion_intentos')
             .select('evaluacion_id')
             .eq('user_id', user.id),
+          supabase
+            .from('progreso_tema')
+            .select('tema_id, tiempo_estudio_segundos')
+            .eq('user_id', user.id),
         ]);
         if (cancelled) return;
         if (unidadesRes.error) throw unidadesRes.error;
         if (temasRes.error) throw temasRes.error;
         if (actRes.error) throw actRes.error;
         if (evalRes.error) throw evalRes.error;
+        if (progresoRes.error) throw progresoRes.error;
 
         const unidades = (unidadesRes.data ?? []) as {
           id: string;
@@ -65,6 +71,19 @@ export function useMisionesAlumno(): EstadoMisiones {
           orden: number | null;
         }[];
         const temas = (temasRes.data ?? []) as { id: string; unidad_id: string }[];
+        const temaToUnidad = new Map(temas.map((t) => [t.id, t.unidad_id]));
+        const tiempoPorUnidad = new Map<string, number>();
+        for (const row of (progresoRes.data ?? []) as {
+          tema_id: string;
+          tiempo_estudio_segundos?: number;
+        }[]) {
+          const unidadId = temaToUnidad.get(row.tema_id);
+          if (!unidadId) continue;
+          tiempoPorUnidad.set(
+            unidadId,
+            (tiempoPorUnidad.get(unidadId) ?? 0) + (row.tiempo_estudio_segundos ?? 0)
+          );
+        }
 
         // Para estimar pasos completados por unidad,
         // contamos cuántos temas tienen al menos una actividad o evaluación completada.
@@ -115,6 +134,7 @@ export function useMisionesAlumno(): EstadoMisiones {
             orden: u.orden ?? 0,
             totalPasos,
             pasosCompletados,
+            tiempoEstudioSegundos: tiempoPorUnidad.get(u.id) ?? 0,
           };
         });
 

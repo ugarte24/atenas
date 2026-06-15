@@ -17,6 +17,7 @@ export interface Evaluacion {
   /** null/undefined = ilimitado */
   max_intentos?: number | null;
   modo_examen?: boolean;
+  minutos_limite?: number | null;
   /** Si true, no se muestra la opción correcta al fallar */
   ocultar_respuesta_correcta?: boolean;
   /** Si true, se muestra como micro-quiz en la vista de tema (tarjeta rápida) */
@@ -33,4 +34,6 @@ export interface EvaluacionIntento {
   puntuacion: number;
   aprobado: boolean;
   completado_at: string;
+  tiempo_segundos?: number | null;
+  numero_intento?: number | null;
 }

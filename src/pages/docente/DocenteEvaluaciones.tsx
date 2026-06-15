@@ -39,11 +39,13 @@ export default function DocenteEvaluaciones() {
   const [busquedaEv, setBusquedaEv] = useState('');
   const [maxIntentos, setMaxIntentos] = useState('');
   const [modoExamen, setModoExamen] = useState(false);
+  const [minutosLimite, setMinutosLimite] = useState('30');
   const [ocultarCorrecta, setOcultarCorrecta] = useState(false);
   const [esMicroQuiz, setEsMicroQuiz] = useState(false);
   const [microUbicacion, setMicroUbicacion] = useState<'inicio' | 'post_contenido'>('post_contenido');
   const [editMaxIntentos, setEditMaxIntentos] = useState('');
   const [editModoExamen, setEditModoExamen] = useState(false);
+  const [editMinutosLimite, setEditMinutosLimite] = useState('30');
   const [editOcultarCorrecta, setEditOcultarCorrecta] = useState(false);
   const [editEsMicroQuiz, setEditEsMicroQuiz] = useState(false);
   const [editMicroUbicacion, setEditMicroUbicacion] = useState<'inicio' | 'post_contenido'>('post_contenido');
@@ -202,6 +204,7 @@ export default function DocenteEvaluaciones() {
     setEditPlantillaId('');
     setEditMaxIntentos(ev.max_intentos != null ? String(ev.max_intentos) : '');
     setEditModoExamen(ev.modo_examen === true);
+    setEditMinutosLimite(ev.minutos_limite != null ? String(ev.minutos_limite) : '30');
     setEditOcultarCorrecta(ev.ocultar_respuesta_correcta === true);
     setEditEsMicroQuiz(ev.es_micro_quiz === true);
     setEditMicroUbicacion((ev.micro_ubicacion ?? 'post_contenido') as 'inicio' | 'post_contenido');
@@ -219,6 +222,7 @@ export default function DocenteEvaluaciones() {
         return;
       }
       const m = editMaxIntentos.trim() ? parseInt(editMaxIntentos, 10) : null;
+      const ml = editMinutosLimite.trim() ? parseInt(editMinutosLimite, 10) : null;
       await update(editing.id, {
         title: editTitle.trim(),
         descripcion: editDescripcion.trim() || null,
@@ -226,6 +230,8 @@ export default function DocenteEvaluaciones() {
         preguntas,
         max_intentos: m != null && !Number.isNaN(m) && m >= 1 ? m : null,
         modo_examen: editModoExamen,
+        minutos_limite:
+          editModoExamen && ml != null && !Number.isNaN(ml) && ml >= 1 ? ml : null,
         ocultar_respuesta_correcta: editOcultarCorrecta,
         es_micro_quiz: editEsMicroQuiz,
         micro_ubicacion: editMicroUbicacion,
@@ -249,6 +255,7 @@ export default function DocenteEvaluaciones() {
         return;
       }
       const m = maxIntentos.trim() ? parseInt(maxIntentos, 10) : null;
+      const ml = minutosLimite.trim() ? parseInt(minutosLimite, 10) : null;
       await create({
         tema_id: temaId,
         title: title.trim(),
@@ -258,6 +265,7 @@ export default function DocenteEvaluaciones() {
         orden: evaluaciones.length,
         max_intentos: m != null && !Number.isNaN(m) && m >= 1 ? m : null,
         modo_examen: modoExamen,
+        minutos_limite: modoExamen && ml != null && !Number.isNaN(ml) && ml >= 1 ? ml : null,
         ocultar_respuesta_correcta: ocultarCorrecta,
         es_micro_quiz: esMicroQuiz,
         micro_ubicacion: microUbicacion,
@@ -267,6 +275,7 @@ export default function DocenteEvaluaciones() {
       setUmbralAprobado(70);
       setMaxIntentos('');
       setModoExamen(false);
+      setMinutosLimite('30');
       setOcultarCorrecta(false);
       setEsMicroQuiz(false);
       setMicroUbicacion('post_contenido');
@@ -300,7 +309,7 @@ export default function DocenteEvaluaciones() {
   }
 
   if (loadingTema || !tema) {
-    return <p className="text-slate-600">Cargando...</p>;
+    return <p className="text-atenas-muted">Cargando...</p>;
   }
 
   const preguntasPreview = previewEvaluacion
@@ -326,9 +335,9 @@ export default function DocenteEvaluaciones() {
         >
           <div className="mb-4">
             {previewEvaluacion.descripcion && (
-              <p className="text-slate-600 text-sm mb-1">{previewEvaluacion.descripcion}</p>
+              <p className="text-atenas-muted text-sm mb-1">{previewEvaluacion.descripcion}</p>
             )}
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-atenas-muted">
               Umbral para aprobar: {previewEvaluacion.umbral_aprobado}%
             </p>
           </div>
@@ -346,12 +355,12 @@ export default function DocenteEvaluaciones() {
       <button
         type="button"
         onClick={() => navigate(`/docente/unidades/${tema.unidad_id}`)}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-[#e6edf5]"
-        style={{ color: '#003366' }}
+        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-atenas-mist"
+        
       >
         ← Temas
       </button>
-      <h2 className="text-xl font-bold text-slate-900 mb-4">{tema.title} — Evaluaciones</h2>
+      <h2 className="text-xl font-bold text-atenas-ink mb-4">{tema.title} — Evaluaciones</h2>
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="search"
@@ -374,8 +383,8 @@ export default function DocenteEvaluaciones() {
       </div>
 
       {editing ? (
-        <form onSubmit={handleSaveEdit} className="mb-6 card p-5 space-y-4 max-w-2xl border-2 border-[#003366]/20">
-          <p className="text-sm font-semibold text-slate-800">Editar evaluación</p>
+        <form onSubmit={handleSaveEdit} className="mb-6 card p-5 space-y-4 max-w-2xl border-2 border-atenas-ink/20">
+          <p className="text-sm font-semibold text-atenas-ink">Editar evaluación</p>
           <label className="label">Sobrescribir con plantilla (opcional)</label>
           <select
             value={editPlantillaId}
@@ -435,15 +444,30 @@ export default function DocenteEvaluaciones() {
               className="input-field max-w-[140px]"
             />
           </div>
-          <label className="flex items-center gap-2 text-slate-800">
+          <label className="flex items-center gap-2 text-atenas-ink">
             <input
               type="checkbox"
               checked={editModoExamen}
               onChange={(e) => setEditModoExamen(e.target.checked)}
             />
-            Modo examen (30 min, solo nota al terminar)
+            Modo examen (tiempo limitado, solo nota al terminar)
           </label>
-          <label className="flex items-center gap-2 text-slate-800">
+          {editModoExamen ? (
+            <div>
+              <label htmlFor="edit-min-lim" className="label">
+                Minutos límite
+              </label>
+              <input
+                id="edit-min-lim"
+                type="number"
+                min={1}
+                value={editMinutosLimite}
+                onChange={(e) => setEditMinutosLimite(e.target.value)}
+                className="input-field max-w-[140px]"
+              />
+            </div>
+          ) : null}
+          <label className="flex items-center gap-2 text-atenas-ink">
             <input
               type="checkbox"
               checked={editOcultarCorrecta}
@@ -451,7 +475,7 @@ export default function DocenteEvaluaciones() {
             />
             No mostrar la respuesta correcta si falla
           </label>
-          <label className="flex items-center gap-2 text-slate-800">
+          <label className="flex items-center gap-2 text-atenas-ink">
             <input
               type="checkbox"
               checked={editEsMicroQuiz}
@@ -549,7 +573,7 @@ export default function DocenteEvaluaciones() {
               className="input-field max-w-[140px]"
             />
           </div>
-          <label className="flex items-center gap-2 text-slate-800">
+          <label className="flex items-center gap-2 text-atenas-ink">
             <input
               type="checkbox"
               checked={modoExamen}
@@ -557,7 +581,22 @@ export default function DocenteEvaluaciones() {
             />
             Modo examen
           </label>
-          <label className="flex items-center gap-2 text-slate-800">
+          {modoExamen ? (
+            <div>
+              <label htmlFor="new-min-lim" className="label">
+                Minutos límite
+              </label>
+              <input
+                id="new-min-lim"
+                type="number"
+                min={1}
+                value={minutosLimite}
+                onChange={(e) => setMinutosLimite(e.target.value)}
+                className="input-field max-w-[140px]"
+              />
+            </div>
+          ) : null}
+          <label className="flex items-center gap-2 text-atenas-ink">
             <input
               type="checkbox"
               checked={ocultarCorrecta}
@@ -565,7 +604,7 @@ export default function DocenteEvaluaciones() {
             />
             Ocultar respuesta correcta
           </label>
-          <label className="flex items-center gap-2 text-slate-800">
+          <label className="flex items-center gap-2 text-atenas-ink">
             <input
               type="checkbox"
               checked={esMicroQuiz}
@@ -593,7 +632,7 @@ export default function DocenteEvaluaciones() {
             className="input-field font-mono text-sm min-h-[240px]"
             rows={14}
           />
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-atenas-muted">
             Formato: array de {"{ enunciado, opciones: [ { texto, correcta } ] }"}
           </p>
           <div className="flex gap-3">
@@ -618,7 +657,7 @@ export default function DocenteEvaluaciones() {
       )}
 
       {loading ? (
-        <p className="text-slate-600">Cargando evaluaciones...</p>
+        <p className="text-atenas-muted">Cargando evaluaciones...</p>
       ) : (
         <ul className="space-y-2">
           {evaluacionesFiltradas.map((ev) => {
@@ -630,7 +669,7 @@ export default function DocenteEvaluaciones() {
                   type="button"
                   disabled={reordenando || realIdx <= 0}
                   onClick={() => moverEvaluacion(ev.id, 'up')}
-                  className="min-h-touch min-w-touch rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
                   aria-label="Subir"
                 >
                   ↑
@@ -639,16 +678,16 @@ export default function DocenteEvaluaciones() {
                   type="button"
                   disabled={reordenando || realIdx < 0 || realIdx >= evaluacionesOrdenadas.length - 1}
                   onClick={() => moverEvaluacion(ev.id, 'down')}
-                  className="min-h-touch min-w-touch rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
                   aria-label="Bajar"
                 >
                   ↓
                 </button>
               </div>
               <div className="flex-1 min-w-[140px]">
-                <span className="font-medium text-slate-900 block">{ev.title}</span>
+                <span className="font-medium text-atenas-ink block">{ev.title}</span>
                 {statsPorEvaluacion[ev.id] && (
-                  <span className="text-xs text-slate-500 mt-0.5 block">
+                  <span className="text-xs text-atenas-muted mt-0.5 block">
                     {statsPorEvaluacion[ev.id].alumnos === 0
                       ? 'Sin intentos aún'
                       : `${statsPorEvaluacion[ev.id].alumnos} alumno${statsPorEvaluacion[ev.id].alumnos !== 1 ? 's' : ''} · ${statsPorEvaluacion[ev.id].aprobados} aprobado${statsPorEvaluacion[ev.id].aprobados !== 1 ? 's' : ''}${
@@ -659,18 +698,18 @@ export default function DocenteEvaluaciones() {
                   </span>
                 )}
               </div>
-              <span className="text-sm text-slate-500">Umbral: {ev.umbral_aprobado}%</span>
+              <span className="text-sm text-atenas-muted">Umbral: {ev.umbral_aprobado}%</span>
               <button
                 type="button"
                 onClick={() => handleTogglePublicada(ev.id, ev.publicada)}
-                className={`badge ${ev.publicada ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}
+                className={`badge ${ev.publicada ? 'bg-emerald-100 text-emerald-800' : 'bg-atenas-mist text-atenas-muted'}`}
               >
                 {ev.publicada ? 'Publicada' : 'No publicada'}
               </button>
               <button
                 type="button"
                 onClick={() => duplicarEvaluacion(ev)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-slate-600"
+                className="text-sm font-medium hover:underline min-h-touch px-1 text-atenas-muted"
                 title="Duplicar como borrador no publicado"
               >
                 Duplicar
@@ -679,7 +718,7 @@ export default function DocenteEvaluaciones() {
                 type="button"
                 onClick={() => openEdit(ev)}
                 className="text-sm font-medium hover:underline min-h-touch px-1"
-                style={{ color: '#003366' }}
+                
               >
                 Editar
               </button>
@@ -697,7 +736,7 @@ export default function DocenteEvaluaciones() {
               >
                 Ver alumnos
               </button>
-              <Link to={`/evaluaciones/${ev.id}`} className="text-sm font-medium hover:underline" style={{ color: '#003366' }} target="_blank" rel="noopener noreferrer">
+              <Link to={`/evaluaciones/${ev.id}`} className="text-sm font-medium hover:underline"  target="_blank" rel="noopener noreferrer">
                 Ver alumno
               </Link>
               <button type="button" onClick={() => handleRemove(ev.id)} className="text-sm text-red-600 hover:text-red-700">
@@ -709,13 +748,13 @@ export default function DocenteEvaluaciones() {
         </ul>
       )}
       {evaluaciones.length === 0 && !adding && !editing && !loading && (
-        <p className="text-slate-500 mt-4">No hay evaluaciones. Crea una con el botón anterior.</p>
+        <p className="text-atenas-muted mt-4">No hay evaluaciones. Crea una con el botón anterior.</p>
       )}
 
       {!loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length > 0 && (
-        <section className="mt-8 card p-5 max-w-2xl space-y-3 border border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-800">Mover evaluación a otro tema</h3>
-          <p className="text-xs text-slate-500">
+        <section className="mt-8 card p-5 max-w-2xl space-y-3 border border-atenas-mist-border">
+          <h3 className="text-sm font-semibold text-atenas-ink">Mover evaluación a otro tema</h3>
+          <p className="text-xs text-atenas-muted">
             Solo temas de la misma unidad. La evaluación se coloca al final del tema destino.
           </p>
           <label className="label mb-0">Evaluación</label>
@@ -756,7 +795,7 @@ export default function DocenteEvaluaciones() {
       )}
 
       {!loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length === 0 && (
-        <p className="text-xs text-slate-500 mt-6 max-w-2xl">
+        <p className="text-xs text-atenas-muted mt-6 max-w-2xl">
           Para mover evaluaciones a otro tema, crea al menos un tema más en esta unidad.
         </p>
       )}

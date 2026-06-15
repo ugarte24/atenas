@@ -58,7 +58,7 @@ export function Memoria({ config, onSubmit, disabled }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-slate-600">Encuentra las parejas. Haz clic en dos tarjetas.</p>
+      <p className="text-atenas-muted">Encuentra las parejas. Haz clic en dos tarjetas.</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {cards.map((card) => {
           const show = flippedIds.includes(card.id) || matchedPairs.has(card.pairId);
@@ -71,7 +71,7 @@ export function Memoria({ config, onSubmit, disabled }: Props) {
               className={`min-h-[80px] p-3 rounded-lg border-2 text-sm text-left transition ${
                 show
                   ? 'border-primary-500 bg-white'
-                  : 'border-slate-200 bg-primary-50 hover:border-primary-300'
+                  : 'border-atenas-mist-border bg-primary-50 hover:border-primary-300'
               }`}
             >
               {show ? card.text : '?'}
@@ -79,7 +79,7 @@ export function Memoria({ config, onSubmit, disabled }: Props) {
           );
         })}
       </div>
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-atenas-muted">
         Aciertos: {matchedPairs.size} / {totalPairs} · Intentos: {intentos}
       </p>
       {!enviado && (allMatched || intentos >= totalPairs * 2) && (
@@ -92,7 +92,7 @@ export function Memoria({ config, onSubmit, disabled }: Props) {
         </button>
       )}
       {enviado && (
-        <p className="text-lg font-medium text-slate-900">Puntuación: {puntuacion}%</p>
+        <p className="text-lg font-medium text-atenas-ink">Puntuación: {puntuacion}%</p>
       )}
     </div>
   );

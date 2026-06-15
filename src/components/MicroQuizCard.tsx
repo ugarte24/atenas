@@ -50,8 +50,13 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
   }, [user, evaluacion.id, sesion, tickIntentos]);
 
   const handleSubmit = useCallback(
-    async (respuestas: Record<string, unknown>, puntuacion: number, aprobado: boolean) => {
-      const ok = await guardarIntento(respuestas, puntuacion, aprobado);
+    async (
+      respuestas: Record<string, unknown>,
+      puntuacion: number,
+      aprobado: boolean,
+      tiempoSegundos?: number
+    ) => {
+      const ok = await guardarIntento(respuestas, puntuacion, aprobado, tiempoSegundos);
       setUltimoGuardadoOk(ok);
       if (ok) setTickIntentos((t) => t + 1);
     },
@@ -68,12 +73,12 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
   if (!evaluacion.publicada) return null;
 
   return (
-    <section className="card p-4 sm:p-5 border border-[#003366]/20 bg-white">
+    <section className="card p-4 sm:p-5 border border-atenas-ink/20 bg-white">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-lg font-bold text-slate-900">Reto rápido</h3>
-          <p className="text-sm text-slate-600 mt-1 line-clamp-2">{evaluacion.title}</p>
-          {evaluacion.descripcion ? <p className="text-xs text-slate-500 mt-1">{evaluacion.descripcion}</p> : null}
+          <h3 className="text-lg font-bold text-atenas-ink">Reto rápido</h3>
+          <p className="text-sm text-atenas-muted mt-1 line-clamp-2">{evaluacion.title}</p>
+          {evaluacion.descripcion ? <p className="text-xs text-atenas-muted mt-1">{evaluacion.descripcion}</p> : null}
         </div>
         <button
           type="button"
@@ -98,7 +103,7 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
         ) : null}
 
         {!abierto ? (
-          <div className="text-sm text-slate-700">
+          <div className="text-sm text-atenas-muted-strong">
             {ilimitado ? (
               <span>Cuando quieras, responde y mejora tu puntaje.</span>
             ) : agotado ? (
@@ -112,19 +117,19 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
             )}
           </div>
         ) : soloBloqueoInicial ? (
-          <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
-            <p className="text-slate-800 font-semibold">Máximo de intentos alcanzado</p>
+          <div className="p-4 border border-atenas-mist-border rounded-xl bg-atenas-page">
+            <p className="text-atenas-ink font-semibold">Máximo de intentos alcanzado</p>
             {mejorPuntuacion != null ? (
-              <p className="text-sm text-slate-700 mt-1">
+              <p className="text-sm text-atenas-muted-strong mt-1">
                 Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.
               </p>
             ) : (
-              <p className="text-sm text-slate-700 mt-1">Aún no tienes resultados guardados.</p>
+              <p className="text-sm text-atenas-muted-strong mt-1">Aún no tienes resultados guardados.</p>
             )}
           </div>
         ) : (
-          <div className="card p-4 sm:p-5 border border-slate-200 bg-white">
-            <div className="mb-3 text-sm text-slate-700">
+          <div className="card p-4 sm:p-5 border border-atenas-mist-border bg-white">
+            <div className="mb-3 text-sm text-atenas-muted-strong">
               Para aprobar necesitas al menos <strong>{evaluacion.umbral_aprobado}%</strong>.
               {!ilimitado ? (
                 <>
@@ -147,11 +152,11 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
               onSubmit={handleSubmit}
               disabled={saving}
               feedback={feedback}
-              minutosExamen={modoExamen ? 30 : 0}
+              minutosExamen={modoExamen ? (evaluacion.minutos_limite ?? 30) : 0}
             />
 
             {ultimoGuardadoOk && (ilimitado || intentosCount < maxIntentos!) ? (
-              <div className="mt-6 pt-4 border-t border-slate-200">
+              <div className="mt-6 pt-4 border-t border-atenas-mist-border">
                 <button
                   type="button"
                   className="btn-secondary"

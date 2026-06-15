@@ -82,7 +82,7 @@ export function AuthLoadingSplash() {
         >
           Ciencias Sociales · 6.º Primaria
         </motion.p>
-        <p className="text-slate-500 text-sm mt-4 flex justify-center items-center gap-0.5" role="status" aria-live="polite">
+        <p className="text-atenas-muted text-sm mt-4 flex justify-center items-center gap-0.5" role="status" aria-live="polite">
           <span>Cargando</span>
           {[0, 1, 2].map((i) => (
             <motion.span

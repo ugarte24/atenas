@@ -23,7 +23,7 @@ export function UnidadMediaBlock({ coverVideoUrl, className = '' }: Props) {
 
   if (info.kind === 'iframe') {
     return (
-      <div className={`rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-black ${className}`}>
+      <div className={`rounded-2xl overflow-hidden shadow-lg border border-atenas-mist-border bg-black ${className}`}>
         <div className="aspect-video w-full">
           <iframe
             src={info.src}
@@ -38,7 +38,7 @@ export function UnidadMediaBlock({ coverVideoUrl, className = '' }: Props) {
   }
 
   return (
-    <div className={`rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-black ${className}`}>
+    <div className={`rounded-2xl overflow-hidden shadow-lg border border-atenas-mist-border bg-black ${className}`}>
       <video src={info.src} controls className="w-full max-h-[480px]" playsInline>
         Tu navegador no reproduce vídeo HTML5.
       </video>

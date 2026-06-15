@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useEstudianteDashboard } from '../hooks/useEstudianteDashboard';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Input } from '../components/ui/Input';
 import type { UserRole } from '../types';
 
 type Tab = 'datos' | 'progreso';
@@ -32,7 +34,7 @@ export default function Perfil() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 px-1 sm:px-0">
-      <h1 className="text-page-title font-bold text-atenas-ink">Mi perfil</h1>
+      <PageHeader title="Mi perfil" description="Actualiza tus datos y revisa tu progreso." />
 
       {esEstudiante && (
         <div
@@ -77,30 +79,21 @@ export default function Perfil() {
           className="card p-5 sm:p-8"
         >
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="email" className="label">
-                Correo
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={profile.email}
-                disabled
-                className="input-field bg-atenas-mist text-atenas-muted cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label htmlFor="fullName" className="label">
-                Nombre completo
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="input-field"
-              />
-            </div>
+            <Input
+              label="Correo"
+              id="email"
+              type="email"
+              value={profile.email}
+              disabled
+              className="bg-atenas-mist text-atenas-muted cursor-not-allowed"
+            />
+            <Input
+              label="Nombre completo"
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
             <div className="flex items-center gap-2">
               <span className="text-sm text-atenas-muted">Rol:</span>
               <span className="badge-role capitalize">{(profile.role as UserRole)}</span>

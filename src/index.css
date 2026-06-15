@@ -15,6 +15,8 @@
     --atenas-text-body: #1f2937;
     --atenas-text-muted: #64748b;
     --atenas-text-muted-strong: #475569;
+    --space-page-x: 1rem;
+    --radius-card: 1rem;
   }
   html {
     font-size: 18px;
@@ -193,12 +195,20 @@
 }
 
 @layer utilities {
-  /** Nav horizontal en móvil sin barra visible */
   .scrollbar-nav-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
   .scrollbar-nav-hide::-webkit-scrollbar {
     display: none;
+  }
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+  .page-container {
+    @apply max-w-6xl w-full mx-auto px-4 sm:px-6;
   }
 }

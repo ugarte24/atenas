@@ -137,7 +137,7 @@ export default function UnidadTemas() {
                     className="flex items-center gap-4 p-5 rounded-2xl border-2 border-atenas-mist-border bg-atenas-mist/80 opacity-95"
                     aria-disabled="true"
                   >
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-500 text-white font-bold">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-atenas-page0 text-white font-bold">
                       {i + 1}
                     </div>
                     <div>

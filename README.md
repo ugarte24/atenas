@@ -54,6 +54,16 @@ Copia `.env.example` a `.env` y rellena las variables (ver siguiente sección). 
    | 3 | `supabase/migrations/003_actividades_intentos.sql` | Tablas: `actividades`, `actividad_intentos` |
    | 4 | `supabase/migrations/004_evaluaciones.sql` | Tablas: `evaluaciones`, `evaluacion_intentos` |
    | 5 | `supabase/migrations/005_profiles_activo_admin.sql` | Columna `activo` en `profiles` y política para que admin actualice perfiles |
+   | 6+ | Ver `supabase/README_MIGRACIONES.md` y migraciones `20250318_*` … `20260615_*` | Features, gamificación, RLS, **PRD v1.0** (unidades publicadas, recursos ampliados, tiempo en evaluaciones, tiempo de estudio, permisos admin) |
+
+   **Migraciones PRD (jun 2026)** — ejecutar después de las anteriores:
+   - `20260615_unidades_publicada.sql`
+   - `20260615_recursos_tipos_ampliados.sql`
+   - `20260615_evaluacion_intentos_tiempo.sql`
+   - `20260615_progreso_tema_tiempo_estudio.sql`
+   - `20260615_rls_profiles_admin_activo.sql`
+
+   Trazabilidad requisito ↔ código: [`docs/PRD_TRAZABILIDAD.md`](docs/PRD_TRAZABILIDAD.md).
 
 4. **Opcional (recomendado si solo docente/admin dan de alta):** En Authentication → Settings desactiva **Enable email confirmations** para que los usuarios creados desde Admin puedan entrar sin confirmar correo.
 
@@ -194,6 +204,7 @@ El certificado de unidad completada se descarga en **PDF** en **carta horizontal
 | **5** | Panel docente: vista **Progreso de estudiantes**. Admin: gestión de usuarios (alta, edición, activar/desactivar). Columna `activo` en perfiles. |
 | **6** | Pulido: tipografía y botones adecuados para primaria (44px touch), branding ATENAS, mensajes amigables, responsive y focus visible. |
 | **7** | Misiones (Home), plantillas, **edición**, **reordenar**, **duplicar**, **mover a otro tema**, **vista previa** (modal docente) y **estadísticas** por ítem (intentos, medias, aprobados en evaluaciones). |
+| **8** | **Alineación PRD v1.0:** publicar/despublicar unidades; recursos texto/PDF/audio; tiempo en evaluaciones e intentos; tiempo de estudio en progreso; DnD en ordenar secuencia; gestión de usuarios solo admin (RLS). Ver `docs/PRD_TRAZABILIDAD.md`. |
 
 ---
 

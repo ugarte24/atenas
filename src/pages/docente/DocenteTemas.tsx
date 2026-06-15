@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { SkeletonLines } from '../../components/ui/Skeleton';
 import { useUnidad } from '../../hooks/useUnidad';
 import { useTemas } from '../../hooks/useTemas';
 
@@ -75,7 +77,7 @@ export default function DocenteTemas() {
   }
 
   if (loadingUnidad || !unidad) {
-    return <p className="text-slate-600">Cargando...</p>;
+    return <SkeletonLines lines={3} />;
   }
 
   return (
@@ -83,13 +85,21 @@ export default function DocenteTemas() {
       <button
         type="button"
         onClick={() => navigate('/docente/contenidos')}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-[#e6edf5]"
- style={{ color: '#003366' }}
+        className="text-sm font-medium text-atenas-ink mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-atenas-mist"
       >
         ← Unidades
       </button>
-      <h2 className="text-xl font-bold text-slate-900 mb-1">{unidad.title}</h2>
-      <p className="text-slate-600 text-sm mb-6">Temas de esta unidad</p>
+      <PageHeader
+        title={unidad.title}
+        description="Temas de esta unidad"
+        actions={
+          !creating ? (
+            <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
+              + Nuevo tema
+            </button>
+          ) : undefined
+        }
+      />
 
       {creating ? (
         <form onSubmit={handleCreate} className="mb-6 card p-5 space-y-3 max-w-md">
@@ -133,7 +143,7 @@ export default function DocenteTemas() {
       )}
 
       {loading ? (
-        <p className="text-slate-600">Cargando temas...</p>
+        <p className="text-atenas-muted">Cargando temas...</p>
       ) : (
         <ul className="space-y-2">
           {temas.map((t) => (
@@ -175,11 +185,11 @@ export default function DocenteTemas() {
                 </form>
               ) : (
                 <>
-                  <span className="flex-1 font-medium text-slate-900">{t.title}</span>
-                  <Link to={`/docente/temas/${t.id}`} className="text-sm font-medium hover:underline" style={{ color: '#003366' }}>Recursos</Link>
-                  <Link to={`/docente/temas/${t.id}/actividades`} className="text-sm font-medium hover:underline" style={{ color: '#003366' }}>Actividades</Link>
-                  <Link to={`/docente/temas/${t.id}/evaluaciones`} className="text-sm font-medium hover:underline" style={{ color: '#003366' }}>Evaluaciones</Link>
-                  <button type="button" onClick={() => startEdit(t)} className="text-sm text-slate-600 hover:text-slate-800">Editar</button>
+                  <span className="flex-1 font-medium text-atenas-ink">{t.title}</span>
+                  <Link to={`/docente/temas/${t.id}`} className="text-sm font-medium hover:underline" >Recursos</Link>
+                  <Link to={`/docente/temas/${t.id}/actividades`} className="text-sm font-medium hover:underline" >Actividades</Link>
+                  <Link to={`/docente/temas/${t.id}/evaluaciones`} className="text-sm font-medium hover:underline" >Evaluaciones</Link>
+                  <button type="button" onClick={() => startEdit(t)} className="text-sm text-atenas-muted hover:text-atenas-ink">Editar</button>
                   <button type="button" onClick={() => handleRemove(t.id)} className="text-sm text-red-600 hover:text-red-700">Eliminar</button>
                 </>
               )}
@@ -188,7 +198,7 @@ export default function DocenteTemas() {
         </ul>
       )}
       {temas.length === 0 && !creating && !loading && (
-        <p className="text-slate-500 mt-4">No hay temas. Crea uno para empezar.</p>
+        <p className="text-atenas-muted mt-4">No hay temas. Crea uno para empezar.</p>
       )}
     </div>
   );

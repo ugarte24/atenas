@@ -51,9 +51,10 @@ export default function EvaluacionView() {
     async (
       respuestas: Record<string, unknown>,
       puntuacion: number,
-      aprobado: boolean
+      aprobado: boolean,
+      tiempoSegundos?: number
     ) => {
-      const ok = await guardarIntento(respuestas, puntuacion, aprobado);
+      const ok = await guardarIntento(respuestas, puntuacion, aprobado, tiempoSegundos);
       setUltimoGuardadoOk(ok);
       if (ok) setTickIntentos((t) => t + 1);
     },
@@ -90,7 +91,7 @@ export default function EvaluacionView() {
       : 'completo';
 
   return (
-    <div className="max-w-2xl mx-auto px-1 sm:px-0">
+    <div className="max-w-lg mx-auto px-1 sm:px-0 pb-24">
       <button
         type="button"
         onClick={() => navigate(-1)}
@@ -159,7 +160,9 @@ export default function EvaluacionView() {
             onSubmit={handleSubmit}
             disabled={saving}
             feedback={feedback}
-            minutosExamen={modoExamen ? 30 : 0}
+            minutosExamen={
+              modoExamen ? (evaluacion.minutos_limite ?? 30) : 0
+            }
           />
           {ultimoGuardadoOk && (ilimitado || intentosCount < maxIntentos!) && (
             <div className="mt-6 pt-4 border-t border-atenas-mist-border">

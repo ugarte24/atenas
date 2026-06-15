@@ -11,18 +11,29 @@ export function useEvaluacionIntento(evaluacionId: string | null) {
     async (
       respuestas: Record<string, unknown>,
       puntuacion: number,
-      aprobado: boolean
+      aprobado: boolean,
+      tiempoSegundos?: number
     ): Promise<boolean> => {
       if (!user || !evaluacionId) return false;
       setSaving(true);
       setError(null);
       try {
+        const { count } = await supabase
+          .from('evaluacion_intentos')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('evaluacion_id', evaluacionId);
+
+        const numeroIntento = (count ?? 0) + 1;
+
         const { error: e } = await supabase.from('evaluacion_intentos').insert({
           user_id: user.id,
           evaluacion_id: evaluacionId,
           respuestas,
           puntuacion,
           aprobado,
+          tiempo_segundos: tiempoSegundos ?? null,
+          numero_intento: numeroIntento,
           completado_at: new Date().toISOString(),
         });
         if (e) {
@@ -35,6 +46,8 @@ export function useEvaluacionIntento(evaluacionId: string | null) {
             setError(
               'Tu base aún tiene un intento único por evaluación. Ejecuta la migración en supabase/migrations/20250318_atenas_features.sql para permitir varios intentos.'
             );
+          } else if (msg.includes('max_intentos')) {
+            setError('Has alcanzado el máximo de intentos para esta evaluación.');
           } else {
             setError(msg);
           }

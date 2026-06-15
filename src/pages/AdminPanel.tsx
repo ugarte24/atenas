@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
+import { PageHeader } from '../components/ui/PageHeader';
+import { StatCard } from '../components/ui/StatCard';
+import { SkeletonLines } from '../components/ui/Skeleton';
 import { supabase } from '../lib/supabase';
 import { useProfiles } from '../hooks/useProfiles';
 import { useUnidades } from '../hooks/useUnidades';
@@ -333,31 +336,32 @@ export default function AdminPanel() {
     }
   }
 
-  if (loading) return <p className="text-atenas-muted">Cargando usuarios...</p>;
+  if (loading) {
+    return (
+      <div className="px-1 sm:px-0">
+        <PageHeader title="Gestión de usuarios" />
+        <SkeletonLines lines={5} />
+      </div>
+    );
+  }
   if (error) return <p className="text-red-600">{error}</p>;
 
   return (
     <div className="px-1 sm:px-0">
-      <h1 className="text-page-title font-bold text-atenas-ink mb-2">Gestión de usuarios</h1>
-      <p className="text-atenas-muted mb-4 sm:mb-6 text-sm sm:text-base">
-        Dar de alta estudiantes y docentes. Solo el administrador puede editar roles y desactivar cuentas.
-      </p>
+      <PageHeader
+        title="Gestión de usuarios"
+        description="Dar de alta estudiantes y docentes. Solo el administrador puede editar roles y desactivar cuentas."
+      />
 
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <div className="card p-4 border border-atenas-mist-border">
-            <p className="text-xs font-medium text-atenas-muted uppercase tracking-wide">Estudiantes activos</p>
-            <p className="text-2xl font-bold text-atenas-ink mt-1">{stats.estudiantesActivos}</p>
-          </div>
-          <div className="card p-4 border border-atenas-mist-border">
-            <p className="text-xs font-medium text-atenas-muted uppercase tracking-wide">Intentos hoy</p>
-            <p className="text-2xl font-bold text-navy mt-1">{stats.intentosHoy}</p>
-            <p className="text-xs text-atenas-muted mt-0.5">Actividades + evaluaciones</p>
-          </div>
-          <div className="card p-4 border border-atenas-mist-border">
-            <p className="text-xs font-medium text-atenas-muted uppercase tracking-wide">Intentos (7 días)</p>
-            <p className="text-2xl font-bold text-[#009975] mt-1">{stats.intentosSemana}</p>
-          </div>
+          <StatCard label="Estudiantes activos" value={stats.estudiantesActivos} />
+          <StatCard
+            label="Intentos hoy"
+            value={stats.intentosHoy}
+            hint="Actividades + evaluaciones"
+          />
+          <StatCard label="Intentos (7 días)" value={stats.intentosSemana} />
         </div>
       )}
 
@@ -490,7 +494,7 @@ export default function AdminPanel() {
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-atenas-mist-border shadow-card -mx-1 sm:mx-0">
-        <table className="w-full border-collapse bg-white table-mobile min-w-[600px]">
+        <table className="w-full border-collapse bg-white table-mobile">
           <thead>
             <tr className="bg-atenas-mist border-b border-atenas-mist-border">
               <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
@@ -574,7 +578,7 @@ export default function AdminPanel() {
                       <button
                         type="button"
                         onClick={() => startEdit(p)}
-                        className="text-sm font-medium hover:underline text-navy"
+                        className="text-sm font-medium hover:underline text-atenas-ink"
                       >
                         Editar
                       </button>

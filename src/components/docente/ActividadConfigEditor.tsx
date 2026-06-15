@@ -86,7 +86,7 @@ export function ActividadConfigEditor({ tipo, value, onChange, idPrefix = 'cfg' 
             + Opción
           </button>
         </fieldset>
-        <label className="flex items-center gap-2 text-sm text-slate-800">
+        <label className="flex items-center gap-2 text-sm text-atenas-ink">
           <input
             type="checkbox"
             checked={c.multiple === true}
@@ -107,7 +107,7 @@ export function ActividadConfigEditor({ tipo, value, onChange, idPrefix = 'cfg' 
           Parejas memoria
         </p>
         {parejas.map((p, i) => (
-          <div key={i} className="flex flex-col sm:flex-row gap-2 border border-slate-200 rounded-lg p-3">
+          <div key={i} className="flex flex-col sm:flex-row gap-2 border border-atenas-mist-border rounded-lg p-3">
             <input
               className="input-field flex-1"
               placeholder="Concepto"
@@ -228,12 +228,12 @@ export function ActividadConfigEditor({ tipo, value, onChange, idPrefix = 'cfg' 
             onChange={(e) => onChange({ ...c, instruccion: e.target.value })}
           />
         </div>
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-atenas-muted">
           Orden correcto: primero arriba, último abajo.
         </p>
         {items.map((it, i) => (
           <div key={i} className="flex gap-2 items-center">
-            <span className="text-slate-500 w-6">{i + 1}.</span>
+            <span className="text-atenas-muted w-6">{i + 1}.</span>
             <input
               className="input-field flex-1"
               value={it}
@@ -306,7 +306,7 @@ export function ActividadConfigEditor({ tipo, value, onChange, idPrefix = 'cfg' 
             onChange={(e) => onChange({ ...c, imagenUrl: e.target.value })}
           />
         </div>
-        <fieldset className="border border-slate-200 rounded-lg p-3">
+        <fieldset className="border border-atenas-mist-border rounded-lg p-3">
           <legend className="text-sm font-medium px-1">Zonas</legend>
           {zonas.map((z, i) => (
             <div key={z.id || i} className="flex flex-wrap gap-2 mb-2 items-center">
@@ -348,7 +348,7 @@ export function ActividadConfigEditor({ tipo, value, onChange, idPrefix = 'cfg' 
             + Zona
           </button>
         </fieldset>
-        <fieldset className="border border-slate-200 rounded-lg p-3">
+        <fieldset className="border border-atenas-mist-border rounded-lg p-3">
           <legend className="text-sm font-medium px-1">Elementos a ubicar</legend>
           {elementos.map((el, i) => (
             <div key={el.id || i} className="flex flex-wrap gap-2 mb-2">
@@ -425,10 +425,10 @@ export function ActividadConfigJsonToggle({
   const [err, setErr] = useState<string | null>(null);
 
   return (
-    <div className="border border-slate-200 rounded-lg p-3">
+    <div className="border border-atenas-mist-border rounded-lg p-3">
       <button
         type="button"
-        className="text-sm font-medium text-[#003366]"
+        className="text-sm font-medium text-atenas-ink"
         onClick={() => {
           setOpen((o) => !o);
           setText(JSON.stringify(config, null, 2));

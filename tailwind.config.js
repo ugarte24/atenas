@@ -20,11 +20,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
-        /** Logo / marca: clásica, alineada con el emblema de Atenea */
+        sans: ['"DM Sans"', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
         atenas: ['Cinzel', 'Georgia', 'Times New Roman', 'serif'],
-        /** Login y copy académico (serif legible) */
-        login: ['Crimson Text', 'Georgia', 'Times New Roman', 'serif'],
+        login: ['"DM Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
         /** Identidad academia ATENAS (plan híbrido) */
@@ -92,9 +90,10 @@ export default {
         'touch': '44px',
       },
       boxShadow: {
-        'card': '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+        card: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
         'card-hover': '0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
-        'elevated': '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
+        soft: '0 2px 8px -2px rgb(0 0 0 / 0.08)',
+        elevated: '0 10px 25px -5px rgb(0 0 0 / 0.1), 0 4px 10px -4px rgb(0 0 0 / 0.06)',
       },
       borderRadius: {
         'xl': '0.75rem',

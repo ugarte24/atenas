@@ -1,5 +1,17 @@
 # Migraciones ATENAS
 
+## Migraciones PRD v1.0 (2026-06-15)
+
+Ejecutar tras el resto de migraciones:
+
+1. `20260615_unidades_publicada.sql` — columna `publicada` en unidades + RLS estudiante.
+2. `20260615_recursos_tipos_ampliados.sql` — tipos texto, pdf, audio + columna `contenido`.
+3. `20260615_evaluacion_intentos_tiempo.sql` — `tiempo_segundos`, `numero_intento`, `minutos_limite`.
+4. `20260615_progreso_tema_tiempo_estudio.sql` — `tiempo_estudio_segundos` en `progreso_tema`.
+5. `20260615_rls_profiles_admin_activo.sql` — solo admin inserta perfiles; intentos solo si activo.
+
+Trazabilidad completa: [`docs/PRD_TRAZABILIDAD.md`](../docs/PRD_TRAZABILIDAD.md).
+
 ## Orden recomendado
 
 1. `migrations/20250318_atenas_features.sql` — columnas, tablas, intentos múltiples.

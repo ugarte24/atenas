@@ -30,7 +30,7 @@ const DocenteProgreso = lazy(() => import('./pages/docente/DocenteProgreso'));
 function PageLoader() {
   return (
     <div className="flex items-center justify-center min-h-[40vh]" role="status" aria-live="polite">
-      <p className="text-slate-600">Cargando…</p>
+      <p className="text-atenas-muted">Cargando…</p>
     </div>
   );
 }

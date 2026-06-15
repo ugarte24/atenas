@@ -16,6 +16,7 @@ export interface IntentoEvaluacion {
   puntuacion: number;
   aprobado: boolean;
   completado_at: string;
+  tiempo_segundos?: number | null;
 }
 
 export interface ProgresoEstudiante {
@@ -27,6 +28,7 @@ export interface ProgresoEstudiante {
   promedioActividades: number;
   promedioEvaluaciones: number;
   logrosEstimados: number;
+  tiempoEstudioSegundos: number;
 }
 
 export function useProgresoEstudiantes() {
@@ -41,12 +43,13 @@ export function useProgresoEstudiantes() {
       setLoading(true);
       setError(null);
       try {
-        const [profilesRes, actividadesRes, evaluacionesRes] = await Promise.all([
+        const [profilesRes, actividadesRes, evaluacionesRes, progresoRes] = await Promise.all([
           supabase.from('profiles').select('id, full_name, email').eq('role', 'estudiante'),
           supabase.from('actividad_intentos').select('user_id, puntuacion'),
           supabase
             .from('evaluacion_intentos')
-            .select('user_id, evaluacion_id, puntuacion, aprobado'),
+            .select('user_id, evaluacion_id, puntuacion, aprobado, tiempo_segundos'),
+          supabase.from('progreso_tema').select('user_id, tiempo_estudio_segundos'),
         ]);
 
         if (cancelled) return;
@@ -54,10 +57,31 @@ export function useProgresoEstudiantes() {
         if (profilesRes.error) throw profilesRes.error;
         if (actividadesRes.error) throw actividadesRes.error;
         if (evaluacionesRes.error) throw evaluacionesRes.error;
+        if (progresoRes.error) throw progresoRes.error;
 
         const profiles = (profilesRes.data ?? []) as { id: string; full_name: string; email: string }[];
         const intentosAct = (actividadesRes.data ?? []) as IntentoActividad[];
         const intentosEval = (evaluacionesRes.data ?? []) as IntentoEvaluacion[];
+        const progresoTemas = (progresoRes.data ?? []) as {
+          user_id: string;
+          tiempo_estudio_segundos?: number;
+        }[];
+
+        const tiempoPorUsuario = new Map<string, number>();
+        for (const row of progresoTemas) {
+          tiempoPorUsuario.set(
+            row.user_id,
+            (tiempoPorUsuario.get(row.user_id) ?? 0) + (row.tiempo_estudio_segundos ?? 0)
+          );
+        }
+        for (const row of intentosEval) {
+          if (row.tiempo_segundos && row.tiempo_segundos > 0) {
+            tiempoPorUsuario.set(
+              row.user_id,
+              (tiempoPorUsuario.get(row.user_id) ?? 0) + row.tiempo_segundos
+            );
+          }
+        }
 
         const byUser = new Map<string, { act: number[]; evalPorEval: Map<string, number[]> }>();
         profiles.forEach((p) => byUser.set(p.id, { act: [], evalPorEval: new Map() }));
@@ -95,6 +119,7 @@ export function useProgresoEstudiantes() {
             promedioActividades: promAct,
             promedioEvaluaciones: promEval,
             logrosEstimados,
+            tiempoEstudioSegundos: tiempoPorUsuario.get(p.id) ?? 0,
           };
         });
 

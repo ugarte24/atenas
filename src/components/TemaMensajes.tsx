@@ -68,11 +68,11 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
   if (profile?.role === 'estudiante') return null;
 
   return (
-    <section className="mt-10 card p-5 border border-slate-200" aria-labelledby="tema-msj-h">
-      <h2 id="tema-msj-h" className="text-lg font-semibold text-slate-900 mb-3">
+    <section className="mt-10 card p-5 border border-atenas-mist-border" aria-labelledby="tema-msj-h">
+      <h2 id="tema-msj-h" className="text-lg font-semibold text-atenas-ink mb-3">
         Mensajes del tema
       </h2>
-      <p className="text-sm text-slate-600 mb-4">
+      <p className="text-sm text-atenas-muted mb-4">
         Docentes y administradores pueden dejar un mensaje visible para quienes cursan este tema.
       </p>
       <form onSubmit={enviar} className="flex flex-col sm:flex-row gap-2 mb-6">
@@ -92,26 +92,26 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
         </button>
       </form>
       {loading ? (
-        <p className="text-slate-600 text-sm">Cargando mensajes…</p>
+        <p className="text-atenas-muted text-sm">Cargando mensajes…</p>
       ) : lista.length === 0 ? (
-        <p className="text-slate-500 text-sm">Aún no hay mensajes.</p>
+        <p className="text-atenas-muted text-sm">Aún no hay mensajes.</p>
       ) : (
         <ul className="space-y-3 list-none m-0 p-0">
           {lista.map((m) => (
             <li
               key={m.id}
-              className="border border-slate-200 rounded-lg p-3 bg-slate-50/80"
+              className="border border-atenas-mist-border rounded-lg p-3 bg-atenas-page/80"
             >
-              <p className="text-sm font-medium text-slate-900">
+              <p className="text-sm font-medium text-atenas-ink">
                 {m.profiles?.full_name ?? 'Usuario'}
-                <span className="text-slate-500 font-normal ml-2">
+                <span className="text-atenas-muted font-normal ml-2">
                   {new Date(m.created_at).toLocaleString('es-PE', {
                     dateStyle: 'short',
                     timeStyle: 'short',
                   })}
                 </span>
               </p>
-              <p className="text-slate-800 mt-1 text-sm whitespace-pre-wrap">{m.cuerpo}</p>
+              <p className="text-atenas-ink mt-1 text-sm whitespace-pre-wrap">{m.cuerpo}</p>
             </li>
           ))}
         </ul>

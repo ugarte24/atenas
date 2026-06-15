@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
+import { formatTiempoEstudio } from '../../lib/formatTiempo';
 
 type Fila = {
   user_id: string;
@@ -8,6 +9,8 @@ type Fila = {
   puntuacion: number;
   completado_at: string | null;
   aprobado?: boolean;
+  tiempo_segundos?: number | null;
+  numero_intento?: number | null;
 };
 
 type Props = {
@@ -65,7 +68,7 @@ export function DocenteDetalleIntentosModal({ tipo, itemId, titulo, onClose }: P
         } else {
           const { data, error } = await supabase
             .from('evaluacion_intentos')
-            .select('user_id, puntuacion, aprobado, completado_at')
+            .select('user_id, puntuacion, aprobado, completado_at, tiempo_segundos, numero_intento')
             .eq('evaluacion_id', itemId)
             .order('completado_at', { ascending: false });
           if (error) throw error;
@@ -74,6 +77,8 @@ export function DocenteDetalleIntentosModal({ tipo, itemId, titulo, onClose }: P
             puntuacion: number;
             aprobado: boolean;
             completado_at: string | null;
+            tiempo_segundos?: number | null;
+            numero_intento?: number | null;
           }[];
           const ids = [...new Set(rows.map((r) => r.user_id))];
           const map = new Map<string, { full_name: string; email: string }>();
@@ -126,7 +131,7 @@ export function DocenteDetalleIntentosModal({ tipo, itemId, titulo, onClose }: P
     const sep = ';';
     const head =
       tipo === 'evaluacion'
-        ? ['Nombre', 'Email', 'Nota %', 'Aprobado', 'Fecha']
+        ? ['Nombre', 'Email', 'Intento', 'Nota %', 'Tiempo', 'Aprobado', 'Fecha']
         : ['Nombre', 'Email', 'Nota %', 'Fecha'];
     const lines = [head.join(sep)];
     for (const f of filas) {
@@ -135,7 +140,15 @@ export function DocenteDetalleIntentosModal({ tipo, itemId, titulo, onClose }: P
         : '';
       if (tipo === 'evaluacion') {
         lines.push(
-          [f.full_name, f.email, String(f.puntuacion), f.aprobado ? 'Sí' : 'No', fecha]
+          [
+            f.full_name,
+            f.email,
+            f.numero_intento != null ? String(f.numero_intento) : '—',
+            String(f.puntuacion),
+            f.tiempo_segundos != null ? formatTiempoEstudio(f.tiempo_segundos) : '—',
+            f.aprobado ? 'Sí' : 'No',
+            fecha,
+          ]
             .map((c) => `"${String(c).replace(/"/g, '""')}"`)
             .join(sep)
         );
@@ -164,16 +177,16 @@ export function DocenteDetalleIntentosModal({ tipo, itemId, titulo, onClose }: P
     >
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/50 min-h-full w-full cursor-default border-0"
+        className="absolute inset-0 bg-atenas-ink/50 min-h-full w-full cursor-default border-0"
         aria-label="Cerrar"
         onClick={onClose}
       />
       <div
-        className="relative bg-white rounded-t-2xl sm:rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col z-10"
+        className="relative bg-white rounded-t-3xl sm:rounded-xl shadow-elevated w-full max-w-3xl max-h-[90vh] flex flex-col z-10 pb-safe"
         tabIndex={-1}
       >
-        <div className="flex items-center justify-between gap-3 px-3 sm:px-4 py-3 border-b border-slate-200 shrink-0">
-          <h2 id="detalle-intentos-titulo" className="text-base font-bold text-slate-900 truncate pr-2">
+        <div className="flex items-center justify-between gap-3 px-3 sm:px-4 py-3 border-b border-atenas-mist-border shrink-0">
+          <h2 id="detalle-intentos-titulo" className="text-base font-bold text-atenas-ink truncate pr-2">
             Intentos: {titulo}
           </h2>
           <div className="flex gap-2 shrink-0">
@@ -193,45 +206,61 @@ export function DocenteDetalleIntentosModal({ tipo, itemId, titulo, onClose }: P
           </div>
         </div>
         <div className="overflow-auto flex-1 p-3 sm:p-4">
-          {loading && <p className="text-slate-600 text-sm">Cargando…</p>}
+          {loading && <p className="text-atenas-muted text-sm">Cargando…</p>}
           {err && <p className="text-red-600 text-sm">{err}</p>}
           {!loading && !err && filas.length === 0 && (
-            <p className="text-slate-500 text-sm">Ningún alumno ha completado aún.</p>
+            <p className="text-atenas-muted text-sm">Ningún alumno ha completado aún.</p>
           )}
           {!loading && filas.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <div className="overflow-x-auto rounded-lg border border-atenas-mist-border">
               <table className="w-full text-sm table-mobile">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-slate-700">Alumno</th>
-                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-slate-700 hidden sm:table-cell">
+                  <tr className="bg-atenas-page border-b border-atenas-mist-border">
+                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-atenas-muted-strong">Alumno</th>
+                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-atenas-muted-strong hidden sm:table-cell">
                       Email
                     </th>
-                    <th className="text-center px-2 py-2 font-semibold text-slate-700">Nota</th>
                     {tipo === 'evaluacion' && (
-                      <th className="text-center px-2 py-2 font-semibold text-slate-700">Aprobado</th>
+                      <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">#</th>
                     )}
-                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-slate-700">Fecha</th>
+                    <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">Nota</th>
+                    {tipo === 'evaluacion' && (
+                      <>
+                        <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">Tiempo</th>
+                        <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">Aprobado</th>
+                      </>
+                    )}
+                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-atenas-muted-strong">Fecha</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filas.map((f, i) => (
-                    <tr key={`${f.user_id}-${i}`} className="border-b border-slate-100">
-                      <td className="px-2 sm:px-3 py-2 text-slate-900">{f.full_name}</td>
-                      <td className="px-2 sm:px-3 py-2 text-slate-600 hidden sm:table-cell text-xs">
+                    <tr key={`${f.user_id}-${i}`} className="border-b border-atenas-mist-border/60">
+                      <td className="px-2 sm:px-3 py-2 text-atenas-ink">{f.full_name}</td>
+                      <td className="px-2 sm:px-3 py-2 text-atenas-muted hidden sm:table-cell text-xs">
                         {f.email}
                       </td>
+                      {tipo === 'evaluacion' && (
+                        <td className="px-2 py-2 text-center">{f.numero_intento ?? '—'}</td>
+                      )}
                       <td className="px-2 py-2 text-center">{f.puntuacion}%</td>
                       {tipo === 'evaluacion' && (
-                        <td className="px-2 py-2 text-center">
-                          {f.aprobado ? (
-                            <span className="text-emerald-700 font-medium">Sí</span>
-                          ) : (
-                            <span className="text-slate-600">No</span>
-                          )}
-                        </td>
+                        <>
+                          <td className="px-2 py-2 text-center text-xs whitespace-nowrap">
+                            {f.tiempo_segundos != null
+                              ? formatTiempoEstudio(f.tiempo_segundos)
+                              : '—'}
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            {f.aprobado ? (
+                              <span className="text-emerald-700 font-medium">Sí</span>
+                            ) : (
+                              <span className="text-atenas-muted">No</span>
+                            )}
+                          </td>
+                        </>
                       )}
-                      <td className="px-2 sm:px-3 py-2 text-slate-600 text-xs whitespace-nowrap">
+                      <td className="px-2 sm:px-3 py-2 text-atenas-muted text-xs whitespace-nowrap">
                         {f.completado_at
                           ? new Date(f.completado_at).toLocaleString('es-PE', {
                               dateStyle: 'short',

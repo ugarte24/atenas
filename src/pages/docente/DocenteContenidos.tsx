@@ -1,4 +1,7 @@
 import { useState, useMemo } from 'react';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { Input } from '../../components/ui/Input';
+import { SkeletonLines } from '../../components/ui/Skeleton';
 import { Link } from 'react-router-dom';
 import { useUnidades } from '../../hooks/useUnidades';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -143,6 +146,15 @@ export default function DocenteContenidos() {
     }
   }
 
+  async function handleTogglePublicada(id: string, publicada: boolean) {
+    try {
+      await update(id, { publicada: !publicada });
+    } catch (err) {
+      console.error(err);
+      alert('Error al actualizar el estado de publicación');
+    }
+  }
+
   const formCamposVisuales = (
     <>
       <div>
@@ -187,8 +199,8 @@ export default function DocenteContenidos() {
             <input
               type="color"
               aria-label="Elegir color"
-              className="h-10 w-14 rounded border border-slate-300 cursor-pointer"
-              value={/^#[0-9A-Fa-f]{6}$/.test(formAccentColor.trim()) ? formAccentColor.trim() : '#003366'}
+              className="h-10 w-14 rounded border border-atenas-mist-border cursor-pointer"
+              value={/^#[0-9A-Fa-f]{6}$/.test(formAccentColor.trim()) ? formAccentColor.trim() : 'atenas-ink'}
               onChange={(e) => setFormAccentColor(e.target.value)}
             />
           </div>
@@ -227,23 +239,34 @@ export default function DocenteContenidos() {
     </>
   );
 
-  if (loading) return <p className="text-slate-600">Cargando unidades...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  if (loading) return <SkeletonLines lines={4} />;
+  if (error) return <p className="text-red-600" role="alert">{error}</p>;
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-slate-900 mb-4">Unidades</h2>
-      <input
-        type="search"
-        placeholder="Buscar unidad…"
-        value={busquedaUnidad}
-        onChange={(e) => setBusquedaUnidad(e.target.value)}
-        className="input-field max-w-md mb-4"
-        aria-label="Buscar unidades"
+      <PageHeader
+        title="Unidades"
+        description="Crea y organiza las unidades del curso. Publica cuando estén listas para los estudiantes."
+        actions={
+          !creating && !editingId ? (
+            <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
+              + Nueva unidad
+            </button>
+          ) : undefined
+        }
       />
+      <div className="mb-4 max-w-md">
+        <Input
+          type="search"
+          placeholder="Buscar unidad…"
+          value={busquedaUnidad}
+          onChange={(e) => setBusquedaUnidad(e.target.value)}
+          aria-label="Buscar unidades"
+        />
+      </div>
       {creating ? (
         <form onSubmit={handleCreate} className="mb-6 card p-5 space-y-3 max-w-2xl">
-          <p className="text-sm font-semibold text-slate-800">Nueva unidad</p>
+          <p className="text-sm font-semibold text-atenas-ink">Nueva unidad</p>
           <input
             value={formTitle}
             onChange={(e) => setFormTitle(e.target.value)}
@@ -308,7 +331,7 @@ export default function DocenteContenidos() {
           <li key={u.id} className="card p-4">
             {editingId === u.id ? (
               <form onSubmit={(e) => handleUpdate(e, u.id)} className="space-y-3 max-w-2xl">
-                <p className="text-sm font-semibold text-slate-800">Editar unidad</p>
+                <p className="text-sm font-semibold text-atenas-ink">Editar unidad</p>
                 <input
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
@@ -355,17 +378,24 @@ export default function DocenteContenidos() {
                 <span className="flex-1 min-w-[140px] font-medium text-atenas-ink">
                   {tituloUnidadConOrden(u.orden ?? 0, u.title, i)}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => handleTogglePublicada(u.id, u.publicada ?? true)}
+                  className={`badge ${u.publicada !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-atenas-mist text-atenas-muted'}`}
+                >
+                  {u.publicada !== false ? 'Publicada' : 'Borrador'}
+                </button>
                 <Link
                   to={`/docente/unidades/${u.id}`}
                   className="text-sm font-medium hover:underline"
-                  style={{ color: '#003366' }}
+                  
                 >
                   Temas
                 </Link>
                 <button
                   type="button"
                   onClick={() => startEdit(u)}
-                  className="text-sm text-slate-600 hover:text-slate-800"
+                  className="text-sm text-atenas-muted hover:text-atenas-ink"
                 >
                   Editar
                 </button>
@@ -382,10 +412,10 @@ export default function DocenteContenidos() {
         ))}
       </ul>
       {unidades.length === 0 && !creating && (
-        <p className="text-slate-500 mt-4">No hay unidades. Crea una para empezar.</p>
+        <p className="text-atenas-muted mt-4">No hay unidades. Crea una para empezar.</p>
       )}
       {unidades.length > 0 && unidadesFiltradas.length === 0 && (
-        <p className="text-slate-500 mt-4 text-sm">Ninguna unidad coincide con la búsqueda.</p>
+        <p className="text-atenas-muted mt-4 text-sm">Ninguna unidad coincide con la búsqueda.</p>
       )}
     </div>
   );

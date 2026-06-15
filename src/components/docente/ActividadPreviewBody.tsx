@@ -49,7 +49,7 @@ export function ActividadPreviewBody({ actividad }: Props) {
       );
     default:
       return (
-        <p className="text-slate-600">Tipo de actividad no reconocido para vista previa.</p>
+        <p className="text-atenas-muted">Tipo de actividad no reconocido para vista previa.</p>
       );
   }
 }

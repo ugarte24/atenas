@@ -41,7 +41,7 @@ export function SeleccionMultiple({ config, onSubmit, disabled }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-lg font-medium text-slate-900">{config.pregunta}</p>
+      <p className="text-lg font-medium text-atenas-ink">{config.pregunta}</p>
       <ul className="space-y-2">
         {config.opciones.map((op, idx) => (
           <li key={idx}>
@@ -53,12 +53,12 @@ export function SeleccionMultiple({ config, onSubmit, disabled }: Props) {
                 !enviado
                   ? seleccion.includes(idx)
                     ? 'border-primary-500 bg-primary-50'
-                    : 'border-slate-200 hover:border-primary-300'
+                    : 'border-atenas-mist-border hover:border-primary-300'
                   : config.opciones[idx].correcta
                     ? 'border-green-600 bg-green-50'
                     : seleccion.includes(idx)
                       ? 'border-red-500 bg-red-50'
-                      : 'border-slate-200'
+                      : 'border-atenas-mist-border'
               }`}
             >
               {op.texto}

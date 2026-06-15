@@ -236,7 +236,7 @@ export default function DocenteActividades() {
   }
 
   if (loadingTema || !tema) {
-    return <p className="text-slate-600">Cargando...</p>;
+    return <p className="text-atenas-muted">Cargando...</p>;
   }
 
   return (
@@ -263,12 +263,12 @@ export default function DocenteActividades() {
       <button
         type="button"
         onClick={() => navigate(`/docente/unidades/${tema.unidad_id}`)}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-[#e6edf5]"
-        style={{ color: '#003366' }}
+        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-atenas-mist"
+        
       >
         ← Temas
       </button>
-      <h2 className="text-xl font-bold text-slate-900 mb-4">{tema.title} — Actividades</h2>
+      <h2 className="text-xl font-bold text-atenas-ink mb-4">{tema.title} — Actividades</h2>
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="search"
@@ -291,8 +291,8 @@ export default function DocenteActividades() {
       </div>
 
       {editing ? (
-        <form onSubmit={handleSaveEdit} className="mb-6 card p-5 space-y-4 max-w-2xl border-2 border-[#003366]/20">
-          <p className="text-sm font-semibold text-slate-800">Editar actividad</p>
+        <form onSubmit={handleSaveEdit} className="mb-6 card p-5 space-y-4 max-w-2xl border-2 border-atenas-ink/20">
+          <p className="text-sm font-semibold text-atenas-ink">Editar actividad</p>
           <input
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
@@ -338,9 +338,9 @@ export default function DocenteActividades() {
             className="input-field"
           >
             <option value="seleccion_multiple">Selección múltiple</option>
-            <option value="relacion_conceptos">Relación de conceptos</option>
-            <option value="memoria">Memoria (parejas)</option>
-            <option value="ordenar_secuencia">Ordenar secuencia</option>
+            <option value="relacion_conceptos">Relacionar columnas</option>
+            <option value="memoria">Juego de memoria</option>
+            <option value="ordenar_secuencia">Arrastrar y soltar (ordenar)</option>
             <option value="ubicar_en_mapa">Ubicar en mapa</option>
           </select>
           <ActividadConfigEditor
@@ -406,9 +406,9 @@ export default function DocenteActividades() {
             className="input-field"
           >
             <option value="seleccion_multiple">Selección múltiple</option>
-            <option value="relacion_conceptos">Relación de conceptos</option>
-            <option value="memoria">Memoria (parejas)</option>
-            <option value="ordenar_secuencia">Ordenar secuencia</option>
+            <option value="relacion_conceptos">Relacionar columnas</option>
+            <option value="memoria">Juego de memoria</option>
+            <option value="ordenar_secuencia">Arrastrar y soltar (ordenar)</option>
             <option value="ubicar_en_mapa">Ubicar en mapa</option>
           </select>
           <ActividadConfigEditor
@@ -439,7 +439,7 @@ export default function DocenteActividades() {
       )}
 
       {loading ? (
-        <p className="text-slate-600">Cargando actividades...</p>
+        <p className="text-atenas-muted">Cargando actividades...</p>
       ) : (
         <ul className="space-y-2">
           {actividadesFiltradas.map((a) => {
@@ -451,7 +451,7 @@ export default function DocenteActividades() {
                   type="button"
                   disabled={reordenando || realIdx <= 0}
                   onClick={() => moverActividad(a.id, 'up')}
-                  className="min-h-touch min-w-touch rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
                   aria-label="Subir"
                 >
                   ↑
@@ -460,16 +460,16 @@ export default function DocenteActividades() {
                   type="button"
                   disabled={reordenando || realIdx < 0 || realIdx >= actividadesOrdenadas.length - 1}
                   onClick={() => moverActividad(a.id, 'down')}
-                  className="min-h-touch min-w-touch rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
                   aria-label="Bajar"
                 >
                   ↓
                 </button>
               </div>
               <div className="flex-1 min-w-[140px]">
-                <span className="font-medium text-slate-900 block">{a.title}</span>
+                <span className="font-medium text-atenas-ink block">{a.title}</span>
                 {statsPorActividad[a.id] && (
-                  <span className="text-xs text-slate-500 mt-0.5 block">
+                  <span className="text-xs text-atenas-muted mt-0.5 block">
                     {statsPorActividad[a.id].alumnos === 0
                       ? 'Sin intentos aún'
                       : `${statsPorActividad[a.id].alumnos} alumno${statsPorActividad[a.id].alumnos !== 1 ? 's' : ''}${
@@ -480,18 +480,18 @@ export default function DocenteActividades() {
                   </span>
                 )}
               </div>
-              <span className="text-sm text-slate-500 capitalize">{a.tipo.replace(/_/g, ' ')}</span>
+              <span className="text-sm text-atenas-muted capitalize">{a.tipo.replace(/_/g, ' ')}</span>
               <button
                 type="button"
                 onClick={() => handleTogglePublicada(a.id, a.publicada)}
-                className={`badge ${a.publicada ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}
+                className={`badge ${a.publicada ? 'bg-emerald-100 text-emerald-800' : 'bg-atenas-mist text-atenas-muted'}`}
               >
                 {a.publicada ? 'Publicada' : 'No publicada'}
               </button>
               <button
                 type="button"
                 onClick={() => duplicarActividad(a)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-slate-600"
+                className="text-sm font-medium hover:underline min-h-touch px-1 text-atenas-muted"
                 title="Duplicar como borrador no publicado"
               >
                 Duplicar
@@ -500,7 +500,7 @@ export default function DocenteActividades() {
                 type="button"
                 onClick={() => openEdit(a)}
                 className="text-sm font-medium hover:underline min-h-touch px-1"
-                style={{ color: '#003366' }}
+                
               >
                 Editar
               </button>
@@ -518,7 +518,7 @@ export default function DocenteActividades() {
               >
                 Ver alumnos
               </button>
-              <Link to={`/actividades/${a.id}`} className="text-sm font-medium hover:underline" style={{ color: '#003366' }} target="_blank" rel="noopener noreferrer">
+              <Link to={`/actividades/${a.id}`} className="text-sm font-medium hover:underline"  target="_blank" rel="noopener noreferrer">
                 Ver alumno
               </Link>
               <button type="button" onClick={() => handleRemove(a.id)} className="text-sm text-red-600 hover:text-red-700">
@@ -530,13 +530,13 @@ export default function DocenteActividades() {
         </ul>
       )}
       {actividades.length === 0 && !adding && !editing && !loading && (
-        <p className="text-slate-500 mt-4">No hay actividades. Crea una con el botón anterior.</p>
+        <p className="text-atenas-muted mt-4">No hay actividades. Crea una con el botón anterior.</p>
       )}
 
       {!loading && !loadingTemas && actividades.length > 0 && temasDestino.length > 0 && (
-        <section className="mt-8 card p-5 max-w-2xl space-y-3 border border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-800">Mover actividad a otro tema</h3>
-          <p className="text-xs text-slate-500">
+        <section className="mt-8 card p-5 max-w-2xl space-y-3 border border-atenas-mist-border">
+          <h3 className="text-sm font-semibold text-atenas-ink">Mover actividad a otro tema</h3>
+          <p className="text-xs text-atenas-muted">
             Solo aparecen temas de la misma unidad. La actividad se coloca al final del tema destino.
           </p>
           <label className="label mb-0">Actividad</label>
@@ -577,7 +577,7 @@ export default function DocenteActividades() {
       )}
 
       {!loading && !loadingTemas && actividades.length > 0 && temasDestino.length === 0 && (
-        <p className="text-xs text-slate-500 mt-6 max-w-2xl">
+        <p className="text-xs text-atenas-muted mt-6 max-w-2xl">
           Para mover actividades a otro tema, crea al menos un tema más en esta unidad.
         </p>
       )}

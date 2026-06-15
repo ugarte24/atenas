@@ -2,6 +2,12 @@ import { useMemo } from 'react';
 import { useMisionesAlumno } from '../hooks/useMisiones';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { limpiarDescripcionUnidad } from '../lib/unidadDescripcion';
+import { formatTiempoEstudio } from '../lib/formatTiempo';
+import { PageHeader } from '../components/ui/PageHeader';
+import { ProgressBar } from '../components/ui/ProgressBar';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonLines } from '../components/ui/Skeleton';
+import { Card } from '../components/ui/Card';
 
 export default function Progreso() {
   const { misiones, loading, error } = useMisionesAlumno();
@@ -12,24 +18,23 @@ export default function Progreso() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <header className="mb-6 border-b border-atenas-mist-border pb-5">
-        <h1 className="text-2xl font-extrabold text-atenas-ink">Tu progreso</h1>
-        <p className="text-sm text-atenas-muted mt-1">
-          Revisa cómo avanzas en las unidades y niveles del Abya Yala.
-        </p>
-      </header>
+      <PageHeader
+        title="Tu progreso"
+        description="Revisa cómo avanzas en las unidades y niveles del Abya Yala."
+      />
 
-      {loading && <p className="text-sm text-atenas-muted">Cargando progreso…</p>}
+      {loading && <SkeletonLines lines={4} />}
       {error && !loading && (
-        <p className="text-sm text-red-600">No se pudo cargar tu progreso.</p>
+        <p className="text-sm text-red-600" role="alert">
+          No se pudo cargar tu progreso.
+        </p>
       )}
 
       {!loading && !error && misionesConTemas.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-atenas-mist-border bg-atenas-card p-8 text-center shadow-card">
-          <p className="text-atenas-muted text-sm">
-            Aún no tienes progreso registrado. Cuando completes actividades, lo verás aquí.
-          </p>
-        </div>
+        <EmptyState
+          title="Sin progreso aún"
+          description="Cuando completes actividades, lo verás aquí."
+        />
       )}
 
       {!loading && !error && misionesConTemas.length > 0 && (
@@ -41,10 +46,7 @@ export default function Progreso() {
             const tituloMostrado = tituloUnidadConOrden(m.orden, m.titulo);
             const descripcionLimpia = limpiarDescripcionUnidad(m.descripcion);
             return (
-              <article
-                key={m.id}
-                className="card p-5 flex flex-col gap-3 bg-white border border-atenas-mist-border shadow-card"
-              >
+              <Card key={m.id} className="flex flex-col gap-3">
                 <div>
                   <h2 className="text-sm font-semibold text-atenas-ink">{tituloMostrado}</h2>
                   {descripcionLimpia && (
@@ -53,18 +55,17 @@ export default function Progreso() {
                     </p>
                   )}
                 </div>
-                <div>
-                  <div className="w-full h-3 rounded-full bg-atenas-mist overflow-hidden ring-1 ring-atenas-mist-border/50">
-                    <div
-                      className="h-full rounded-full bg-emerald-500 transition-all"
-                      style={{ width: `${porcentaje}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-[11px] text-atenas-muted text-right">
-                    {m.pasosCompletados} de {m.totalPasos} pasos · {porcentaje}% completado
+                <ProgressBar
+                  value={porcentaje}
+                  label={`${m.pasosCompletados} de ${m.totalPasos} pasos`}
+                  showPercent
+                />
+                {m.tiempoEstudioSegundos > 0 && (
+                  <p className="text-[11px] text-atenas-muted text-right -mt-1">
+                    Tiempo: {formatTiempoEstudio(m.tiempoEstudioSegundos)}
                   </p>
-                </div>
-              </article>
+                )}
+              </Card>
             );
           })}
         </div>

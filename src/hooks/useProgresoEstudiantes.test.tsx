@@ -49,10 +49,19 @@ describe('useProgresoEstudiantes', () => {
         return {
           select: () =>
             thenable([
-              { user_id: 'u1', evaluacion_id: 'ev1', puntuacion: 70, aprobado: true },
-              { user_id: 'u1', evaluacion_id: 'ev1', puntuacion: 90, aprobado: true },
-              { user_id: 'u1', evaluacion_id: 'ev2', puntuacion: 50, aprobado: false },
-              { user_id: 'u2', evaluacion_id: 'ev1', puntuacion: 75, aprobado: true },
+              { user_id: 'u1', evaluacion_id: 'ev1', puntuacion: 70, aprobado: true, tiempo_segundos: 120 },
+              { user_id: 'u1', evaluacion_id: 'ev1', puntuacion: 90, aprobado: true, tiempo_segundos: 60 },
+              { user_id: 'u1', evaluacion_id: 'ev2', puntuacion: 50, aprobado: false, tiempo_segundos: 30 },
+              { user_id: 'u2', evaluacion_id: 'ev1', puntuacion: 75, aprobado: true, tiempo_segundos: 90 },
+            ]),
+        };
+      }
+      if (table === 'progreso_tema') {
+        return {
+          select: () =>
+            thenable([
+              { user_id: 'u1', tiempo_estudio_segundos: 300 },
+              { user_id: 'u2', tiempo_estudio_segundos: 60 },
             ]),
         };
       }
@@ -79,6 +88,8 @@ describe('useProgresoEstudiantes', () => {
     expect(luis!.promedioActividades).toBe(60);
     expect(luis!.evaluacionesCompletadas).toBe(1);
     expect(luis!.promedioEvaluaciones).toBe(75);
+    expect(ana!.tiempoEstudioSegundos).toBe(300 + 120 + 60 + 30);
+    expect(luis!.tiempoEstudioSegundos).toBe(60 + 90);
   });
 
   it('expone error si falla Supabase', async () => {

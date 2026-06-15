@@ -41,7 +41,7 @@ export function RelacionConceptos({ config, onSubmit, disabled }: Props) {
 
   return (
     <div className="space-y-4">
-      {config.instruccion && <p className="text-slate-600">{config.instruccion}</p>}
+      {config.instruccion && <p className="text-atenas-muted">{config.instruccion}</p>}
       <p className="font-medium">Relaciona cada concepto con su definición.</p>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -55,8 +55,8 @@ export function RelacionConceptos({ config, onSubmit, disabled }: Props) {
                 selectedLeft === i
                   ? 'border-primary-500 bg-primary-50'
                   : pairs[i] !== undefined
-                    ? 'border-slate-300 bg-slate-50'
-                    : 'border-slate-200 hover:border-primary-300'
+                    ? 'border-atenas-mist-border bg-atenas-page'
+                    : 'border-atenas-mist-border hover:border-primary-300'
               }`}
             >
               {col.izquierda}
@@ -72,8 +72,8 @@ export function RelacionConceptos({ config, onSubmit, disabled }: Props) {
               disabled={enviado || disabled}
               className={`w-full text-left p-3 rounded-lg border-2 transition ${
                 Object.values(pairs).includes(pos)
-                  ? 'border-slate-300 bg-slate-50'
-                  : 'border-slate-200 hover:border-primary-300'
+                  ? 'border-atenas-mist-border bg-atenas-page'
+                  : 'border-atenas-mist-border hover:border-primary-300'
               }`}
             >
               {config.columnas[colIdx].derecha}
@@ -92,7 +92,7 @@ export function RelacionConceptos({ config, onSubmit, disabled }: Props) {
         </button>
       )}
       {enviado && (
-        <p className="text-lg font-medium text-slate-900">
+        <p className="text-lg font-medium text-atenas-ink">
           Puntuación: {puntuacion}% ({correctCount} de {total} correctas)
         </p>
       )}

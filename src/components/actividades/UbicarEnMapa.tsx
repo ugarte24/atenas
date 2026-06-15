@@ -49,7 +49,7 @@ export function UbicarEnMapa({ config, onSubmit, disabled }: Props) {
             key={z.id}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => handleDrop(z.id)}
-            className="absolute border-2 border-dashed border-slate-400 rounded p-1 min-w-[60px] text-center text-sm bg-white/80"
+            className="absolute border-2 border-dashed border-atenas-muted rounded p-1 min-w-[60px] text-center text-sm bg-white/80"
             style={{ left: `${z.x}%`, top: `${z.y}%`, transform: 'translate(-50%, -50%)' }}
           >
             {z.etiqueta}
@@ -71,7 +71,7 @@ export function UbicarEnMapa({ config, onSubmit, disabled }: Props) {
           </span>
         ))}
       </div>
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-atenas-muted">
         Colocados: {Object.keys(colocaciones).length} / {total}
       </p>
       {!enviado && (
@@ -85,7 +85,7 @@ export function UbicarEnMapa({ config, onSubmit, disabled }: Props) {
         </button>
       )}
       {enviado && (
-        <p className="text-lg font-medium text-slate-900">
+        <p className="text-lg font-medium text-atenas-ink">
           Puntuación: {puntuacion}% ({correctas} de {total} correctas)
         </p>
       )}
