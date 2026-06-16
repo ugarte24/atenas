@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useEvaluacion } from '../hooks/useEvaluacion';
 import { useEvaluacionIntento } from '../hooks/useEvaluacionIntento';
 import { Cuestionario, type FeedbackEvaluacion } from '../components/Cuestionario';
+import { ParchmentLayout, ParchmentFooter } from '../components/layout/ParchmentLayout';
 import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -95,40 +96,13 @@ export default function EvaluacionView() {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 transition-colors text-atenas-ink hover:bg-atenas-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
+        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 text-atenas-ink hover:bg-atenas-mist"
       >
         ← Volver al tema
       </button>
-      <div className="mb-6">
-        <h1 className="text-page-title font-bold text-atenas-ink">{evaluacion.title}</h1>
-        {evaluacion.descripcion && (
-          <p className="text-atenas-muted-strong mt-1">{evaluacion.descripcion}</p>
-        )}
-        <p className="text-sm text-atenas-muted-strong mt-1">
-          Para aprobar necesitas al menos <strong>{evaluacion.umbral_aprobado}%</strong>.
-        </p>
-        {!ilimitado && (
-          <p className="text-sm text-atenas-muted-strong mt-1">
-            Intentos permitidos: <strong>{maxIntentos}</strong>. Llevas <strong>{intentosCount}</strong>.
-          </p>
-        )}
-        {mejorPuntuacion != null && (
-          <p className="text-sm text-atenas-muted-strong mt-1">
-            Tu mejor nota hasta ahora: <strong>{mejorPuntuacion}%</strong>
-          </p>
-        )}
-        {modoExamen && (
-          <p className="text-sm font-medium text-amber-900 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            Modo examen: tiempo limitado y sin detalle de respuestas al terminar.
-          </p>
-        )}
-      </div>
 
       {saveErr && (
-        <div
-          className="mb-4 p-4 rounded-xl bg-red-50 border-2 border-red-300 text-red-900 text-sm"
-          role="alert"
-        >
+        <div className="mb-4 p-4 rounded-xl bg-red-50 border-2 border-red-300 text-red-900 text-sm" role="alert">
           {saveErr}
           <button type="button" className="underline ml-2" onClick={clearError}>
             Cerrar
@@ -140,19 +114,35 @@ export default function EvaluacionView() {
         <div className="card p-6">
           <p className="text-atenas-muted-strong">
             Has alcanzado el máximo de intentos para esta evaluación.
-            {mejorPuntuacion != null && (
-              <>
-                {' '}
-                Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.
-              </>
-            )}
+            {mejorPuntuacion != null && <> Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.</>}
           </p>
           <button type="button" onClick={() => navigate(-1)} className="btn-secondary mt-4">
             Volver al tema
           </button>
         </div>
       ) : (
-        <div className="card p-6">
+        <ParchmentLayout
+          title={evaluacion.title}
+          subtitle={evaluacion.descripcion ?? undefined}
+          step={intentosCount + 1}
+          totalSteps={ilimitado ? preguntas.length : maxIntentos ?? preguntas.length}
+          footer={
+            <ParchmentFooter
+              step={Math.min(preguntas.length, 1)}
+              totalSteps={preguntas.length}
+              progress={preguntas.length ? Math.round((1 / preguntas.length) * 100) : 0}
+            />
+          }
+        >
+          <p className="text-sm text-amber-900/80 mb-4">
+            Para aprobar: <strong>{evaluacion.umbral_aprobado}%</strong>
+            {!ilimitado && <> · Intentos: {intentosCount}/{maxIntentos}</>}
+          </p>
+          {modoExamen && (
+            <p className="text-sm font-medium text-amber-900 mb-4 bg-amber-100/50 border border-amber-200 rounded-lg px-3 py-2">
+              Modo examen activo.
+            </p>
+          )}
           <Cuestionario
             key={sesion}
             preguntas={preguntas}
@@ -160,12 +150,10 @@ export default function EvaluacionView() {
             onSubmit={handleSubmit}
             disabled={saving}
             feedback={feedback}
-            minutosExamen={
-              modoExamen ? (evaluacion.minutos_limite ?? 30) : 0
-            }
+            minutosExamen={modoExamen ? (evaluacion.minutos_limite ?? 30) : 0}
           />
           {ultimoGuardadoOk && (ilimitado || intentosCount < maxIntentos!) && (
-            <div className="mt-6 pt-4 border-t border-atenas-mist-border">
+            <div className="mt-6 pt-4 border-t border-amber-200/50">
               <button
                 type="button"
                 className="btn-secondary"
@@ -179,7 +167,7 @@ export default function EvaluacionView() {
               </button>
             </div>
           )}
-        </div>
+        </ParchmentLayout>
       )}
     </div>
   );

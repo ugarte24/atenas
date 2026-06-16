@@ -43,7 +43,7 @@ export function AppDrawer({ open, onClose, links, role, onSignOut }: Props) {
         aria-label="Cerrar menú"
         onClick={onClose}
       />
-      <aside className="absolute top-0 right-0 h-full w-[min(100%,20rem)] bg-white shadow-elevated flex flex-col pt-safe pb-safe">
+      <aside className="absolute top-0 left-0 h-full w-[min(100%,20rem)] bg-white shadow-elevated flex flex-col pt-safe pb-safe border-r border-atenas-mist-border">
         <div className="flex items-center justify-between px-5 py-4 border-b border-atenas-mist-border">
           <Badge tone="gold" className="capitalize">
             {role}

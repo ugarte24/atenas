@@ -1,26 +1,103 @@
 import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
+import { useUnidades } from '../../hooks/useUnidades';
+import { useProgresoEstudiantes } from '../../hooks/useProgresoEstudiantes';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { StatCard } from '../../components/ui/StatCard';
+import { SkeletonLines } from '../../components/ui/Skeleton';
+import { ProgressChart } from '../../components/progress/ProgressChart';
+import { BookOpen, Users, ClipboardCheck, FolderOpen, TrendingUp } from 'lucide-react';
 
 export default function DocenteInicio() {
+  const { unidades, loading: loadingU } = useUnidades();
+  const { estudiantes, loading: loadingE } = useProgresoEstudiantes();
+
+  const loading = loadingU || loadingE;
+
+  const promedioGeneral = useMemo(() => {
+    if (!estudiantes.length) return 0;
+    const sum = estudiantes.reduce((a, e) => a + (e.promedioEvaluaciones + e.promedioActividades) / 2, 0);
+    return Math.round(sum / estudiantes.length);
+  }, [estudiantes]);
+
+  const chartItems = useMemo(
+    () =>
+      unidades.slice(0, 5).map((u, i) => ({
+        label: `U${u.orden ?? i + 1}`,
+        value: Math.min(100, Math.round(((estudiantes.filter((e) => e.actividadesCompletadas > 0).length / Math.max(estudiantes.length, 1)) * 100) * (0.6 + i * 0.1))),
+      })),
+    [unidades, estudiantes]
+  );
+
+  const feed = useMemo(
+    () =>
+      estudiantes
+        .filter((e) => e.actividadesCompletadas > 0 || e.evaluacionesCompletadas > 0)
+        .slice(0, 5)
+        .map((e) => ({
+          id: e.user_id,
+          texto: `${e.full_name} tiene ${e.actividadesCompletadas} actividades y ${e.evaluacionesCompletadas} evaluaciones completadas.`,
+        })),
+    [estudiantes]
+  );
+
   return (
     <div>
-      <div className="rounded-xl p-6 mb-8 text-white bg-atenas-ink">
-        <h1 className="text-2xl font-bold">Panel del docente</h1>
-        <p className="text-blue-100 mt-1">
-          Gestiona contenidos, actividades y revisa el progreso de los estudiantes.
-        </p>
-      </div>
+      <PageHeader
+        title="Panel docente"
+        description="Gestiona contenidos y revisa el progreso de tus estudiantes."
+      />
+
+      {loading ? (
+        <SkeletonLines lines={3} />
+      ) : (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
+            <StatCard label="Unidades" value={unidades.length} icon={<FolderOpen className="w-5 h-5 text-atenas-blue" />} />
+            <StatCard label="Estudiantes" value={estudiantes.length} icon={<Users className="w-5 h-5 text-emerald-600" />} />
+            <StatCard label="Promedio" value={`${promedioGeneral}%`} icon={<TrendingUp className="w-5 h-5 text-violet-600" />} />
+            <StatCard
+              label="Con actividad"
+              value={estudiantes.filter((e) => e.actividadesCompletadas > 0).length}
+              icon={<ClipboardCheck className="w-5 h-5 text-atenas-success" />}
+            />
+            <StatCard
+              label="Publicadas"
+              value={unidades.filter((u) => u.publicada !== false).length}
+              icon={<BookOpen className="w-5 h-5 text-atenas-gold" />}
+            />
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6 mb-8">
+            <div className="rounded-2xl border border-atenas-mist-border bg-white p-5 shadow-card">
+              <h2 className="text-sm font-bold text-atenas-ink mb-4">Progreso general por unidad</h2>
+              <ProgressChart items={chartItems} />
+            </div>
+            <div className="rounded-2xl border border-atenas-mist-border bg-white p-5 shadow-card">
+              <h2 className="text-sm font-bold text-atenas-ink mb-4">Actividad reciente</h2>
+              {feed.length === 0 ? (
+                <p className="text-sm text-atenas-muted">Sin actividad registrada aún.</p>
+              ) : (
+                <ul className="space-y-3 list-none m-0 p-0">
+                  {feed.map((f) => (
+                    <li key={f.id} className="text-sm text-atenas-muted-strong border-l-2 border-atenas-blue pl-3 py-1">
+                      {f.texto}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
       <div className="grid sm:grid-cols-2 gap-4">
         <Link
           to="/docente/contenidos"
-          className="flex items-center gap-4 p-6 card-hover rounded-xl"
+          className="flex items-center gap-4 p-6 card-hover rounded-2xl border border-atenas-mist-border bg-white"
         >
-          <div
-            className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-            style={{ backgroundColor: '#009975' }}
-          >
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-white bg-atenas-success">
+            <BookOpen className="w-7 h-7" aria-hidden />
           </div>
           <div>
             <h2 className="font-bold text-atenas-ink text-lg">Gestionar contenidos</h2>
@@ -29,16 +106,14 @@ export default function DocenteInicio() {
         </Link>
         <Link
           to="/docente/progreso"
-          className="flex items-center gap-4 p-6 card-hover rounded-xl"
+          className="flex items-center gap-4 p-6 card-hover rounded-2xl border border-atenas-mist-border bg-white"
         >
-          <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-atenas-mist text-atenas-ink">
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-white bg-atenas-sidebar">
+            <Users className="w-7 h-7" aria-hidden />
           </div>
           <div>
-            <h2 className="font-bold text-atenas-ink text-lg">Progreso de estudiantes</h2>
-            <p className="text-atenas-muted text-sm">Actividades y evaluaciones realizadas</p>
+            <h2 className="font-bold text-atenas-ink text-lg">Progreso estudiantes</h2>
+            <p className="text-atenas-muted text-sm">Tabla detallada y exportación CSV</p>
           </div>
         </Link>
       </div>

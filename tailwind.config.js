@@ -27,19 +27,22 @@ export default {
       colors: {
         /** Identidad academia ATENAS (plan híbrido) */
         atenas: {
-          ink: '#1F2D2A',
-          'ink-hover': '#161f1c',
-          gold: '#D6B98C',
-          'gold-mid': '#c4a574',
-          page: '#F5F7FA',
-          /** Texto secundario / captions (antes mezclado con slate-600) */
+          /** Azul institucional (mockup UI) */
+          ink: '#002D62',
+          'ink-hover': '#001f47',
+          sidebar: '#002D62',
+          gold: '#FFC107',
+          'gold-mid': '#e6ac00',
+          page: '#F8F9FA',
           muted: '#64748b',
-          /** Texto muted más fuerte */
           'muted-strong': '#475569',
           blue: '#4A90E2',
-          card: '#FAF8F5',
-          mist: '#E8EDEB',
-          'mist-border': '#C5D0CC',
+          success: '#28A745',
+          card: '#FFFFFF',
+          mist: '#E8EEF5',
+          'mist-border': '#CBD5E1',
+          parchment: '#F5E6C8',
+          cream: '#FAF6F0',
         },
         primary: {
           50: '#eef2ff',

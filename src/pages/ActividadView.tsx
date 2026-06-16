@@ -1,6 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import { useActividad } from '../hooks/useActividad';
 import { useIntento } from '../hooks/useIntento';
+import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
+import { nivelDesdeXp } from '../lib/gamificacion';
 import {
   SeleccionMultiple,
   RelacionConceptos,
@@ -8,6 +11,9 @@ import {
   OrdenarSecuencia,
   UbicarEnMapa,
 } from '../components/actividades';
+import { ParchmentLayout, ParchmentFooter } from '../components/layout/ParchmentLayout';
+import { ResultScreen } from '../components/gamification/ResultScreen';
+import { LevelUpModal } from '../components/gamification/LevelUpModal';
 import type { ActividadConfig } from '../types';
 
 export default function ActividadView() {
@@ -15,9 +21,17 @@ export default function ActividadView() {
   const navigate = useNavigate();
   const { actividad, loading, error } = useActividad(actividadId ?? null);
   const { guardarIntento, saving } = useIntento(actividadId ?? null);
+  const { puntos } = useGamificacionEstudiante();
+  const [resultado, setResultado] = useState<{ puntuacion: number } | null>(null);
+  const [nivelAnterior] = useState(() => nivelDesdeXp(puntos).nivel);
+  const [showLevelUp, setShowLevelUp] = useState(false);
 
-  const handleSubmit = (respuestas: Record<string, unknown>, puntuacion: number) => {
-    guardarIntento(respuestas, puntuacion);
+  const nivelActual = useMemo(() => nivelDesdeXp(puntos + (resultado?.puntuacion ?? 0)), [puntos, resultado]);
+
+  const handleSubmit = async (respuestas: Record<string, unknown>, puntuacion: number) => {
+    await guardarIntento(respuestas, puntuacion);
+    setResultado({ puntuacion });
+    if (nivelActual.nivel > nivelAnterior) setShowLevelUp(true);
   };
 
   if (loading || !actividad) {
@@ -30,14 +44,28 @@ export default function ActividadView() {
     return (
       <div className="card p-6 max-w-md">
         <p className="text-atenas-muted">Esta actividad no está publicada.</p>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="btn-secondary mt-4"
-        >
+        <button type="button" onClick={() => navigate(-1)} className="btn-secondary mt-4">
           Volver
         </button>
       </div>
+    );
+  }
+
+  if (resultado) {
+    return (
+      <>
+        <ResultScreen
+          titulo="¡Actividad completada!"
+          puntuacion={resultado.puntuacion}
+          maxPuntuacion={100}
+          onContinuar={() => navigate(-1)}
+        />
+        <LevelUpModal
+          open={showLevelUp}
+          xpTotal={puntos + resultado.puntuacion}
+          onClose={() => setShowLevelUp(false)}
+        />
+      </>
     );
   }
 
@@ -48,12 +76,17 @@ export default function ActividadView() {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 transition-colors text-atenas-ink hover:bg-atenas-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
+        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 text-atenas-ink hover:bg-atenas-mist"
       >
         ← Volver al tema
       </button>
-      <h1 className="text-page-title font-bold text-atenas-ink mb-6">{actividad.title}</h1>
-      <div className="card p-6">
+      <ParchmentLayout
+        title={actividad.title}
+        subtitle={actividad.tipo.replace(/_/g, ' ')}
+        step={1}
+        totalSteps={1}
+        footer={<ParchmentFooter step={1} totalSteps={1} progress={50} />}
+      >
         {actividad.tipo === 'seleccion_multiple' && (
           <SeleccionMultiple
             config={config as import('../types').ConfigSeleccionMultiple}
@@ -89,7 +122,7 @@ export default function ActividadView() {
             disabled={saving}
           />
         )}
-      </div>
+      </ParchmentLayout>
     </div>
   );
 }

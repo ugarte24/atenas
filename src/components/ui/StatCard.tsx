@@ -18,7 +18,7 @@ export function StatCard({ label, value, hint, icon, className }: Props) {
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-atenas-muted">{label}</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-atenas-muted-strong">{label}</span>
         {icon && <span className="text-atenas-gold shrink-0">{icon}</span>}
       </div>
       <span className="text-2xl font-bold text-atenas-ink tabular-nums leading-none">{value}</span>

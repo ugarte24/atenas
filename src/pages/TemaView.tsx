@@ -1,6 +1,9 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, BookOpen, Maximize2 } from 'lucide-react';
 import { useTema } from '../hooks/useTema';
+import { useUnidad } from '../hooks/useUnidad';
+import { useTemas } from '../hooks/useTemas';
 import { useRecursos } from '../hooks/useRecursos';
 import { useActividades } from '../hooks/useActividades';
 import { useEvaluaciones } from '../hooks/useEvaluaciones';
@@ -10,14 +13,18 @@ import { usuarioCumplePrerequisitoTema } from '../lib/prerequisitoTema';
 import { TemaMensajes } from '../components/TemaMensajes';
 import { MicroQuizCard } from '../components/MicroQuizCard';
 import { useTiempoEstudio } from '../hooks/useTiempoEstudio';
-import { SectionAccordion } from '../components/SectionAccordion';
 import { SkeletonLines } from '../components/ui/Skeleton';
-import type { Recurso } from '../types';
+import { LessonTabs, type LessonTab } from '../components/lesson/LessonTabs';
+import { LessonSectionNav, type SectionItem } from '../components/lesson/LessonSectionNav';
+import { TimelineSection } from '../components/lesson/TimelineSection';
+import { LessonNotesWidget } from '../components/lesson/LessonNotesWidget';
+import { LessonMapWidget } from '../components/lesson/LessonMapWidget';
+import { LessonForumWidget } from '../components/lesson/LessonForumWidget';
+import { RecursoItem, ResourcesSplitView } from '../components/lesson';
+import { MascotTip } from '../components/gamification/MascotTip';
+import { cn } from '../components/ui/cn';
 
-type ProgresoTema = {
-  total: number;
-  completadas: number;
-};
+type ProgresoTema = { total: number; completadas: number };
 
 export default function TemaView() {
   const { temaId } = useParams<{ temaId: string }>();
@@ -25,14 +32,19 @@ export default function TemaView() {
   const { user, profile, loading: authLoading } = useAuthContext();
   const esEstudiante = profile?.role === 'estudiante';
   const { tema, loading: loadingTema } = useTema(temaId ?? null);
+  const { unidad } = useUnidad(tema?.unidad_id ?? null);
+  const { temas: temasUnidad } = useTemas(tema?.unidad_id ?? null);
+
+  const [tab, setTab] = useState<LessonTab>('contenido');
+  const [readingMode, setReadingMode] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const [progreso, setProgreso] = useState<ProgresoTema | null>(null);
   const [loadingProgreso, setLoadingProgreso] = useState(false);
   const [prereqOk, setPrereqOk] = useState(true);
   const [prereqResolved, setPrereqResolved] = useState(false);
 
   const temaIdContenido = (() => {
-    if (!temaId) return null;
-    if (!tema) return null;
+    if (!temaId || !tema) return null;
     if (!tema.prerequisito_tema_id) return temaId;
     if (prereqResolved && prereqOk) return temaId;
     return null;
@@ -49,10 +61,7 @@ export default function TemaView() {
       ? evaluaciones.find((e) => e.publicada && e.es_micro_quiz === true)
       : null;
 
-  const recursosVideo = useMemo(
-    () => recursos.filter((r) => r.tipo === 'video'),
-    [recursos]
-  );
+  const recursosVideo = useMemo(() => recursos.filter((r) => r.tipo === 'video'), [recursos]);
   const recursosTeoria = useMemo(
     () => recursos.filter((r) => r.tipo === 'imagen' || r.tipo === 'mapa' || r.tipo === 'texto'),
     [recursos]
@@ -60,9 +69,43 @@ export default function TemaView() {
   const recursosPdf = useMemo(() => recursos.filter((r) => r.tipo === 'pdf'), [recursos]);
   const recursosAudio = useMemo(() => recursos.filter((r) => r.tipo === 'audio'), [recursos]);
 
+  const hasTheoryBlock = !!(tema?.content || recursosTeoria.length > 0 || recursosPdf.length > 0);
+  const hasVideoBlock = recursosVideo.length > 0 || recursosAudio.length > 0;
+  const hasActividades = actividades.filter((a) => a.publicada).length > 0;
+  const hasEvaluaciones =
+    evaluaciones.filter((e) =>
+      esEstudiante ? e.publicada && e.es_micro_quiz !== true : e.publicada
+    ).length > 0;
+
+  const sections = useMemo(() => {
+    const list: SectionItem[] = [];
+    let step = 0;
+    if (hasTheoryBlock) list.push({ id: 'teoria', step: ++step, title: 'Introducción y teoría' });
+    if (recursosTeoria.length >= 2)
+      list.push({ id: 'timeline', step: ++step, title: 'Hechos importantes' });
+    if (hasVideoBlock) list.push({ id: 'video', step: ++step, title: 'Video y audio' });
+    if (hasActividades) list.push({ id: 'actividades', step: ++step, title: 'Actividades' });
+    if (hasEvaluaciones) list.push({ id: 'evaluacion', step: ++step, title: 'Evaluación' });
+    return list;
+  }, [hasTheoryBlock, recursosTeoria.length, hasVideoBlock, hasActividades, hasEvaluaciones]);
+
+  useEffect(() => {
+    if (sections.length && !activeSection) setActiveSection(sections[0]!.id);
+  }, [sections, activeSection]);
+
+  const temaIndex = temasUnidad.findIndex((t) => t.id === temaId);
+  const prevTema = temaIndex > 0 ? temasUnidad[temaIndex - 1] : null;
+  const nextTema = temaIndex >= 0 && temaIndex < temasUnidad.length - 1 ? temasUnidad[temaIndex + 1] : null;
+
+  const scrollToSection = useCallback((id: string) => {
+    setActiveSection(id);
+    setTab('contenido');
+    const el = document.getElementById(`section-${id}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
-
     async function calcularProgreso() {
       if (!temaId || !user) {
         setProgreso(null);
@@ -75,8 +118,6 @@ export default function TemaView() {
           supabase.from('evaluaciones').select('id').eq('tema_id', temaId).eq('publicada', true),
         ]);
         if (cancelled) return;
-        if (actsRes.error) throw actsRes.error;
-        if (evalsRes.error) throw evalsRes.error;
         const actividadIds = (actsRes.data ?? []).map((a: { id: string }) => a.id);
         const evaluacionIds = (evalsRes.data ?? []).map((e: { id: string }) => e.id);
         const total = actividadIds.length + evaluacionIds.length;
@@ -86,40 +127,24 @@ export default function TemaView() {
         }
         const [intActRes, intEvalRes] = await Promise.all([
           actividadIds.length
-            ? supabase
-                .from('actividad_intentos')
-                .select('actividad_id')
-                .eq('user_id', user.id)
-                .in('actividad_id', actividadIds)
-            : Promise.resolve({ data: [], error: null } as { data: unknown[] | null; error: null }),
+            ? supabase.from('actividad_intentos').select('actividad_id').eq('user_id', user.id).in('actividad_id', actividadIds)
+            : Promise.resolve({ data: [] }),
           evaluacionIds.length
-            ? supabase
-                .from('evaluacion_intentos')
-                .select('evaluacion_id')
-                .eq('user_id', user.id)
-                .in('evaluacion_id', evaluacionIds)
-            : Promise.resolve({ data: [], error: null } as { data: unknown[] | null; error: null }),
+            ? supabase.from('evaluacion_intentos').select('evaluacion_id').eq('user_id', user.id).in('evaluacion_id', evaluacionIds)
+            : Promise.resolve({ data: [] }),
         ]);
         if (cancelled) return;
-        if (intActRes.error) throw intActRes.error;
-        if (intEvalRes.error) throw intEvalRes.error;
-        const completadasAct = new Set(
-          ((intActRes.data ?? []) as { actividad_id: string }[]).map((i) => i.actividad_id)
-        ).size;
-        const completadasEval = new Set(
-          ((intEvalRes.data ?? []) as { evaluacion_id: string }[]).map((i) => i.evaluacion_id)
-        ).size;
-        setProgreso({ total, completadas: completadasAct + completadasEval });
+        const completadas =
+          new Set(((intActRes.data ?? []) as { actividad_id: string }[]).map((i) => i.actividad_id)).size +
+          new Set(((intEvalRes.data ?? []) as { evaluacion_id: string }[]).map((i) => i.evaluacion_id)).size;
+        setProgreso({ total, completadas });
       } catch {
-        if (!cancelled) {
-          setProgreso(null);
-        }
+        if (!cancelled) setProgreso(null);
       } finally {
         if (!cancelled) setLoadingProgreso(false);
       }
     }
-
-    calcularProgreso();
+    void calcularProgreso();
     return () => {
       cancelled = true;
     };
@@ -144,256 +169,279 @@ export default function TemaView() {
     };
   }, [user, tema?.prerequisito_tema_id, tema?.id]);
 
-  if (loadingTema || !tema) {
-    return <SkeletonLines lines={5} />;
-  }
-  if (authLoading || !profile) {
-    return <p className="text-atenas-muted text-lg">Cargando perfil...</p>;
-  }
-
+  if (loadingTema || !tema) return <SkeletonLines lines={5} />;
+  if (authLoading || !profile) return <p className="text-atenas-muted text-lg">Cargando perfil...</p>;
   if (tema.prerequisito_tema_id && !prereqResolved) {
     return <p className="text-atenas-muted-strong">Comprobando acceso al tema…</p>;
   }
   if (!prereqOk && tema.prerequisito_tema_id) {
     return (
       <div className="max-w-lg">
-        <button
-          type="button"
-          onClick={() => navigate(`/unidades/${tema.unidad_id}`)}
-          className="text-sm font-medium mb-4 min-h-touch text-[#1F2D2A] hover:text-atenas-blue"
-        >
+        <button type="button" onClick={() => navigate(`/unidades/${tema.unidad_id}`)} className="text-sm font-medium mb-4 min-h-touch text-atenas-ink hover:text-atenas-blue">
           ← Volver a la unidad
         </button>
         <div className="card p-6 border-2 border-amber-300 bg-amber-50">
           <h1 className="text-xl font-bold text-amber-950">Tema bloqueado</h1>
-          <p className="text-amber-900 mt-2">
-            Debes completar todas las actividades y evaluaciones publicadas del tema anterior antes
-            de acceder a este contenido.
-          </p>
+          <p className="text-amber-900 mt-2">Completa el tema anterior antes de continuar.</p>
         </div>
       </div>
     );
   }
 
-  function RecursoItem({ r }: { r: Recurso }) {
-    return (
-      <li className="rounded-xl border border-atenas-mist-border bg-white p-4 shadow-card">
-        {r.title && <h3 className="font-medium text-atenas-ink mb-2">{r.title}</h3>}
-        {r.tipo === 'texto' && (
-          <div className="text-atenas-ink whitespace-pre-wrap text-base leading-relaxed">
-            {r.contenido || r.url}
-          </div>
-        )}
-        {r.tipo === 'imagen' && (
-          <img src={r.url} alt={r.title ?? ''} className="max-w-full rounded-lg mt-2" loading="lazy" />
-        )}
-        {r.tipo === 'mapa' && (
-          <img src={r.url} alt={r.title ?? 'Mapa'} className="max-w-full rounded-lg mt-2" loading="lazy" />
-        )}
-        {r.tipo === 'video' && <video src={r.url} controls className="max-w-full rounded-lg mt-2" />}
-        {r.tipo === 'audio' && <audio src={r.url} controls className="w-full mt-2" />}
-        {r.tipo === 'pdf' && r.url && (
-          <div className="mt-2 space-y-2">
-            <a
-              href={r.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium text-atenas-blue hover:underline"
-            >
-              Descargar PDF
-            </a>
-            <iframe
-              src={r.url}
-              title={r.title ?? 'Documento PDF'}
-              className="hidden sm:block w-full min-h-[320px] rounded-lg border border-atenas-mist-border"
-            />
-          </div>
-        )}
-      </li>
-    );
-  }
-
-  const hasTheoryBlock = !!(tema.content || recursosTeoria.length > 0 || recursosPdf.length > 0);
-  const hasVideoBlock = recursosVideo.length > 0 || recursosAudio.length > 0;
-  const hasActividades = actividades.filter((a) => a.publicada).length > 0;
-  const hasEvaluaciones =
-    evaluaciones.filter((e) =>
-      esEstudiante ? e.publicada && e.es_micro_quiz !== true : e.publicada
-    ).length > 0;
-
-  let sec = 0; // numeración dinámica de secciones visibles
-  const stepTheory = hasTheoryBlock ? ++sec : 0;
-  const stepVideo = hasVideoBlock ? ++sec : 0;
-  const stepAct = hasActividades ? ++sec : 0;
-  const stepEval = hasEvaluaciones ? ++sec : 0;
+  const showStudentLayout = esEstudiante;
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => navigate(`/unidades/${tema.unidad_id}`)}
-        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 transition-colors text-atenas-ink hover:bg-atenas-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
-      >
-        ← Volver a la unidad
-      </button>
-      <h1 className="text-page-title font-bold text-[#1F2D2A] mb-6">{tema.title}</h1>
+    <div className={cn(readingMode && 'reading-mode', '-mx-4 sm:-mx-6 px-4 sm:px-6')}>
+      {/* Header */}
+      <header className="mb-5">
+        <nav className="text-xs text-atenas-muted mb-2 flex flex-wrap items-center gap-1" aria-label="Ruta">
+          <Link to="/unidades" className="hover:text-atenas-ink font-medium">Unidades</Link>
+          <span aria-hidden>/</span>
+          {unidad && (
+            <>
+              <Link to={`/unidades/${unidad.id}`} className="hover:text-atenas-ink font-medium truncate max-w-[140px]">
+                {unidad.title}
+              </Link>
+              <span aria-hidden>/</span>
+            </>
+          )}
+          <span className="text-atenas-ink font-semibold truncate">{tema.title}</span>
+        </nav>
 
-      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion === 'inicio' && esEstudiante ? (
-        <div className="mb-8">
-          <MicroQuizCard evaluacion={microQuizEvaluacion} defaultCollapsed />
-        </div>
-      ) : null}
-
-      {progreso && (
-        <div className="rounded-2xl border border-atenas-mist-border bg-atenas-card p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-card">
-          <div>
-            <p className="text-sm text-atenas-muted">
-              Progreso en este tema:&nbsp;
-              <span className="font-semibold text-atenas-ink">
-                {progreso.completadas} de {progreso.total} actividades/evaluaciones
-              </span>
-            </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-atenas-ink">{tema.title}</h1>
+            {unidad && <p className="text-sm text-atenas-muted mt-0.5">{unidad.title}</p>}
           </div>
-          <div className="flex-1 max-w-xs w-full">
-            <div className="w-full h-3 rounded-full bg-[#1F2D2A]/10 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-atenas-blue"
-                style={{
-                  width: `${Math.round((progreso.completadas / progreso.total) * 100)}%`,
-                }}
-              />
+          {showStudentLayout && (
+            <div className="flex items-center gap-3 shrink-0">
+              <label className="flex items-center gap-2 text-sm text-atenas-muted-strong cursor-pointer min-h-touch">
+                <input
+                  type="checkbox"
+                  checked={readingMode}
+                  onChange={(e) => setReadingMode(e.target.checked)}
+                  className="rounded border-atenas-mist-border"
+                />
+                Modo lectura
+              </label>
+              <button type="button" className="p-2 rounded-xl text-atenas-muted hover:bg-white/80 min-h-touch" aria-label="Pantalla completa" onClick={() => document.documentElement.requestFullscreen?.()}>
+                <Maximize2 className="w-5 h-5" />
+              </button>
             </div>
-            {loadingProgreso ? (
-              <p className="text-[11px] text-atenas-muted mt-1">Calculando progreso...</p>
-            ) : (
-              <p className="text-[11px] text-atenas-muted mt-1">
-                {Math.round((progreso.completadas / progreso.total) * 100)}% completado
-              </p>
-            )}
+          )}
+        </div>
+
+        {progreso && (
+          <div className="mt-4 rounded-xl bg-white/80 border border-atenas-mist-border px-4 py-2 flex items-center gap-3">
+            <BookOpen className="w-4 h-4 text-atenas-blue shrink-0" aria-hidden />
+            <div className="flex-1">
+              <div className="h-2 rounded-full bg-atenas-mist overflow-hidden">
+                <div
+                  className="h-full bg-atenas-success rounded-full transition-all"
+                  style={{ width: `${Math.round((progreso.completadas / progreso.total) * 100)}%` }}
+                />
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-atenas-ink tabular-nums shrink-0">
+              {loadingProgreso ? '…' : `${progreso.completadas}/${progreso.total}`}
+            </span>
           </div>
+        )}
+      </header>
+
+      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion === 'inicio' && esEstudiante && (
+        <div className="mb-6">
+          <MicroQuizCard evaluacion={microQuizEvaluacion} defaultCollapsed />
         </div>
       )}
 
-      {hasTheoryBlock ? (
-        <SectionAccordion
-          step={stepTheory}
-          title="Teoría"
-          description="Texto base y material de apoyo visual (imágenes y mapas)."
-        >
-          {loadingRecursos && !tema.content ? (
-            <p className="text-atenas-muted">Cargando…</p>
-          ) : (
-            <>
-              {tema.content && (
-                <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed text-base mb-6 last:mb-0">
-                  {tema.content}
-                </div>
+      {showStudentLayout ? (
+        <>
+          <LessonTabs active={tab} onChange={setTab} />
+
+          <div className="mt-5 grid grid-cols-1 lg:grid-cols-[11rem_minmax(0,1fr)_17rem] xl:grid-cols-[12rem_minmax(0,1fr)_18rem] gap-5 lg:gap-6">
+            {tab === 'contenido' && (
+              <aside className="hidden lg:block">
+                <LessonSectionNav sections={sections} activeId={activeSection} onSelect={scrollToSection} />
+              </aside>
+            )}
+
+            <div className="min-w-0 space-y-6">
+              {tab === 'contenido' && (
+                <>
+                  {hasTheoryBlock && (
+                    <section id="section-teoria" className="rounded-2xl bg-white border border-atenas-mist-border p-5 sm:p-6 shadow-card scroll-mt-4">
+                      <h2 className="text-lg font-bold text-atenas-ink mb-4">Introducción</h2>
+                      {tema.content && (
+                        <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed text-base mb-6">{tema.content}</div>
+                      )}
+                      {loadingRecursos && !tema.content ? (
+                        <p className="text-atenas-muted">Cargando…</p>
+                      ) : (
+                        <ul className="space-y-4 list-none m-0 p-0">
+                          {recursosTeoria.map((r) => (
+                            <RecursoItem key={r.id} r={r} />
+                          ))}
+                          {recursosPdf.map((r) => (
+                            <RecursoItem key={r.id} r={r} />
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  )}
+
+                  {recursosTeoria.length >= 2 && (
+                    <div id="section-timeline" className="scroll-mt-4">
+                      <TimelineSection recursos={recursosTeoria} />
+                    </div>
+                  )}
+
+                  {hasVideoBlock && (
+                    <section id="section-video" className="rounded-2xl bg-white border border-atenas-mist-border p-5 shadow-card scroll-mt-4">
+                      <h2 className="text-lg font-bold text-atenas-ink mb-4">Video y audio</h2>
+                      <ul className="space-y-4 list-none m-0 p-0">
+                        {recursosVideo.map((r) => (
+                          <RecursoItem key={r.id} r={r} />
+                        ))}
+                        {recursosAudio.map((r) => (
+                          <RecursoItem key={r.id} r={r} />
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+
+                  {hasActividades && (
+                    <section id="section-actividades" className="scroll-mt-4">
+                      <h2 className="text-lg font-bold text-atenas-ink mb-3">Actividades</h2>
+                      <ul className="space-y-3 list-none m-0 p-0">
+                        {actividades.filter((a) => a.publicada).map((a) => (
+                          <li key={a.id}>
+                            <Link to={`/actividades/${a.id}`} className="block p-4 rounded-xl border border-atenas-mist-border bg-white shadow-card card-hover">
+                              <span className="text-xs font-semibold uppercase text-atenas-blue">{a.tipo.replace(/_/g, ' ')}</span>
+                              <h3 className="font-bold text-atenas-ink mt-1">{a.title}</h3>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+
+                  {hasEvaluaciones && (
+                    <section id="section-evaluacion" className="scroll-mt-4">
+                      <h2 className="text-lg font-bold text-atenas-ink mb-3">Evaluación</h2>
+                      <ul className="space-y-3 list-none m-0 p-0">
+                        {(esEstudiante ? evaluaciones.filter((e) => e.publicada && e.es_micro_quiz !== true) : evaluaciones.filter((e) => e.publicada)).map((e) => (
+                          <li key={e.id}>
+                            <Link to={`/evaluaciones/${e.id}`} className="block p-4 rounded-xl border border-atenas-mist-border bg-white shadow-card card-hover">
+                              <span className="text-xs font-semibold uppercase text-atenas-ink">Cuestionario</span>
+                              <h3 className="font-bold text-atenas-ink mt-1">{e.title}</h3>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+
+                  <MascotTip>Lee con atención cada sección y completa las actividades para ganar XP.</MascotTip>
+                </>
               )}
-              {recursosTeoria.length > 0 && (
-                <ul className="space-y-4 list-none m-0 p-0">
-                  {recursosTeoria.map((r) => (
-                    <RecursoItem key={r.id} r={r} />
-                  ))}
-                </ul>
+
+              {tab === 'recursos' && (
+                loadingRecursos ? (
+                  <p className="text-atenas-muted">Cargando recursos…</p>
+                ) : (
+                  <ResourcesSplitView recursos={recursos} />
+                )
               )}
-              {recursosPdf.length > 0 && (
-                <ul className="space-y-4 list-none m-0 p-0 mt-6">
-                  {recursosPdf.map((r) => (
-                    <RecursoItem key={r.id} r={r} />
-                  ))}
-                </ul>
+
+              {tab === 'actividades' && (
+                <section>
+                  {loadingActividades ? (
+                    <p className="text-atenas-muted">Cargando…</p>
+                  ) : !hasActividades && !hasEvaluaciones ? (
+                    <p className="text-atenas-muted">No hay actividades publicadas.</p>
+                  ) : (
+                    <ul className="space-y-3 list-none m-0 p-0">
+                      {actividades.filter((a) => a.publicada).map((a) => (
+                        <li key={a.id}>
+                          <Link to={`/actividades/${a.id}`} className="block p-4 rounded-xl border bg-white shadow-card card-hover">
+                            <h3 className="font-bold text-atenas-ink">{a.title}</h3>
+                          </Link>
+                        </li>
+                      ))}
+                      {(esEstudiante ? evaluaciones.filter((e) => e.publicada && e.es_micro_quiz !== true) : evaluaciones.filter((e) => e.publicada)).map((e) => (
+                        <li key={e.id}>
+                          <Link to={`/evaluaciones/${e.id}`} className="block p-4 rounded-xl border bg-white shadow-card card-hover">
+                            <h3 className="font-bold text-atenas-ink">{e.title}</h3>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
               )}
-            </>
+
+              {tab === 'notas' && <LessonNotesWidget temaId={tema.id} />}
+            </div>
+
+            <aside className="lesson-widgets space-y-4 hidden lg:block">
+              <LessonNotesWidget temaId={tema.id} compact />
+              <LessonMapWidget recursos={recursos} />
+              <LessonForumWidget temaId={tema.id} compact />
+            </aside>
+          </div>
+
+          {/* Footer nav temas */}
+          <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-atenas-mist-border pt-6">
+            {prevTema ? (
+              <button
+                type="button"
+                onClick={() => navigate(`/temas/${prevTema.id}`)}
+                className="btn-secondary flex items-center gap-2 text-sm"
+              >
+                <ChevronLeft className="w-4 h-4" aria-hidden />
+                Anterior
+              </button>
+            ) : (
+              <span />
+            )}
+            {temasUnidad.length > 0 && (
+              <p className="text-sm text-atenas-muted font-medium">
+                Tema {temaIndex + 1} / {temasUnidad.length}
+              </p>
+            )}
+            {nextTema ? (
+              <button
+                type="button"
+                onClick={() => navigate(`/temas/${nextTema.id}`)}
+                className="btn-primary flex items-center gap-2 text-sm"
+              >
+                Siguiente
+                <ChevronRight className="w-4 h-4" aria-hidden />
+              </button>
+            ) : (
+              <button type="button" onClick={() => navigate(`/unidades/${tema.unidad_id}`)} className="btn-primary text-sm">
+                Volver a unidad
+              </button>
+            )}
+          </footer>
+        </>
+      ) : (
+        /* Vista docente/admin simplificada */
+        <div className="space-y-6">
+          {tema.content && (
+            <div className="card p-6 whitespace-pre-wrap">{tema.content}</div>
           )}
-        </SectionAccordion>
-      ) : null}
+          <ResourcesSplitView recursos={recursos} />
+          <TemaMensajes temaId={tema.id} />
+        </div>
+      )}
 
-      {hasVideoBlock ? (
-        <SectionAccordion
-          step={stepVideo}
-          title="Video y audio"
-          description="Mira y escucha el material audiovisual del tema."
-        >
-          {loadingRecursos ? (
-            <p className="text-atenas-muted">Cargando recursos...</p>
-          ) : (
-            <ul className="space-y-4 list-none m-0 p-0">
-              {recursosVideo.map((r) => (
-                <RecursoItem key={r.id} r={r} />
-              ))}
-              {recursosAudio.map((r) => (
-                <RecursoItem key={r.id} r={r} />
-              ))}
-            </ul>
-          )}
-        </SectionAccordion>
-      ) : null}
-
-      {loadingActividades ? (
-        <p className="text-atenas-muted mt-4">Cargando actividades...</p>
-      ) : hasActividades ? (
-        <SectionAccordion
-          step={stepAct}
-          title="Actividades"
-          description="Practica con ejercicios interactivos publicados."
-        >
-          <ul className="space-y-3 list-none m-0 p-0">
-            {actividades
-              .filter((a) => a.publicada)
-              .map((a) => (
-                <li key={a.id}>
-                  <Link
-                    to={`/actividades/${a.id}`}
-                    className="block p-4 rounded-xl border border-atenas-mist-border bg-white shadow-card card-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
-                  >
-                    <span className="text-xs font-semibold uppercase tracking-wide text-atenas-blue">
-                      {a.tipo.replace(/_/g, ' ')}
-                    </span>
-                    <h3 className="font-bold text-atenas-ink mt-1">{a.title}</h3>
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </SectionAccordion>
-      ) : null}
-
-      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion !== 'inicio' && esEstudiante ? (
-        <div className="mb-10">
+      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion !== 'inicio' && esEstudiante && (
+        <div className="mt-8">
           <MicroQuizCard evaluacion={microQuizEvaluacion} defaultCollapsed />
         </div>
-      ) : null}
-
-      {loadingEvaluaciones ? (
-        <p className="text-atenas-muted mt-4">Cargando evaluaciones...</p>
-      ) : hasEvaluaciones ? (
-        <SectionAccordion
-          step={stepEval}
-          title="Evaluación"
-          description="Demuestra lo aprendido con cuestionarios o retos."
-        >
-          <ul className="space-y-3 list-none m-0 p-0">
-            {(esEstudiante
-              ? evaluaciones.filter((e) => e.publicada && e.es_micro_quiz !== true)
-              : evaluaciones.filter((e) => e.publicada)
-            ).map((e) => (
-              <li key={e.id}>
-                <Link
-                  to={`/evaluaciones/${e.id}`}
-                  className="block p-4 rounded-xl border border-atenas-mist-border bg-white shadow-card card-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
-                >
-                  <span className="text-xs font-semibold uppercase tracking-wide text-atenas-ink">
-                    Cuestionario
-                  </span>
-                  <h3 className="font-bold text-atenas-ink mt-1">{e.title}</h3>
-                  {e.descripcion && <p className="text-atenas-muted text-sm mt-1">{e.descripcion}</p>}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </SectionAccordion>
-      ) : null}
-
-      {esEstudiante ? null : <TemaMensajes temaId={tema.id} />}
+      )}
     </div>
   );
 }

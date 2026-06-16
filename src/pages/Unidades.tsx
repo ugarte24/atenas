@@ -63,12 +63,12 @@ export default function Unidades() {
   return (
     <div className="max-w-6xl mx-auto pb-8">
       <PageHeader
-        eyebrow="Plataforma ATENAS"
-        title="Contenidos"
+        eyebrow="ATENAS"
+        title="Unidades"
         description={
           esDocenteOAdmin
             ? undefined
-            : 'Elige una unidad y sigue tu ruta: cada una tiene temas, actividades y retos para aprender Ciencias Sociales.'
+            : 'Explora cada isla del recorrido: temas, actividades y evaluaciones.'
         }
       />
       {esDocenteOAdmin && (

@@ -1,26 +1,19 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { StudentBottomNav } from './StudentBottomNav';
+import { StudentSidebar } from './StudentSidebar';
+import { DocenteSidebar } from './DocenteSidebar';
 import { AppDrawer, type DrawerLink } from './AppDrawer';
-import { Badge } from './ui/Badge';
 import { cn } from './ui/cn';
 
 type Props = { children: React.ReactNode };
 
-function navClassName({ isActive }: { isActive: boolean }) {
-  return cn(
-    'text-sm font-medium rounded-xl px-3 py-2.5 min-h-touch flex items-center transition-colors whitespace-nowrap',
-    isActive
-      ? 'bg-atenas-mist text-atenas-ink font-semibold shadow-soft'
-      : 'text-atenas-muted hover:text-atenas-ink hover:bg-atenas-mist/80'
-  );
-}
-
 export function Layout({ children }: Props) {
   const { profile, signOut } = useAuthContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   async function handleSignOut() {
@@ -29,114 +22,136 @@ export function Layout({ children }: Props) {
   }
 
   const esEstudiante = profile?.role === 'estudiante';
+  const enDocente = location.pathname.startsWith('/docente');
+  const enLeccion =
+    location.pathname.startsWith('/temas/') ||
+    location.pathname.startsWith('/actividades/') ||
+    location.pathname.startsWith('/evaluaciones/');
+  const esDocenteOAdmin =
+    profile?.role === 'docente' || profile?.role === 'admin';
+  const showDocenteSidebar = esDocenteOAdmin && enDocente;
+  const showStudentSidebar = esEstudiante;
 
   const drawerLinks: DrawerLink[] = profile
     ? [
         ...(esEstudiante
           ? [
               { to: '/', label: 'Inicio', end: true },
-              { to: '/unidades', label: 'Contenidos' },
+              { to: '/unidades', label: 'Unidades' },
+              { to: '/misiones', label: 'Misiones' },
               { to: '/progreso', label: 'Progreso' },
               { to: '/logros', label: 'Logros' },
+              { to: '/certificados', label: 'Certificados' },
             ]
           : []),
         { to: '/perfil', label: 'Mi perfil' },
-        ...(profile.role === 'docente' || profile.role === 'admin'
-          ? [{ to: '/docente', label: 'Panel docente' }]
-          : []),
+        ...(esDocenteOAdmin ? [{ to: '/docente', label: 'Panel docente' }] : []),
         ...(profile.role === 'admin' ? [{ to: '/admin', label: 'Administración' }] : []),
       ]
     : [];
 
   return (
-    <div className="min-h-screen flex flex-col bg-atenas-page">
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-atenas-mist-border shadow-soft pt-safe">
-        <div className="page-container py-3 flex items-center justify-between gap-3 min-w-0">
-          <Link
-            to="/"
-            className="atenas-logo hover:opacity-90 focus:outline-none rounded-lg px-1.5 py-2 min-h-touch flex shrink-0 items-center transition-opacity"
-          >
-            ATENAS
-          </Link>
+    <div className="min-h-screen flex bg-atenas-page">
+      {showStudentSidebar && (
+        <StudentSidebar onSignOut={handleSignOut} className="hidden lg:flex" />
+      )}
+      {showDocenteSidebar && (
+        <DocenteSidebar onSignOut={handleSignOut} className="hidden lg:flex" />
+      )}
 
-          {profile && (
-            <>
-              {/* Desktop nav */}
-              <nav
-                className="hidden md:flex items-center justify-end gap-1 flex-1 min-w-0"
-                aria-label="Principal"
-              >
-                <Badge tone="muted" className="capitalize mr-1 shrink-0 hidden lg:inline-flex">
-                  {profile.role}
-                </Badge>
-                {esEstudiante && (
-                  <>
-                    <NavLink to="/unidades" className={navClassName}>
-                      Contenidos
-                    </NavLink>
-                    <NavLink to="/progreso" className={navClassName}>
-                      Progreso
-                    </NavLink>
-                    <NavLink to="/logros" className={navClassName}>
-                      Logros
-                    </NavLink>
-                  </>
-                )}
-                <NavLink to="/perfil" className={navClassName}>
-                  Perfil
-                </NavLink>
-                {(profile.role === 'docente' || profile.role === 'admin') && (
-                  <NavLink to="/docente" className={navClassName}>
-                    Docente
-                  </NavLink>
-                )}
-                {profile.role === 'admin' && (
-                  <NavLink to="/admin" className={navClassName}>
-                    Admin
-                  </NavLink>
-                )}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {/* Barra superior móvil / admin sin sidebar */}
+        <header
+          className={cn(
+            'sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-atenas-mist-border shadow-soft pt-safe',
+            (showStudentSidebar || showDocenteSidebar) && 'lg:hidden'
+          )}
+        >
+          <div className="page-container py-3 flex items-center justify-between gap-3 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              {profile && (showStudentSidebar || showDocenteSidebar) && (
                 <button
                   type="button"
-                  onClick={handleSignOut}
-                  className="text-sm font-medium text-atenas-muted hover:text-red-700 hover:bg-red-50 rounded-xl px-3 py-2.5 min-h-touch transition-colors ml-1"
+                  className="flex lg:hidden items-center justify-center min-h-touch min-w-touch rounded-xl text-atenas-ink hover:bg-atenas-mist shrink-0"
+                  aria-label="Abrir menú"
+                  onClick={() => setDrawerOpen(true)}
                 >
-                  Salir
+                  <Menu className="w-6 h-6" />
                 </button>
-              </nav>
+              )}
+              <Link
+                to="/"
+                className="flex items-center gap-2 min-h-touch shrink-0 rounded-lg hover:opacity-90 transition-opacity min-w-0"
+              >
+                <img src="/logo-athena.png" alt="" className="w-9 h-9 object-contain shrink-0" />
+                <span className="font-atenas font-bold text-atenas-ink text-lg tracking-wide truncate">
+                  ATENAS
+                </span>
+              </Link>
+            </div>
 
-              {/* Mobile menu button */}
+            {profile && !showStudentSidebar && !showDocenteSidebar && (
               <button
                 type="button"
-                className="md:hidden flex items-center justify-center min-h-touch min-w-touch rounded-xl text-atenas-ink hover:bg-atenas-mist"
+                className="flex md:hidden items-center justify-center min-h-touch min-w-touch rounded-xl text-atenas-ink hover:bg-atenas-mist shrink-0"
                 aria-label="Abrir menú"
                 onClick={() => setDrawerOpen(true)}
               >
                 <Menu className="w-6 h-6" />
               </button>
-            </>
-          )}
-        </div>
-      </header>
+            )}
 
-      {profile && (
-        <AppDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          links={drawerLinks}
-          role={profile.role}
-          onSignOut={handleSignOut}
-        />
-      )}
+            {profile && !showStudentSidebar && !showDocenteSidebar && (
+              <nav className="hidden md:flex items-center gap-2" aria-label="Principal">
+                <Link
+                  to="/perfil"
+                  className="text-sm font-medium text-atenas-muted hover:text-atenas-ink px-3 py-2 rounded-xl"
+                >
+                  Perfil
+                </Link>
+                {profile.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="text-sm font-medium text-atenas-muted hover:text-atenas-ink px-3 py-2 rounded-xl"
+                  >
+                    Admin
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="text-sm font-medium text-atenas-muted hover:text-red-700 px-3 py-2 rounded-xl"
+                >
+                  Salir
+                </button>
+              </nav>
+            )}
+          </div>
+        </header>
 
-      <main
-        className={cn(
-          'flex-1 page-container py-6 sm:py-8',
-          esEstudiante ? 'pb-24 md:pb-8' : 'pb-10 sm:pb-8'
+        {profile && (
+          <AppDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            links={drawerLinks}
+            role={profile.role}
+            onSignOut={handleSignOut}
+          />
         )}
-      >
-        {children}
-      </main>
-      {esEstudiante && <StudentBottomNav />}
+
+        <main
+          className={cn(
+            'flex-1 page-container py-5 sm:py-8',
+            esEstudiante && 'pb-24 lg:pb-8',
+            showDocenteSidebar && 'pb-24 lg:pb-8',
+            enLeccion && esEstudiante && 'lesson-cream-bg max-w-none rounded-none'
+          )}
+        >
+          {children}
+        </main>
+
+        {esEstudiante && <StudentBottomNav />}
+      </div>
     </div>
   );
 }

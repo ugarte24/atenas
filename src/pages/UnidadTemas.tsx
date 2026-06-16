@@ -1,5 +1,6 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Lock, Play } from 'lucide-react';
 import { useUnidad } from '../hooks/useUnidad';
 import { useTemas } from '../hooks/useTemas';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -9,10 +10,14 @@ import { UnidadHero } from '../components/UnidadHero';
 import { UnidadMediaBlock } from '../components/UnidadMediaBlock';
 import { UnidadIntroExtended } from '../components/UnidadIntroExtended';
 import { resolveAccentColor } from '../lib/unidadVisual';
+import { cn } from '../components/ui/cn';
+
+type UnidadTab = 'temas' | 'recursos' | 'actividades' | 'evaluaciones';
 
 export default function UnidadTemas() {
   const { unidadId } = useParams<{ unidadId: string }>();
   const navigate = useNavigate();
+  const [tab, setTab] = useState<UnidadTab>('temas');
   const { user, profile } = useAuthContext();
   const nombreEstudiante = profile?.full_name ?? 'Estudiante';
   const { unidad, loading: loadingUnidad } = useUnidad(unidadId ?? null);
@@ -95,7 +100,45 @@ export default function UnidadTemas() {
 
       <UnidadIntroExtended text={unidad.intro_extended} />
 
-      {mostrarCert && (
+      <div className="flex gap-1 overflow-x-auto scrollbar-nav-hide border-b border-atenas-mist-border mb-6" role="tablist">
+        {(
+          [
+            { id: 'temas' as const, label: 'Temas' },
+            { id: 'recursos' as const, label: 'Recursos' },
+            { id: 'actividades' as const, label: 'Actividades' },
+            { id: 'evaluaciones' as const, label: 'Evaluaciones' },
+          ] as const
+        ).map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={cn(
+              'shrink-0 px-4 py-2.5 text-sm font-semibold rounded-t-xl min-h-touch transition-colors',
+              tab === id ? 'bg-atenas-sidebar text-white' : 'text-atenas-muted hover:bg-atenas-mist'
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab !== 'temas' && (
+        <div className="rounded-2xl border border-atenas-mist-border bg-white p-6 mb-6 text-center shadow-card">
+          <p className="text-atenas-muted">
+            Abre cada tema para ver {tab === 'recursos' ? 'recursos' : tab} disponibles.
+          </p>
+          {temas[0] && !bloqueoTema[temas[0].id] && (
+            <Link to={`/temas/${temas[0].id}`} className="btn-primary inline-flex mt-4 text-sm">
+              Ir al primer tema
+            </Link>
+          )}
+        </div>
+      )}
+
+      {tab === 'temas' && mostrarCert && (
         <div className="mb-6">
           <button
             type="button"
@@ -124,50 +167,46 @@ export default function UnidadTemas() {
         </div>
       )}
 
-      {loading ? (
+      {tab === 'temas' && loading ? (
         <p className="text-atenas-muted text-lg">Cargando temas...</p>
-      ) : (
+      ) : tab === 'temas' ? (
         <ul className="space-y-3 list-none m-0 p-0">
           {temas.map((t, i) => {
             const bloqueado = bloqueoTema[t.id] === true;
             return (
               <li key={t.id}>
                 {bloqueado ? (
-                  <div
-                    className="flex items-center gap-4 p-5 rounded-2xl border-2 border-atenas-mist-border bg-atenas-mist/80 opacity-95"
-                    aria-disabled="true"
-                  >
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-atenas-page0 text-white font-bold">
-                      {i + 1}
+                  <div className="flex items-center gap-4 p-5 rounded-2xl border-2 border-atenas-mist-border bg-atenas-mist/80 opacity-95" aria-disabled="true">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-gray-400 text-white">
+                      <Lock className="w-5 h-5" aria-hidden />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-bold text-atenas-muted uppercase">Tema {i + 1}</span>
                       <h2 className="text-lg font-bold text-atenas-muted-strong">{t.title}</h2>
-                      <p className="text-sm text-atenas-muted mt-1">
-                        Completa el tema anterior para desbloquear.
-                      </p>
+                      <p className="text-sm text-atenas-muted mt-1">Completa el tema anterior para desbloquear.</p>
                     </div>
                   </div>
                 ) : (
                   <Link
                     to={`/temas/${t.id}`}
-                    className="flex items-center gap-4 p-5 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2 border-2 border-atenas-mist-border bg-white shadow-card hover:shadow-card-hover transition-shadow"
+                    className="flex items-center gap-4 p-5 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink border-2 border-atenas-mist-border bg-white shadow-card hover:shadow-card-hover transition-shadow"
                   >
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-lg"
-                      style={{ backgroundColor: accent }}
-                    >
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-lg" style={{ backgroundColor: accent }}>
                       {i + 1}
                     </div>
-                    <h2 className="text-lg font-bold text-atenas-ink">{t.title}</h2>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-lg font-bold text-atenas-ink">{t.title}</h2>
+                    </div>
+                    <Play className="w-5 h-5 text-atenas-success shrink-0" aria-hidden />
                   </Link>
                 )}
               </li>
             );
           })}
         </ul>
-      )}
+      ) : null}
 
-      {temas.length === 0 && !loading && (
+      {tab === 'temas' && temas.length === 0 && !loading && (
         <div className="rounded-2xl border border-atenas-mist-border bg-atenas-card p-8 text-center shadow-card">
           <p className="text-atenas-muted text-lg">No hay temas en esta unidad todavía.</p>
         </div>

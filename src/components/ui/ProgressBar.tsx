@@ -6,7 +6,7 @@ type Props = {
   label?: string;
   showPercent?: boolean;
   size?: 'sm' | 'md' | 'lg';
-  tone?: 'blue' | 'gold' | 'ink';
+  tone?: 'blue' | 'gold' | 'ink' | 'success';
   className?: string;
 };
 
@@ -15,6 +15,7 @@ const fillClass = {
   blue: 'bg-atenas-blue',
   gold: 'bg-atenas-gold',
   ink: 'bg-atenas-ink',
+  success: 'bg-atenas-success',
 };
 
 export function ProgressBar({

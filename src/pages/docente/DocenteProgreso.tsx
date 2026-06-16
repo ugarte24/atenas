@@ -5,9 +5,11 @@ import { formatTiempoEstudio } from '../../lib/formatTiempo';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { StatCard } from '../../components/ui/StatCard';
 import { ResponsiveTable } from '../../components/ui/ResponsiveTable';
 import { SkeletonLines } from '../../components/ui/Skeleton';
 import { Card } from '../../components/ui/Card';
+import { Users, ClipboardCheck, TrendingUp } from 'lucide-react';
 import type { ProgresoEstudiante } from '../../hooks/useProgresoEstudiantes';
 
 export default function DocenteProgreso() {
@@ -110,6 +112,11 @@ export default function DocenteProgreso() {
     []
   );
 
+  const promedioEval = useMemo(() => {
+    if (!filtrados.length) return 0;
+    return Math.round(filtrados.reduce((a, e) => a + e.promedioEvaluaciones, 0) / filtrados.length);
+  }, [filtrados]);
+
   if (loading) {
     return (
       <div>
@@ -137,6 +144,16 @@ export default function DocenteProgreso() {
           </Button>
         }
       />
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+        <StatCard label="Estudiantes" value={filtrados.length} icon={<Users className="w-5 h-5 text-atenas-blue" />} />
+        <StatCard
+          label="Con actividad"
+          value={filtrados.filter((e) => e.actividadesCompletadas > 0).length}
+          icon={<ClipboardCheck className="w-5 h-5 text-atenas-success" />}
+        />
+        <StatCard label="Prom. evaluaciones" value={`${promedioEval}%`} icon={<TrendingUp className="w-5 h-5 text-violet-600" />} />
+      </div>
 
       <div className="mb-4 max-w-md">
         <Input

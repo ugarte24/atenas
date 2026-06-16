@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import { useEstudianteDashboard } from '../hooks/useEstudianteDashboard';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Input } from '../components/ui/Input';
+import { ProgressBar } from '../components/ui/ProgressBar';
+import { Link } from 'react-router-dom';
 import type { UserRole } from '../types';
 
 type Tab = 'datos' | 'progreso';
@@ -35,6 +37,42 @@ export default function Perfil() {
   return (
     <div className="max-w-3xl mx-auto space-y-6 px-1 sm:px-0">
       <PageHeader title="Mi perfil" description="Actualiza tus datos y revisa tu progreso." />
+
+      {esEstudiante && !dash.loading && (
+        <div className="atenas-sidebar-panel rounded-2xl p-6 mb-6 shadow-elevated">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-atenas-gold border-2 border-amber-300 flex items-center justify-center text-2xl font-bold text-atenas-ink">
+              {dash.nivel.nivel}
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <p className="font-bold text-lg text-white">{profile.full_name}</p>
+              <p className="sidebar-muted text-sm font-medium">
+                Nivel {dash.nivel.nivel} · {dash.nivel.nombre}
+              </p>
+              <p className="text-atenas-gold text-sm font-bold mt-1">{dash.xp} XP</p>
+              {dash.nivel.xpParaSiguiente != null && (
+                <div className="mt-2">
+                  <ProgressBar value={dash.nivel.progresoEnNivel} size="sm" tone="gold" />
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 text-center text-sm">
+              <Link to="/logros" className="rounded-xl bg-white/15 px-4 py-2 hover:bg-white/25 min-h-touch flex flex-col justify-center">
+                <span className="font-bold text-atenas-gold">{dash.logros.length}</span>
+                <span className="sidebar-muted text-xs font-medium">Logros</span>
+              </Link>
+              <Link to="/certificados" className="rounded-xl bg-white/15 px-4 py-2 hover:bg-white/25 min-h-touch flex flex-col justify-center">
+                <span className="font-bold text-lg" aria-hidden>📜</span>
+                <span className="sidebar-muted text-xs font-medium">Certificados</span>
+              </Link>
+              <Link to="/misiones" className="rounded-xl bg-white/15 px-4 py-2 hover:bg-white/25 min-h-touch flex flex-col justify-center">
+                <span className="font-bold text-lg" aria-hidden>🎯</span>
+                <span className="sidebar-muted text-xs font-medium">Misiones</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {esEstudiante && (
         <div

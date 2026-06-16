@@ -11,6 +11,9 @@ const Home = lazy(() => import('./pages/Home'));
 const Perfil = lazy(() => import('./pages/Perfil'));
 const Progreso = lazy(() => import('./pages/Progreso'));
 const Logros = lazy(() => import('./pages/Logros'));
+const Misiones = lazy(() => import('./pages/Misiones'));
+const Certificados = lazy(() => import('./pages/Certificados'));
+const AulaEnVivo = lazy(() => import('./pages/AulaEnVivo'));
 const Unidades = lazy(() => import('./pages/Unidades'));
 const UnidadTemas = lazy(() => import('./pages/UnidadTemas'));
 const TemaView = lazy(() => import('./pages/TemaView'));
@@ -75,6 +78,42 @@ function App() {
                 <Layout>
                   <WithPageSuspense>
                     <Progreso />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/misiones"
+            element={
+              <ProtectedRoute allowedRoles={['estudiante']}>
+                <Layout>
+                  <WithPageSuspense>
+                    <Misiones />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/certificados"
+            element={
+              <ProtectedRoute allowedRoles={['estudiante']}>
+                <Layout>
+                  <WithPageSuspense>
+                    <Certificados />
+                  </WithPageSuspense>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/aula-en-vivo"
+            element={
+              <ProtectedRoute allowedRoles={['estudiante']}>
+                <Layout>
+                  <WithPageSuspense>
+                    <AulaEnVivo />
                   </WithPageSuspense>
                 </Layout>
               </ProtectedRoute>
