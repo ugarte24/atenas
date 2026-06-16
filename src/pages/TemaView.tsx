@@ -26,6 +26,17 @@ import { cn } from '../components/ui/cn';
 
 type ProgresoTema = { total: number; completadas: number };
 
+function normalizeTemaContent(raw: string | null | undefined): string {
+  if (!raw) return '';
+  if (!raw.toLowerCase().includes('<p')) return raw;
+
+  return raw
+    .replace(/<p>\s*<\/p>/gi, '')
+    .replace(/<\/p>\s*<p>/gi, '\n')
+    .replace(/<\/?p>/gi, '')
+    .trimEnd();
+}
+
 export default function TemaView() {
   const { temaId } = useParams<{ temaId: string }>();
   const navigate = useNavigate();
@@ -189,21 +200,7 @@ export default function TemaView() {
   }
 
   const showStudentLayout = esEstudiante;
-
-  const normalizedTemaContent = useMemo(() => {
-    const raw = tema.content;
-    if (!raw) return '';
-
-    // Si el contenido viene desde el editor con HTML (ej. `<p>...</p><p></p>`),
-    // limpiamos `<p>` para evitar dobles párrafos o un `<p>` vacío al final.
-    if (!raw.toLowerCase().includes('<p')) return raw;
-
-    return raw
-      .replace(/<p>\s*<\/p>/gi, '') // elimina p vacíos
-      .replace(/<\/p>\s*<p>/gi, '\n') // separa párrafos con salto de línea
-      .replace(/<\/?p>/gi, '') // elimina etiquetas p restantes
-      .trimEnd();
-  }, [tema.content]);
+  const normalizedTemaContent = normalizeTemaContent(tema.content);
 
   return (
     <div className={cn(readingMode && 'reading-mode', '-mx-4 sm:-mx-6 px-4 sm:px-6')}>
