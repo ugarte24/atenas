@@ -190,6 +190,21 @@ export default function TemaView() {
 
   const showStudentLayout = esEstudiante;
 
+  const normalizedTemaContent = useMemo(() => {
+    const raw = tema.content;
+    if (!raw) return '';
+
+    // Si el contenido viene desde el editor con HTML (ej. `<p>...</p><p></p>`),
+    // limpiamos `<p>` para evitar dobles párrafos o un `<p>` vacío al final.
+    if (!raw.toLowerCase().includes('<p')) return raw;
+
+    return raw
+      .replace(/<p>\s*<\/p>/gi, '') // elimina p vacíos
+      .replace(/<\/p>\s*<p>/gi, '\n') // separa párrafos con salto de línea
+      .replace(/<\/?p>/gi, '') // elimina etiquetas p restantes
+      .trimEnd();
+  }, [tema.content]);
+
   return (
     <div className={cn(readingMode && 'reading-mode', '-mx-4 sm:-mx-6 px-4 sm:px-6')}>
       {/* Header */}
@@ -273,7 +288,9 @@ export default function TemaView() {
                     <section id="section-teoria" className="rounded-2xl bg-white border border-atenas-mist-border p-5 sm:p-6 shadow-card scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-4">Introducción</h2>
                       {tema.content && (
-                        <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed text-base mb-6">{tema.content}</div>
+                        <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed text-base mb-6">
+                          {normalizedTemaContent}
+                        </div>
                       )}
                       {loadingRecursos && !tema.content ? (
                         <p className="text-atenas-muted">Cargando…</p>
@@ -430,7 +447,7 @@ export default function TemaView() {
         /* Vista docente/admin simplificada */
         <div className="space-y-6">
           {tema.content && (
-            <div className="card p-6 whitespace-pre-wrap">{tema.content}</div>
+            <div className="card p-6 whitespace-pre-wrap">{normalizedTemaContent}</div>
           )}
           <ResourcesSplitView recursos={recursos} />
           <TemaMensajes temaId={tema.id} />
