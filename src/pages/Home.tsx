@@ -107,16 +107,8 @@ export default function Home() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Barra superior estilo mockup: nivel + XP */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-atenas-ink">
-            ¡Hola, {profile?.full_name?.split(' ')[0] ?? 'explorador'}!
-          </h1>
-          <p className="text-sm text-atenas-muted-strong mt-0.5">
-            Sigue explorando el Abya Yala y gana XP.
-          </p>
-        </div>
+      {/* Barra superior: nivel + XP */}
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-5">
         <div className="flex items-center gap-2">
           <div className="atenas-sidebar-panel flex items-center gap-2 rounded-2xl pl-2 pr-4 py-1.5 shadow-soft">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-atenas-gold text-atenas-ink font-bold text-lg">

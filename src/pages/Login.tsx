@@ -39,30 +39,14 @@ export default function Login() {
   return (
     <div className="min-h-[100dvh] flex flex-col lg:flex-row relative overflow-hidden">
       {/* Panel ilustración (mockup) */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-end justify-center bg-atenas-sidebar overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative items-start justify-center bg-atenas-sidebar overflow-hidden">
         <div
           aria-hidden
-          className="absolute inset-0 bg-cover bg-center opacity-25"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${LOGIN_BACKGROUND_URL})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-atenas-sidebar from-5% via-atenas-sidebar/90 to-atenas-sidebar/75" />
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-atenas-sidebar to-transparent"
-        />
-        <div className="relative z-10 p-12 pb-16 text-center max-w-md">
-          <img
-            src="/logo-athena.png"
-            alt=""
-            className="w-32 h-32 mx-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.55)] mb-6"
-          />
-          <h2 className="atenas-logo !text-3xl !tracking-[0.12em]">
-            ATENAS
-          </h2>
-          <p className="mt-3 text-lg leading-relaxed text-white/95 [text-shadow:0_1px_6px_rgba(0,0,0,0.85)]">
-            Aprende historia y cultura con misiones, logros y un mapa de progreso interactivo.
-          </p>
-        </div>
+        <div className="absolute inset-0 bg-atenas-sidebar/35" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-atenas-sidebar/55" />
       </div>
 
       {/* Formulario */}
@@ -74,17 +58,21 @@ export default function Login() {
         />
 
         <div className="relative z-10 w-full max-w-md">
-          <div className="flex flex-col items-center text-center mb-8 lg:items-start lg:text-left">
-            <div className="lg:hidden w-16 h-16 rounded-2xl bg-atenas-sidebar flex items-center justify-center mb-4 shadow-elevated">
-              <img src="/logo-athena.png" alt="" className="w-12 h-12 object-contain" />
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="flex items-center justify-center gap-3 sm:gap-4">
+              <img
+                src="/logo-athena.png"
+                alt=""
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md shrink-0 rounded-2xl"
+              />
+              <h2 className="font-atenas font-bold uppercase tracking-[0.1em] text-[#1F2D2A] h-16 sm:h-20 flex items-center shrink-0 text-[2.25rem] sm:text-[2.75rem] leading-none">
+                ATENAS
+              </h2>
             </div>
-            <h1 className="text-2xl font-bold text-atenas-ink">Iniciar sesión</h1>
-            <p className="text-sm text-atenas-muted mt-1">
-              Ciencias Sociales · 6.º Primaria
-            </p>
           </div>
 
           <div className="rounded-2xl border border-atenas-mist-border bg-white shadow-elevated p-6 sm:p-8">
+            <h1 className="text-2xl font-bold text-atenas-ink text-center mb-6">Iniciar sesión</h1>
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && <Alert tone="error">{error}</Alert>}
 
@@ -116,7 +104,7 @@ export default function Login() {
             </form>
 
             <p className="mt-6 text-center text-xs text-atenas-muted leading-relaxed">
-              Si no tienes cuenta, pídele a tu docente o administrador que te registre.
+              Si olvidó su contraseña, contáctese con el administrador.
             </p>
           </div>
         </div>

@@ -83,7 +83,7 @@ export function Layout({ children }: Props) {
                 to="/"
                 className="flex items-center gap-2 min-h-touch shrink-0 rounded-lg hover:opacity-90 transition-opacity min-w-0"
               >
-                <img src="/logo-athena.png" alt="" className="w-9 h-9 object-contain shrink-0" />
+                <img src="/logo-athena.png" alt="" className="w-9 h-9 object-contain shrink-0 rounded-2xl" />
                 <span className="font-atenas font-bold text-atenas-ink text-lg tracking-wide truncate">
                   ATENAS
                 </span>
@@ -125,6 +125,22 @@ export function Layout({ children }: Props) {
                   Salir
                 </button>
               </nav>
+            )}
+            {profile && (
+              <div className="text-right min-w-0 shrink">
+                <p className="text-[11px] text-atenas-muted capitalize leading-tight truncate">
+                  {new Date().toLocaleDateString('es', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                  })}
+                </p>
+                {esEstudiante && (
+                  <p className="text-sm font-semibold text-atenas-ink truncate leading-tight mt-0.5">
+                    {profile.full_name ?? 'Explorador'}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </header>
