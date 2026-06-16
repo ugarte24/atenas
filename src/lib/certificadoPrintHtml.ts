@@ -56,7 +56,6 @@ export function buildCertificadoPrintDocument(
   const nombre = escapeHtml(params.nombreEstudiante.trim() || 'Estudiante');
   const unidad = escapeHtml(params.tituloUnidad.trim() || 'Unidad');
   const pct = Math.round(params.porcentajeUnidad);
-  const umbral = Math.round(params.umbralCertificado);
   const fecha = new Date().toLocaleDateString('es-ES', {
     weekday: 'long',
     year: 'numeric',
@@ -101,7 +100,6 @@ export function buildCertificadoPrintDocument(
       --section-gap: 28px;
       --section-gap-tight: 24px;
       --name-margin-v: 30px;
-      --pill-gap: 24px;
       --space-before-signatures: 60px;
       --lh-body: 1.62;
       --lh-title: 1.35;
@@ -148,8 +146,8 @@ export function buildCertificadoPrintDocument(
       text-transform: capitalize;
     }
     html.certificado-root--pdf .detail { letter-spacing: 0.02em !important; }
-    html.certificado-root--pdf .pill { letter-spacing: 0.02em !important; }
-    html.certificado-root--pdf .pill span { letter-spacing: 0.03em !important; }
+    html.certificado-root--pdf .grade-label { letter-spacing: 0.12em !important; }
+    html.certificado-root--pdf .grade-value { letter-spacing: 0.03em !important; }
     html.certificado-root--pdf .footer-date { letter-spacing: 0.02em !important; }
     html.certificado-root--pdf .footer-brand { letter-spacing: 0.1em !important; }
     html.certificado-root--pdf .footer-brand small { letter-spacing: 0.05em !important; }
@@ -214,13 +212,29 @@ export function buildCertificadoPrintDocument(
     }
     html.certificado-root--pdf .name { font-size: 1.38rem; padding: 0 8px var(--section-gap-tight); }
     html.certificado-root--pdf .detail { font-size: 0.92rem; line-height: 1.62; }
-    html.certificado-root--pdf .stats { gap: var(--pill-gap); }
-    html.certificado-root--pdf .pill {
-      font-size: 0.82rem;
-      padding: 12px 18px;
-      line-height: 1.5;
+    html.certificado-root--pdf .grade-box {
+      display: block;
+      padding: 18px 40px;
+      background: #f0e9dc !important;
+      background-image: none !important;
+      box-shadow: inset 0 0 0 1px #d4c3a1;
     }
-    html.certificado-root--pdf .pill span { font-size: 1rem; }
+    html.certificado-root--pdf .grade-label {
+      display: block;
+      font-size: 0.72rem;
+      color: #4a5568 !important;
+      -webkit-text-fill-color: #4a5568 !important;
+      font-family: Georgia, 'Times New Roman', Times, serif !important;
+    }
+    html.certificado-root--pdf .grade-value {
+      display: block;
+      font-size: 2.15rem;
+      color: #1f2d2a !important;
+      -webkit-text-fill-color: #1f2d2a !important;
+      font-family: Georgia, 'Times New Roman', Times, serif !important;
+      font-weight: 700;
+      line-height: 1.2;
+    }
     html.certificado-root--pdf .footer-date { font-size: 0.82rem; margin: 0; line-height: 1.55; }
     html.certificado-root--pdf .footer-brand { margin-top: var(--section-gap-tight); padding-top: var(--section-gap-tight); font-size: 0.78rem; }
     html.certificado-root--pdf .footer-brand small { font-size: 0.68rem; line-height: 1.5; }
@@ -346,7 +360,7 @@ export function buildCertificadoPrintDocument(
     .cert-main .detail {
       margin-bottom: var(--section-gap);
     }
-    .cert-main .stats {
+    .cert-main .grade-wrap {
       margin-bottom: var(--section-gap-tight);
     }
     .cert-bottom {
@@ -453,26 +467,40 @@ export function buildCertificadoPrintDocument(
     .detail strong { color: #1a202c; font-weight: 600; }
     .unidad { font-style: italic; color: #3d4a5c; }
 
-    .stats {
-      display: flex;
-      justify-content: center;
-      align-items: stretch;
-      gap: var(--pill-gap);
-      flex-wrap: wrap;
+    .grade-wrap {
+      text-align: center;
+      margin-bottom: var(--section-gap-tight);
+    }
+    .grade-box {
+      display: inline-block;
+      text-align: center;
+      padding: 22px 52px;
+      background: #f0e9dc;
+      border: 2px solid #c4a574;
+      border-radius: 18px;
+      box-shadow: 0 4px 14px rgba(40, 35, 30, 0.06);
+    }
+    .grade-label {
+      display: block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #4a5568;
+      margin: 0 0 10px;
+      line-height: 1.4;
+      font-weight: 600;
+      font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    }
+    .grade-value {
+      display: block;
+      font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
+      font-size: 2.65rem;
+      font-weight: 700;
+      color: #1f2d2a;
       margin: 0;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
     }
-    .pill {
-      background: linear-gradient(180deg, #f7f2ea, #ebe4d8);
-      border: 1px solid #d4c3a1;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 0.84rem;
-      line-height: 1.5;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
-      min-width: 200px;
-      max-width: 340px;
-    }
-    .pill span { color: #141c2c; font-weight: 700; font-size: 1rem; }
 
     .footer-date {
       font-size: 0.85rem;
@@ -536,7 +564,7 @@ export function buildCertificadoPrintDocument(
           <h1>Certificado de progreso</h1>
           <p class="sub">6.º de Primaria - Unidad completada en ATENAS</p>
 
-          <p class="lead">Se certifica que el alumno o alumna que se nombra ha alcanzado el progreso requerido en la unidad didáctica indicada.</p>
+          <p class="lead">Se certifica que el alumno o alumna que se nombra ha completado la unidad didáctica indicada con la siguiente calificación.</p>
 
           <div class="rule--wide" aria-hidden="true"></div>
 
@@ -544,9 +572,11 @@ export function buildCertificadoPrintDocument(
 
           <p class="detail"><strong>Unidad:</strong> <span class="unidad">${unidad}</span></p>
 
-          <div class="stats">
-            <div class="pill">Progreso en la unidad: <span>${pct}%</span></div>
-            <div class="pill">Mínimo exigido: <span>${umbral}%</span></div>
+          <div class="grade-wrap">
+            <div class="grade-box" aria-label="Calificación obtenida">
+              <span class="grade-label">Calificación obtenida</span>
+              <span class="grade-value">${pct}%</span>
+            </div>
           </div>
 
           <p class="footer-date">${fechaEsc}</p>
