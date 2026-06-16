@@ -149,8 +149,8 @@ export function ActivityCalendar({ className }: { className?: string }) {
               type="button"
               onClick={() => setSelected(d)}
               className={cn(
-                'flex flex-col items-center min-w-[3rem] rounded-xl py-2 px-1 transition-colors',
-                isSelected ? 'bg-atenas-sidebar text-white' : 'hover:bg-atenas-mist',
+                'calendar-day',
+                isSelected ? 'calendar-day--selected' : 'calendar-day--default',
                 isToday && !isSelected && 'ring-2 ring-atenas-blue/40'
               )}
             >

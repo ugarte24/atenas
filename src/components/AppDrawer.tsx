@@ -66,10 +66,8 @@ export function AppDrawer({ open, onClose, links, role, onSignOut }: Props) {
               onClick={onClose}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center min-h-touch px-4 py-3 rounded-xl text-base font-medium transition-colors',
-                  isActive
-                    ? 'bg-atenas-ink text-white shadow-soft'
-                    : 'text-atenas-ink hover:bg-atenas-mist'
+                  'drawer-nav-link',
+                  isActive ? 'drawer-nav-link--active' : 'drawer-nav-link--inactive'
                 )
               }
             >

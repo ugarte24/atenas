@@ -65,8 +65,8 @@ export default function Logros() {
             type="button"
             onClick={() => setFiltro(id)}
             className={cn(
-              'flex-1 rounded-lg py-2.5 text-sm font-semibold min-h-touch transition-colors',
-              filtro === id ? 'bg-atenas-sidebar text-white' : 'text-atenas-muted hover:bg-atenas-mist'
+              'segment-tab',
+              filtro === id ? 'segment-tab--active' : 'segment-tab--inactive'
             )}
           >
             {label}

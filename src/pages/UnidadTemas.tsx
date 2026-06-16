@@ -116,8 +116,8 @@ export default function UnidadTemas() {
             aria-selected={tab === id}
             onClick={() => setTab(id)}
             className={cn(
-              'shrink-0 px-4 py-2.5 text-sm font-semibold rounded-t-xl min-h-touch transition-colors',
-              tab === id ? 'bg-atenas-sidebar text-white' : 'text-atenas-muted hover:bg-atenas-mist'
+              'page-tab',
+              tab === id ? 'page-tab--active' : 'page-tab--inactive'
             )}
           >
             {label}

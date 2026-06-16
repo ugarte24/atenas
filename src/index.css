@@ -107,6 +107,80 @@
   .profile-tab--inactive:hover {
     background-color: var(--atenas-mist);
   }
+  /**
+   * Pestañas segmentadas (Misiones, Logros): fondo y color en la misma regla CSS.
+   * Evita texto blanco invisible si `bg-atenas-sidebar` no llega a aplicarse.
+   */
+  .segment-tab {
+    @apply flex-1 rounded-lg py-2.5 text-sm font-semibold transition-colors min-h-touch;
+  }
+  .segment-tab--active {
+    background-color: var(--atenas-sidebar);
+    color: #fff;
+  }
+  .segment-tab--inactive {
+    color: var(--atenas-text-muted);
+  }
+  .segment-tab--inactive:hover {
+    background-color: var(--atenas-mist);
+  }
+  /**
+   * Pestañas de página (Unidad, lección): mismo arreglo que segment-tab.
+   */
+  .page-tab {
+    @apply shrink-0 px-4 py-2.5 text-sm font-semibold rounded-t-xl min-h-touch transition-colors;
+  }
+  .page-tab--active {
+    background-color: var(--atenas-sidebar);
+    color: #fff;
+  }
+  .page-tab--inactive {
+    color: var(--atenas-text-muted);
+  }
+  .page-tab--inactive:hover {
+    background-color: var(--atenas-mist);
+    color: var(--atenas-ink);
+  }
+  .lesson-nav-item {
+    @apply flex items-center gap-3 w-full text-left rounded-xl px-3 py-2.5 text-sm transition-colors min-h-touch;
+  }
+  .lesson-nav-item--active {
+    background-color: var(--atenas-sidebar);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+  }
+  .lesson-nav-item--inactive {
+    color: var(--atenas-text-muted-strong);
+  }
+  .lesson-nav-item--inactive:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--atenas-ink);
+  }
+  .calendar-day {
+    @apply flex flex-col items-center min-w-[3rem] rounded-xl py-2 px-1 transition-colors;
+  }
+  .calendar-day--selected {
+    background-color: var(--atenas-sidebar);
+    color: #fff;
+  }
+  .calendar-day--default:hover {
+    background-color: var(--atenas-mist);
+  }
+  .drawer-nav-link {
+    @apply flex items-center min-h-touch px-4 py-3 rounded-xl text-base font-medium transition-colors;
+  }
+  .drawer-nav-link--active {
+    background-color: var(--atenas-ink);
+    color: #fff;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+  }
+  .drawer-nav-link--inactive {
+    color: var(--atenas-ink);
+  }
+  .drawer-nav-link--inactive:hover {
+    background-color: var(--atenas-mist);
+  }
   .card {
     @apply bg-white rounded-2xl border shadow-card;
     border-color: var(--atenas-mist-border);

@@ -25,10 +25,8 @@ export function LessonSectionNav({ sections, activeId, onSelect }: Props) {
             type="button"
             onClick={() => onSelect(s.id)}
             className={cn(
-              'flex items-center gap-3 w-full text-left rounded-xl px-3 py-2.5 text-sm transition-colors min-h-touch',
-              active
-                ? 'bg-atenas-sidebar text-white font-semibold shadow-sm'
-                : 'text-atenas-muted-strong hover:bg-white/80 hover:text-atenas-ink'
+              'lesson-nav-item',
+              active ? 'lesson-nav-item--active' : 'lesson-nav-item--inactive'
             )}
           >
             <span

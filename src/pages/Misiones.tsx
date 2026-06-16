@@ -50,8 +50,8 @@ export default function Misiones() {
             aria-selected={tab === id}
             onClick={() => setTab(id)}
             className={cn(
-              'flex-1 rounded-lg py-2.5 text-sm font-semibold transition-colors min-h-touch',
-              tab === id ? 'bg-atenas-sidebar text-white' : 'text-atenas-muted hover:bg-atenas-mist'
+              'segment-tab',
+              tab === id ? 'segment-tab--active' : 'segment-tab--inactive'
             )}
           >
             {label}

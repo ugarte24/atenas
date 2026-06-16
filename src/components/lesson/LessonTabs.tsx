@@ -25,10 +25,8 @@ export function LessonTabs({ active, onChange }: Props) {
           aria-selected={active === id}
           onClick={() => onChange(id)}
           className={cn(
-            'shrink-0 px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors min-h-touch',
-            active === id
-              ? 'bg-atenas-sidebar text-white'
-              : 'text-atenas-muted hover:text-atenas-ink hover:bg-atenas-mist/60'
+            'page-tab',
+            active === id ? 'page-tab--active' : 'page-tab--inactive'
           )}
         >
           {label}
