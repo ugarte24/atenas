@@ -5,7 +5,6 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno, type Mision } from '../hooks/useMisiones';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
 import { nivelDesdeXp } from '../lib/gamificacion';
-import { APP_VERSION } from '../constants/version';
 import { StatCard } from '../components/ui/StatCard';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { ActivityCalendar } from '../components/calendar/ActivityCalendar';
@@ -268,10 +267,6 @@ export default function Home() {
           })}
         </div>
       </section>
-
-      <p className="mt-6 text-[11px] text-atenas-muted text-right">
-        ATENAS v{APP_VERSION}
-      </p>
     </div>
   );
 }

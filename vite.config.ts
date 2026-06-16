@@ -1,5 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+
+function readPackageVersion(): string {
+  const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as {
+    version?: string;
+  };
+  return pkg.version ?? '0.0.0';
+}
 
 // https://vite.dev/config/
 // GitHub Pages: `VITE_BASE_PATH=/atenas/` en .env.production → `/atenas/assets/*.js` (absolutos).
@@ -14,6 +22,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base,
+    define: {
+      __APP_VERSION__: JSON.stringify(readPackageVersion()),
+    },
     server: {
       port: 8080,
     },

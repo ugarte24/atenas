@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { X, LogOut } from 'lucide-react';
 import { cn } from './ui/cn';
 import { Badge } from './ui/Badge';
+import { AppVersionFootnote } from './AppVersionFootnote';
 
 export type DrawerLink = {
   to: string;
@@ -87,6 +88,7 @@ export function AppDrawer({ open, onClose, links, role, onSignOut }: Props) {
             <LogOut className="w-5 h-5" aria-hidden />
             Cerrar sesión
           </button>
+          <AppVersionFootnote variant="on-light" className="pb-0" />
         </div>
       </aside>
     </div>

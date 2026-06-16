@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FolderOpen, Users, LogOut } from 'lucide-react';
 import { cn } from './ui/cn';
+import { AppVersionFootnote } from './AppVersionFootnote';
 
 const ITEMS = [
   { to: '/docente', label: 'Inicio', icon: LayoutDashboard, end: true },
@@ -77,6 +78,7 @@ export function DocenteSidebar({ onSignOut, className }: Props) {
           <LogOut className="w-5 h-5" aria-hidden />
           Cerrar sesión
         </button>
+        <AppVersionFootnote />
       </div>
     </aside>
   );

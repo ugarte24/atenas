@@ -16,6 +16,7 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
 import { nivelDesdeXp } from '../lib/gamificacion';
 import { XpBar } from './gamification/XpBar';
+import { AppVersionFootnote } from './AppVersionFootnote';
 
 type Item = {
   to: string;
@@ -127,6 +128,7 @@ export function StudentSidebar({ onSignOut, className }: Props) {
           <LogOut className="w-5 h-5" aria-hidden />
           Cerrar sesión
         </button>
+        <AppVersionFootnote />
       </div>
     </aside>
   );
