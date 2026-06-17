@@ -147,8 +147,8 @@ export default function UnidadTemas() {
             onClick={async () => {
               setCertPdfLoading(true);
               try {
-                const { downloadCertificadoPdf } = await import('../lib/certificadoPdf');
-                await downloadCertificadoPdf({
+                const { openCertificadoEnVentana } = await import('../lib/certificadoPdf');
+                await openCertificadoEnVentana({
                   nombreEstudiante: nombreEstudiante,
                   tituloUnidad: unidad.title,
                   porcentajeUnidad: pctUnidad ?? 0,
@@ -156,13 +156,13 @@ export default function UnidadTemas() {
                 });
               } catch (e) {
                 console.error(e);
-                window.alert('No se pudo generar el PDF. Intenta de nuevo en unos segundos.');
+                window.alert('No se pudo abrir el certificado. Intenta de nuevo en unos segundos.');
               } finally {
                 setCertPdfLoading(false);
               }
             }}
           >
-            {certPdfLoading ? 'Generando PDF…' : 'Descargar certificado (PDF)'}
+            {certPdfLoading ? 'Abriendo…' : 'Ver certificado'}
           </button>
         </div>
       )}

@@ -212,13 +212,6 @@ export function buildCertificadoPrintDocument(
     }
     html.certificado-root--pdf .name { font-size: 1.38rem; padding: 0 8px var(--section-gap-tight); }
     html.certificado-root--pdf .detail { font-size: 0.92rem; line-height: 1.62; }
-    html.certificado-root--pdf .grade-box {
-      display: block;
-      padding: 18px 40px;
-      background: #f0e9dc !important;
-      background-image: none !important;
-      box-shadow: inset 0 0 0 1px #d4c3a1;
-    }
     html.certificado-root--pdf .grade-label {
       display: block;
       font-size: 0.72rem;
@@ -471,22 +464,13 @@ export function buildCertificadoPrintDocument(
       text-align: center;
       margin-bottom: var(--section-gap-tight);
     }
-    .grade-box {
-      display: inline-block;
-      text-align: center;
-      padding: 22px 52px;
-      background: #f0e9dc;
-      border: 2px solid #c4a574;
-      border-radius: 18px;
-      box-shadow: 0 4px 14px rgba(40, 35, 30, 0.06);
-    }
     .grade-label {
       display: block;
       font-size: 0.78rem;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: #4a5568;
-      margin: 0 0 10px;
+      margin: 0 0 6px;
       line-height: 1.4;
       font-weight: 600;
       font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
@@ -572,11 +556,9 @@ export function buildCertificadoPrintDocument(
 
           <p class="detail"><strong>Unidad:</strong> <span class="unidad">${unidad}</span></p>
 
-          <div class="grade-wrap">
-            <div class="grade-box" aria-label="Calificación obtenida">
-              <span class="grade-label">Calificación obtenida</span>
-              <span class="grade-value">${pct}%</span>
-            </div>
+          <div class="grade-wrap" aria-label="Calificación obtenida">
+            <span class="grade-label">Calificación obtenida</span>
+            <span class="grade-value">${pct}%</span>
           </div>
 
           <p class="footer-date">${fechaEsc}</p>
@@ -586,11 +568,11 @@ export function buildCertificadoPrintDocument(
           <div class="signatures" role="group" aria-label="Espacios para firmas">
             <div class="signatures__col">
               <div class="signatures__line"></div>
-              <p class="signatures__label">Docente de aula<br />Ciencias Sociales</p>
+              <p class="signatures__label">Docente de aula</p>
             </div>
             <div class="signatures__col">
               <div class="signatures__line"></div>
-              <p class="signatures__label">Dirección académica<br />Plataforma educativa</p>
+              <p class="signatures__label">Director(a)</p>
             </div>
           </div>
 

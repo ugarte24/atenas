@@ -6,7 +6,7 @@ import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { useEffect } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
-import { Award, Download } from 'lucide-react';
+import { Award, ExternalLink } from 'lucide-react';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 
 type CertState = Record<string, { pct: number; eligible: boolean }>;
@@ -44,14 +44,23 @@ export default function Certificados() {
     };
   }, [user, profile?.role, publicadas]);
 
-  async function descargar(titulo: string, pct: number, umbral: number) {
-    const { downloadCertificadoPdf } = await import('../lib/certificadoPdf');
-    await downloadCertificadoPdf({
-      nombreEstudiante: profile?.full_name ?? 'Estudiante',
-      tituloUnidad: titulo,
-      porcentajeUnidad: pct,
-      umbralCertificado: umbral,
-    });
+  async function abrirCertificado(titulo: string, pct: number, umbral: number) {
+    try {
+      const { openCertificadoEnVentana } = await import('../lib/certificadoPdf');
+      await openCertificadoEnVentana({
+        nombreEstudiante: profile?.full_name ?? 'Estudiante',
+        tituloUnidad: titulo,
+        porcentajeUnidad: pct,
+        umbralCertificado: umbral,
+      });
+    } catch (e) {
+      console.error(e);
+      window.alert(
+        e instanceof Error && e.message.includes('emergentes')
+          ? e.message
+          : 'No se pudo abrir el certificado. Intenta de nuevo.'
+      );
+    }
   }
 
   return (
@@ -90,11 +99,11 @@ export default function Certificados() {
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => descargar(titulo, st!.pct, umbral)}
+                      onClick={() => abrirCertificado(titulo, st!.pct, umbral)}
                       className="btn-primary flex items-center gap-2 text-sm"
                     >
-                      <Download className="w-4 h-4" aria-hidden />
-                      Descargar PDF
+                      <ExternalLink className="w-4 h-4" aria-hidden />
+                      Ver certificado
                     </button>
                   </div>
                 ) : (

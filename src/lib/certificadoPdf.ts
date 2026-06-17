@@ -35,6 +35,33 @@ async function fetchEmblemaAsDataUrl(): Promise<string | undefined> {
 }
 
 /**
+ * Abre el certificado en una nueva pestaña del navegador (vista HTML).
+ */
+export async function openCertificadoEnVentana(params: CertificadoParams): Promise<void> {
+  const emblemaData = await fetchEmblemaAsDataUrl();
+  const html = buildCertificadoPrintDocument(
+    {
+      ...params,
+      emblemaUrl: emblemaData ?? params.emblemaUrl ?? resolveCertificadoEmblemaUrl(),
+    },
+    {
+      variant: 'print',
+      autoPrint: false,
+    }
+  );
+
+  const win = window.open('', '_blank', 'noopener,noreferrer');
+  if (!win) {
+    throw new Error('Permite ventanas emergentes para ver el certificado.');
+  }
+
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+}
+
+/**
  * PDF en **carta horizontal** (letter landscape), una página.
  * Incrusta el emblema como data URL para html2canvas.
  */
