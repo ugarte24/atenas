@@ -1,4 +1,4 @@
-/** Versión semver desde `package.json` (inyectada en build por Vite). */
+/** Versión semver desde `package.json` (se incrementa en `npm run dev` / `npm run build`). */
 export const APP_VERSION = __APP_VERSION__;
 
 export function getAppVersionLabel(): string {

@@ -1,10 +1,12 @@
 {
   "name": "atenas",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/bump-app-version.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/bump-app-version.mjs",
     "build": "tsc -b && vite build && node scripts/copy-spa-404.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
