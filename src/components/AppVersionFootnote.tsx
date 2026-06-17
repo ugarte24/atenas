@@ -1,4 +1,4 @@
-import { getAppVersionLabel } from '../constants/version';
+import { useAppVersionLabel } from '../hooks/useAppVersionLabel';
 import { cn } from './ui/cn';
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function AppVersionFootnote({ className, variant = 'on-dark' }: Props) {
-  const label = getAppVersionLabel();
+  const label = useAppVersionLabel();
 
   return (
     <p

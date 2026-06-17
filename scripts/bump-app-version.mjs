@@ -1,6 +1,6 @@
 /**
  * Incrementa el patch en package.json (y package-lock.json) antes de dev/build.
- * La UI lee la versión vía Vite (`__APP_VERSION__`).
+ * Escribe public/version.json para que la UI lea la versión en tiempo de ejecución.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkgPath = path.join(root, 'package.json');
 const lockPath = path.join(root, 'package-lock.json');
+const versionJsonPath = path.join(root, 'public', 'version.json');
 
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 const parts = pkg.version.split('.').map((n) => Number.parseInt(n, 10));
@@ -31,5 +32,8 @@ if (fs.existsSync(lockPath)) {
   }
   fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
 }
+
+fs.mkdirSync(path.dirname(versionJsonPath), { recursive: true });
+fs.writeFileSync(versionJsonPath, `${JSON.stringify({ version: pkg.version }, null, 2)}\n`);
 
 console.log(`Versión ATENAS actualizada: v${pkg.version}`);
