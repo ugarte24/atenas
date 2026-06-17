@@ -1,12 +1,36 @@
 import { readFileSync } from 'node:fs';
-import { defineConfig, loadEnv } from 'vite';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
+const pkgPath = path.join(rootDir, 'package.json');
+
 function readPackageVersion(): string {
-  const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as {
-    version?: string;
-  };
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { version?: string };
   return pkg.version ?? '0.0.0';
+}
+
+/** En dev, version.json siempre refleja package.json (evita JS empaquetado desactualizado). */
+function atenasLiveVersionPlugin(): Plugin {
+  return {
+    name: 'atenas-live-version',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const pathname = (req.url ?? '').split('?')[0] ?? '';
+        if (!pathname.endsWith('/version.json') && pathname !== '/version.json') {
+          next();
+          return;
+        }
+        const version = readPackageVersion();
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-store');
+        res.end(JSON.stringify({ version }));
+      });
+    },
+  };
 }
 
 // https://vite.dev/config/
@@ -20,11 +44,8 @@ export default defineConfig(({ mode }) => {
   const base = raw === '/' ? '/' : raw.endsWith('/') ? raw : `${raw}/`;
 
   return {
-    plugins: [react()],
+    plugins: [react(), mode === 'development' ? atenasLiveVersionPlugin() : null].filter(Boolean),
     base,
-    define: {
-      __APP_VERSION__: JSON.stringify(readPackageVersion()),
-    },
     server: {
       port: 8080,
     },

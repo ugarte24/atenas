@@ -1,5 +1,6 @@
-/** Versión semver desde `package.json` (se incrementa en `npm run dev` / `npm run build`). */
-export const APP_VERSION = __APP_VERSION__;
+import { APP_VERSION } from '../generated/appVersion';
+
+export { APP_VERSION };
 
 export function getAppVersionLabel(): string {
   return `v${APP_VERSION}`;
