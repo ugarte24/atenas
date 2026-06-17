@@ -1,32 +1,33 @@
 import { useMemo, useState } from 'react';
 import { useMisionesAlumno } from '../hooks/useMisiones';
+import { useMisionesDiarias } from '../hooks/useMisionesDiarias';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { SkeletonLines } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 import { cn } from '../components/ui/cn';
-import { Star, Gift } from 'lucide-react';
+import { Star, Gift, Target } from 'lucide-react';
 
 type TabMision = 'diarias' | 'semanales' | 'especiales';
 
 export default function Misiones() {
   const { misiones, loading, error } = useMisionesAlumno();
+  const { misiones: diarias, loading: loadingDiarias } = useMisionesDiarias();
   const { racha } = useGamificacionEstudiante();
   const [tab, setTab] = useState<TabMision>('semanales');
 
   const misionesConTemas = useMemo(() => misiones.filter((m) => m.totalPasos > 0), [misiones]);
 
-  const diarias = useMemo(
-    () => [
-      { id: 'd1', titulo: 'Estudia al menos 1 tema hoy', progreso: racha > 0 ? 1 : 0, total: 1, xp: 50 },
-      { id: 'd2', titulo: 'Completa una actividad', progreso: 0, total: 1, xp: 30 },
-    ],
-    [racha]
-  );
-
   const especiales = useMemo(
     () => [
-      { id: 'e1', titulo: 'Explora los 3 mundos del Abya Yala', progreso: misionesConTemas.filter((m) => m.pasosCompletados >= m.totalPasos).length, total: 3, xp: 500 },
+      {
+        id: 'e1',
+        titulo: 'Explora los 3 mundos del Abya Yala',
+        progreso: misionesConTemas.filter((m) => m.pasosCompletados >= m.totalPasos).length,
+        total: 3,
+        xp: 500,
+      },
     ],
     [misionesConTemas]
   );
@@ -59,13 +60,17 @@ export default function Misiones() {
         ))}
       </div>
 
-      {loading && <SkeletonLines lines={4} />}
+      {loading && tab === 'semanales' && <SkeletonLines lines={4} />}
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       {!loading && tab === 'semanales' && (
         <div className="space-y-4">
           {misionesConTemas.length === 0 ? (
-            <p className="text-atenas-muted">No hay misiones disponibles aún.</p>
+            <EmptyState
+              icon={<Target className="w-8 h-8" />}
+              title="Sin misiones semanales"
+              description="Cuando tu docente publique unidades, aparecerán aquí como misiones por completar."
+            />
           ) : (
             misionesConTemas.map((m) => {
               const pct = m.totalPasos ? Math.round((m.pasosCompletados / m.totalPasos) * 100) : 0;
@@ -98,20 +103,29 @@ export default function Misiones() {
         </div>
       )}
 
-      {!loading && tab === 'diarias' && (
+      {tab === 'diarias' && (
         <div className="space-y-4">
-          {diarias.map((d) => (
-            <article key={d.id} className="card p-5">
-              <div className="flex justify-between mb-2">
-                <h2 className="font-bold text-atenas-ink text-sm">{d.titulo}</h2>
-                <span className="text-xs font-bold text-atenas-gold">+{d.xp} XP</span>
-              </div>
-              <ProgressBar value={d.total ? (d.progreso / d.total) * 100 : 0} size="sm" tone="success" />
-              <p className="text-xs text-atenas-muted mt-1">
-                {d.progreso} / {d.total}
-              </p>
-            </article>
-          ))}
+          {loadingDiarias ? (
+            <SkeletonLines lines={2} />
+          ) : (
+            diarias.map((d) => (
+              <article key={d.id} className="card p-5">
+                <div className="flex justify-between mb-2">
+                  <h2 className="font-bold text-atenas-ink text-sm">{d.titulo}</h2>
+                  <span className="text-xs font-bold text-atenas-gold">
+                    {d.progreso >= d.total ? `+${d.xp} XP` : `+${d.xp} XP`}
+                  </span>
+                </div>
+                <ProgressBar value={d.total ? (d.progreso / d.total) * 100 : 0} size="sm" tone="success" />
+                <p className="text-xs text-atenas-muted mt-1">
+                  {d.progreso} / {d.total}
+                  {d.id === 'd1' && racha > 0 && d.progreso === 0 && (
+                    <span className="ml-1">· Sigue tu racha estudiando hoy</span>
+                  )}
+                </p>
+              </article>
+            ))
+          )}
         </div>
       )}
 
@@ -124,6 +138,9 @@ export default function Misiones() {
                 <span className="text-sm font-bold text-atenas-gold">+{e.xp} XP</span>
               </div>
               <ProgressBar value={e.total ? (e.progreso / e.total) * 100 : 0} showPercent tone="success" />
+              <p className="text-xs text-atenas-muted mt-2">
+                Completa las unidades de cada isla para avanzar en los tres mundos.
+              </p>
             </article>
           ))}
         </div>

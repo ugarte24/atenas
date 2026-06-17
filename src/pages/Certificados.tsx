@@ -6,8 +6,10 @@ import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { useEffect } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 import { Award, ExternalLink } from 'lucide-react';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
+import { openCertificadoEnVentana } from '../lib/certificadoVentana';
 
 type CertState = Record<string, { pct: number; eligible: boolean }>;
 
@@ -46,7 +48,6 @@ export default function Certificados() {
 
   async function abrirCertificado(titulo: string, pct: number, umbral: number) {
     try {
-      const { openCertificadoEnVentana } = await import('../lib/certificadoPdf');
       await openCertificadoEnVentana({
         nombreEstudiante: profile?.full_name ?? 'Estudiante',
         tituloUnidad: titulo,
@@ -69,7 +70,15 @@ export default function Certificados() {
 
       {(loading || loadingPct) && <SkeletonLines lines={3} />}
 
-      {!loading && !loadingPct && (
+      {!loading && !loadingPct && publicadas.length === 0 && (
+        <EmptyState
+          icon={<Award className="w-8 h-8" />}
+          title="Sin certificados disponibles"
+          description="Cuando haya unidades publicadas con umbral de certificado, aparecerán aquí."
+        />
+      )}
+
+      {!loading && !loadingPct && publicadas.length > 0 && (
         <div className="space-y-5">
           {publicadas.map((u) => {
             const st = certs[u.id];

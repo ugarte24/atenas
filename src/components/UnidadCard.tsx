@@ -4,7 +4,9 @@ import type { Unidad } from '../types';
 import { resolveCoverImageUrl } from '../lib/unidadVisual';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { limpiarDescripcionUnidad } from '../lib/unidadDescripcion';
+import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
 import { ProgressBar } from './ui/ProgressBar';
+import { Badge } from './ui/Badge';
 
 type Props = {
   unidad: Unidad;
@@ -18,6 +20,7 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
   const showProgress = progressPct != null && !Number.isNaN(progressPct);
   const tituloHero = tituloUnidadConOrden(unidad.orden ?? 0, unidad.title, listIndex);
   const descripcionLimpia = limpiarDescripcionUnidad(unidad.description);
+  const isla = islaDesdeOrdenUnidadSafe(unidad.orden, listIndex);
 
   return (
     <Link
@@ -35,6 +38,11 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
           className="absolute inset-0 bg-gradient-to-t from-atenas-ink/75 via-atenas-ink/10 to-transparent pointer-events-none"
           aria-hidden
         />
+        <div className="absolute top-3 left-3">
+          <Badge tone="gold" className="text-[10px] font-bold shadow-sm">
+            {isla.shortLabel}
+          </Badge>
+        </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between gap-3">
           <h2 className="text-base sm:text-lg font-bold text-white leading-snug drop-shadow-sm line-clamp-2 flex-1">
             {tituloHero}
@@ -46,6 +54,9 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
         </div>
       </div>
       <div className="p-4 sm:p-5">
+        <p className="text-[11px] font-semibold text-atenas-muted uppercase tracking-wide mb-1">
+          {isla.subtitle}
+        </p>
         {descripcionLimpia && (
           <p className="text-atenas-muted text-sm line-clamp-2">{descripcionLimpia}</p>
         )}

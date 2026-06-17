@@ -52,8 +52,8 @@ export function SeleccionMultiple({ config, onSubmit, disabled }: Props) {
               className={`w-full text-left px-4 py-3 rounded-lg border-2 transition ${
                 !enviado
                   ? seleccion.includes(idx)
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-atenas-mist-border hover:border-primary-300'
+                    ? 'border-atenas-blue bg-atenas-mist'
+                    : 'border-atenas-mist-border hover:border-atenas-blue/50'
                   : config.opciones[idx].correcta
                     ? 'border-green-600 bg-green-50'
                     : seleccion.includes(idx)

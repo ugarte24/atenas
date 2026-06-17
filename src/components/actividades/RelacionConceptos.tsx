@@ -53,10 +53,10 @@ export function RelacionConceptos({ config, onSubmit, disabled }: Props) {
               disabled={enviado || disabled}
               className={`w-full text-left p-3 rounded-lg border-2 transition ${
                 selectedLeft === i
-                  ? 'border-primary-500 bg-primary-50'
+                  ? 'border-atenas-blue bg-atenas-mist'
                   : pairs[i] !== undefined
                     ? 'border-atenas-mist-border bg-atenas-page'
-                    : 'border-atenas-mist-border hover:border-primary-300'
+                    : 'border-atenas-mist-border hover:border-atenas-blue/50'
               }`}
             >
               {col.izquierda}
@@ -73,7 +73,7 @@ export function RelacionConceptos({ config, onSubmit, disabled }: Props) {
               className={`w-full text-left p-3 rounded-lg border-2 transition ${
                 Object.values(pairs).includes(pos)
                   ? 'border-atenas-mist-border bg-atenas-page'
-                  : 'border-atenas-mist-border hover:border-primary-300'
+                  : 'border-atenas-mist-border hover:border-atenas-blue/50'
               }`}
             >
               {config.columnas[colIdx].derecha}

@@ -13,9 +13,10 @@ type Msg = {
 type Props = {
   temaId: string;
   compact?: boolean;
+  onOpenForum?: () => void;
 };
 
-export function LessonForumWidget({ temaId, compact }: Props) {
+export function LessonForumWidget({ temaId, compact, onOpenForum }: Props) {
   const { user, profile } = useAuthContext();
   const [lista, setLista] = useState<Msg[]>([]);
   const [cuerpo, setCuerpo] = useState('');
@@ -107,7 +108,7 @@ export function LessonForumWidget({ temaId, compact }: Props) {
         </div>
       )}
 
-      {profile?.role === 'estudiante' && (
+      {profile?.role === 'estudiante' && !compact && (
         <form onSubmit={enviar} className="flex gap-2">
           <input
             type="text"
@@ -121,6 +122,16 @@ export function LessonForumWidget({ temaId, compact }: Props) {
             Enviar
           </button>
         </form>
+      )}
+
+      {compact && onOpenForum && (
+        <button
+          type="button"
+          onClick={onOpenForum}
+          className="text-xs font-semibold text-atenas-blue hover:underline min-h-touch"
+        >
+          Ir al foro de este tema
+        </button>
       )}
 
       {profile?.role !== 'estudiante' && (

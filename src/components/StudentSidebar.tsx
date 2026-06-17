@@ -1,39 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import { useMemo } from 'react';
-import {
-  Home,
-  BookOpen,
-  Target,
-  TrendingUp,
-  Trophy,
-  Award,
-  MessageCircle,
-  User,
-  LogOut,
-} from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { cn } from './ui/cn';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
 import { nivelDesdeXp } from '../lib/gamificacion';
 import { XpBar } from './gamification/XpBar';
 import { AppVersionFootnote } from './AppVersionFootnote';
-
-type Item = {
-  to: string;
-  label: string;
-  icon: typeof Home;
-  end?: boolean;
-};
-
-const ITEMS: Item[] = [
-  { to: '/', label: 'Inicio', icon: Home, end: true },
-  { to: '/unidades', label: 'Unidades', icon: BookOpen },
-  { to: '/misiones', label: 'Misiones', icon: Target },
-  { to: '/progreso', label: 'Progreso', icon: TrendingUp },
-  { to: '/logros', label: 'Logros', icon: Trophy },
-  { to: '/certificados', label: 'Certificados', icon: Award },
-  { to: '/perfil', label: 'Perfil', icon: User },
-];
+import { STUDENT_SIDEBAR_ITEMS } from '../constants/studentNav';
 
 type Props = {
   onSignOut: () => void;
@@ -107,7 +81,7 @@ export function StudentSidebar({ onSignOut, className }: Props) {
       </div>
 
       <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto scrollbar-nav-hide">
-        {ITEMS.map(({ to, label, icon: Icon, end }) => (
+        {STUDENT_SIDEBAR_ITEMS.map(({ to, label, icon: Icon, end }) => (
           <NavLink key={to} to={to} end={end} className={linkClass}>
             <Icon className="w-5 h-5 shrink-0" aria-hidden />
             {label}
@@ -116,10 +90,6 @@ export function StudentSidebar({ onSignOut, className }: Props) {
       </nav>
 
       <div className="px-3 pb-6 pt-2 border-t border-white/15 space-y-1">
-        <NavLink to="/unidades" className={linkClass}>
-          <MessageCircle className="w-5 h-5 shrink-0" aria-hidden />
-          Foro (por tema)
-        </NavLink>
         <button
           type="button"
           onClick={onSignOut}

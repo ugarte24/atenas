@@ -70,8 +70,8 @@ export function Memoria({ config, onSubmit, disabled }: Props) {
               disabled={enviado || disabled || matchedPairs.has(card.pairId)}
               className={`min-h-[80px] p-3 rounded-lg border-2 text-sm text-left transition ${
                 show
-                  ? 'border-primary-500 bg-white'
-                  : 'border-atenas-mist-border bg-primary-50 hover:border-primary-300'
+                  ? 'border-atenas-blue bg-white'
+                  : 'border-atenas-mist-border bg-atenas-mist hover:border-atenas-blue/50'
               }`}
             >
               {show ? card.text : '?'}

@@ -1,6 +1,6 @@
 import { cn } from '../ui/cn';
 
-export type LessonTab = 'contenido' | 'recursos' | 'actividades' | 'notas';
+export type LessonTab = 'contenido' | 'recursos' | 'actividades' | 'foro' | 'notas';
 
 type Props = {
   active: LessonTab;
@@ -11,6 +11,7 @@ const TABS: { id: LessonTab; label: string }[] = [
   { id: 'contenido', label: 'Contenido' },
   { id: 'recursos', label: 'Recursos' },
   { id: 'actividades', label: 'Actividades' },
+  { id: 'foro', label: 'Foro' },
   { id: 'notas', label: 'Notas' },
 ];
 

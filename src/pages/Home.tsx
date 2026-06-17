@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
-import { Star, BookOpen, Flame, Lock, Check, Play, MapPin, Sparkles, Target, Trophy, Award, TrendingUp, Radio } from 'lucide-react';
+import { Star, BookOpen, Flame, Lock, Check, Play, MapPin, Sparkles } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno, type Mision } from '../hooks/useMisiones';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
@@ -9,15 +9,8 @@ import { StatCard } from '../components/ui/StatCard';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { ActivityCalendar } from '../components/calendar/ActivityCalendar';
 import { cn } from '../components/ui/cn';
-
-const QUICK_LINKS = [
-  { to: '/unidades', label: 'Mis Unidades', icon: BookOpen, color: 'from-sky-500 to-blue-600' },
-  { to: '/misiones', label: 'Misiones', icon: Target, color: 'from-orange-400 to-amber-500' },
-  { to: '/logros', label: 'Logros', icon: Trophy, color: 'from-violet-500 to-purple-600' },
-  { to: '/progreso', label: 'Mi Progreso', icon: TrendingUp, color: 'from-emerald-500 to-teal-600' },
-  { to: '/certificados', label: 'Certificados', icon: Award, color: 'from-amber-400 to-yellow-500' },
-  { to: '/aula-en-vivo', label: 'Aula en vivo', icon: Radio, color: 'from-red-500 to-rose-600' },
-];
+import { STUDENT_HOME_QUICK_LINKS } from '../constants/studentNav';
+import { Badge } from '../components/ui/Badge';
 
 type LevelStatus = 'locked' | 'unlocked' | 'completed';
 
@@ -156,16 +149,24 @@ export default function Home() {
       </div>
 
       <section className="mb-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {QUICK_LINKS.map(({ to, label, icon: Icon, color }) => (
+        {STUDENT_HOME_QUICK_LINKS.map(({ to, label, icon: Icon, homeQuickLinkColor, homeQuickLinkLabel, comingSoon }) => (
           <Link
             key={to}
             to={to}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card card-hover min-h-[100px] justify-center text-center"
+            className={cn(
+              'relative flex flex-col items-center gap-2 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card card-hover min-h-[100px] justify-center text-center',
+              comingSoon && 'opacity-90'
+            )}
           >
-            <span className={cn('flex h-12 w-12 items-center justify-center rounded-xl text-white bg-gradient-to-br shadow-md', color)}>
+            {comingSoon && (
+              <Badge tone="muted" className="absolute top-2 right-2 text-[9px] px-1.5 py-0">
+                Próximamente
+              </Badge>
+            )}
+            <span className={cn('flex h-12 w-12 items-center justify-center rounded-xl text-white bg-gradient-to-br shadow-md', homeQuickLinkColor)}>
               <Icon className="w-6 h-6" aria-hidden />
             </span>
-            <span className="text-xs font-bold text-atenas-ink leading-tight">{label}</span>
+            <span className="text-xs font-bold text-atenas-ink leading-tight">{homeQuickLinkLabel ?? label}</span>
           </Link>
         ))}
       </section>
@@ -188,10 +189,16 @@ export default function Home() {
           }}
         />
 
-        <h2 className="relative text-sm font-bold text-atenas-ink mb-5 flex items-center gap-2">
+        <h2 className="relative text-sm font-bold text-atenas-ink mb-2 flex items-center gap-2">
           <MapPin className="w-4 h-4 text-atenas-ink" aria-hidden />
           Tu ruta por el Abya Yala
         </h2>
+        <p className="relative text-xs text-atenas-muted mb-4 max-w-md">
+          Cada isla agrupa varias unidades de tu recorrido.{' '}
+          <Link to="/unidades" className="font-semibold text-atenas-ink underline underline-offset-2">
+            Ver todas las unidades
+          </Link>
+        </p>
 
         <div className="relative space-y-8">
           {levels.map((level, index) => {

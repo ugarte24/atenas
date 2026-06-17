@@ -1,6 +1,6 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Lock, Play } from 'lucide-react';
+import { Lock, Play, BookOpen } from 'lucide-react';
 import { useUnidad } from '../hooks/useUnidad';
 import { useTemas } from '../hooks/useTemas';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -10,7 +10,12 @@ import { UnidadHero } from '../components/UnidadHero';
 import { UnidadMediaBlock } from '../components/UnidadMediaBlock';
 import { UnidadIntroExtended } from '../components/UnidadIntroExtended';
 import { resolveAccentColor } from '../lib/unidadVisual';
+import { tituloUnidadConOrden } from '../lib/unidadTitulo';
+import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
+import { EmptyState } from '../components/ui/EmptyState';
 import { cn } from '../components/ui/cn';
+import { openCertificadoEnVentana } from '../lib/certificadoVentana';
 
 type UnidadTab = 'temas' | 'recursos' | 'actividades' | 'evaluaciones';
 
@@ -77,9 +82,20 @@ export default function UnidadTemas() {
 
   const accent = resolveAccentColor(unidad.accent_color);
   const heroIndex = unidad.orden ?? 0;
+  const isla = islaDesdeOrdenUnidadSafe(unidad.orden, heroIndex);
+  const tituloUnidad = tituloUnidadConOrden(unidad.orden ?? 0, unidad.title, heroIndex);
 
   return (
     <div>
+      <Breadcrumbs
+        className="mb-4"
+        items={[
+          { label: 'Inicio', to: '/' },
+          { label: 'Unidades', to: '/unidades' },
+          { label: tituloUnidad },
+        ]}
+      />
+
       <button
         type="button"
         onClick={() => navigate('/unidades')}
@@ -89,6 +105,9 @@ export default function UnidadTemas() {
       </button>
 
       <UnidadHero unidad={unidad} listIndex={heroIndex}>
+        <p className="relative text-white/90 text-xs font-semibold uppercase tracking-wide mt-2">
+          {isla.label}
+        </p>
         {profile?.role === 'estudiante' && pctUnidad != null && (
           <p className="relative text-white/95 text-sm mt-3 font-medium">
             Tu progreso en la unidad: <strong>{pctUnidad}%</strong>
@@ -147,7 +166,6 @@ export default function UnidadTemas() {
             onClick={async () => {
               setCertPdfLoading(true);
               try {
-                const { openCertificadoEnVentana } = await import('../lib/certificadoPdf');
                 await openCertificadoEnVentana({
                   nombreEstudiante: nombreEstudiante,
                   tituloUnidad: unidad.title,
@@ -207,9 +225,11 @@ export default function UnidadTemas() {
       ) : null}
 
       {tab === 'temas' && temas.length === 0 && !loading && (
-        <div className="rounded-2xl border border-atenas-mist-border bg-atenas-card p-8 text-center shadow-card">
-          <p className="text-atenas-muted text-lg">No hay temas en esta unidad todavía.</p>
-        </div>
+        <EmptyState
+          icon={<BookOpen className="w-8 h-8" />}
+          title="Sin temas"
+          description="Aún no hay temas en esta unidad. Tu docente los publicará pronto."
+        />
       )}
     </div>
   );

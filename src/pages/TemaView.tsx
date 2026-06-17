@@ -14,6 +14,8 @@ import { TemaMensajes } from '../components/TemaMensajes';
 import { MicroQuizCard } from '../components/MicroQuizCard';
 import { useTiempoEstudio } from '../hooks/useTiempoEstudio';
 import { SkeletonLines } from '../components/ui/Skeleton';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
+import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { LessonTabs, type LessonTab } from '../components/lesson/LessonTabs';
 import { LessonSectionNav, type SectionItem } from '../components/lesson/LessonSectionNav';
 import { TimelineSection } from '../components/lesson/TimelineSection';
@@ -35,6 +37,10 @@ function normalizeTemaContent(raw: string | null | undefined): string {
     .replace(/<\/p>\s*<p>/gi, '\n')
     .replace(/<\/?p>/gi, '')
     .trimEnd();
+}
+
+function temaContentEsHtml(raw: string): boolean {
+  return /<h[1-6]|<ul|<ol|<blockquote|<strong/i.test(raw);
 }
 
 export default function TemaView() {
@@ -113,6 +119,11 @@ export default function TemaView() {
     setTab('contenido');
     const el = document.getElementById(`section-${id}`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const openForumTab = useCallback(() => {
+    setTab('foro');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   useEffect(() => {
@@ -201,24 +212,27 @@ export default function TemaView() {
 
   const showStudentLayout = esEstudiante;
   const normalizedTemaContent = normalizeTemaContent(tema.content);
+  const temaContentHtml = tema.content && temaContentEsHtml(tema.content) ? tema.content : null;
 
   return (
     <div className={cn(readingMode && 'reading-mode', '-mx-4 sm:-mx-6 px-4 sm:px-6')}>
       {/* Header */}
       <header className="mb-5">
-        <nav className="text-xs text-atenas-muted mb-2 flex flex-wrap items-center gap-1" aria-label="Ruta">
-          <Link to="/unidades" className="hover:text-atenas-ink font-medium">Unidades</Link>
-          <span aria-hidden>/</span>
-          {unidad && (
-            <>
-              <Link to={`/unidades/${unidad.id}`} className="hover:text-atenas-ink font-medium truncate max-w-[140px]">
-                {unidad.title}
-              </Link>
-              <span aria-hidden>/</span>
-            </>
-          )}
-          <span className="text-atenas-ink font-semibold truncate">{tema.title}</span>
-        </nav>
+        <Breadcrumbs
+          className="mb-2"
+          items={[
+            { label: 'Inicio', to: '/' },
+            ...(unidad
+              ? [
+                  {
+                    label: tituloUnidadConOrden(unidad.orden ?? 0, unidad.title),
+                    to: `/unidades/${unidad.id}`,
+                  },
+                ]
+              : []),
+            { label: tema.title },
+          ]}
+        />
 
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -271,6 +285,15 @@ export default function TemaView() {
         <>
           <LessonTabs active={tab} onChange={setTab} />
 
+          {tab === 'contenido' && sections.length > 0 && (
+            <LessonSectionNav
+              variant="horizontal"
+              sections={sections}
+              activeId={activeSection}
+              onSelect={scrollToSection}
+            />
+          )}
+
           <div className="mt-5 grid grid-cols-1 lg:grid-cols-[11rem_minmax(0,1fr)_17rem] xl:grid-cols-[12rem_minmax(0,1fr)_18rem] gap-5 lg:gap-6">
             {tab === 'contenido' && (
               <aside className="hidden lg:block">
@@ -285,9 +308,16 @@ export default function TemaView() {
                     <section id="section-teoria" className="rounded-2xl bg-white border border-atenas-mist-border p-5 sm:p-6 shadow-card scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-4">Introducción</h2>
                       {tema.content && (
-                        <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed text-base mb-6">
-                          {normalizedTemaContent}
-                        </div>
+                        temaContentHtml ? (
+                          <div
+                            className="prose prose-sm max-w-none text-atenas-muted-strong leading-relaxed mb-6 [&_h3]:text-atenas-ink [&_h3]:font-bold [&_h3]:mt-4 [&_blockquote]:border-l-4 [&_blockquote]:border-atenas-gold [&_blockquote]:pl-4 [&_blockquote]:italic"
+                            dangerouslySetInnerHTML={{ __html: temaContentHtml }}
+                          />
+                        ) : (
+                          <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed text-base mb-6">
+                            {normalizedTemaContent}
+                          </div>
+                        )
                       )}
                       {loadingRecursos && !tema.content ? (
                         <p className="text-atenas-muted">Cargando…</p>
@@ -395,13 +425,15 @@ export default function TemaView() {
                 </section>
               )}
 
-              {tab === 'notas' && <LessonNotesWidget temaId={tema.id} />}
+              {tab === 'notas' && <LessonNotesWidget temaId={tema.id} userId={user?.id} />}
+
+              {tab === 'foro' && <TemaMensajes temaId={tema.id} />}
             </div>
 
             <aside className="lesson-widgets space-y-4 hidden lg:block">
-              <LessonNotesWidget temaId={tema.id} compact />
+              <LessonNotesWidget temaId={tema.id} userId={user?.id} compact />
               <LessonMapWidget recursos={recursos} />
-              <LessonForumWidget temaId={tema.id} compact />
+              <LessonForumWidget temaId={tema.id} compact onOpenForum={openForumTab} />
             </aside>
           </div>
 

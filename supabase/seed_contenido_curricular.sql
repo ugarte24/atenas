@@ -1,18 +1,10 @@
--- =============================================================================
--- ATENAS · Seed de contenido curricular (Ciencias Sociales 6.º Primaria)
--- =============================================================================
--- Carga: unidades (con portada, vídeo, color, intro y tema visual), temas
--- (prerequisito en cadena por unidad), 1 actividad publicada y 1 evaluación
--- publicada por tema.
---
--- Cómo ejecutar:
---   1) Supabase Dashboard → SQL Editor → pegar y ejecutar (rol postgres: ignora RLS).
---   2) O: psql conectado al proyecto.
---
--- Idempotencia: ON CONFLICT (id) DO NOTHING (re-ejecutar no duplica filas).
--- Para vaciar y volver a cargar: borrar en orden hijo→padre o TRUNCATE CASCADE
--- (solo en desarrollo).
--- =============================================================================
+/*
+ * ATENAS - Seed contenido curricular (Ciencias Sociales 6. primaria)
+ * Ejecutar TODO este archivo en Supabase SQL Editor (rol postgres).
+ * Requiere migraciones aplicadas. Idempotente: ON CONFLICT DO NOTHING.
+ *
+ * Carga: unidades, temas, actividades y evaluaciones publicadas.
+ */
 
 -- UUIDs fijos (referencias estables)
 -- Unidades: aaaa0001 … aaaa0007

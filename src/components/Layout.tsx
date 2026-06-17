@@ -6,6 +6,7 @@ import { StudentBottomNav } from './StudentBottomNav';
 import { StudentSidebar } from './StudentSidebar';
 import { DocenteSidebar } from './DocenteSidebar';
 import { AppDrawer, type DrawerLink } from './AppDrawer';
+import { STUDENT_DRAWER_ITEMS } from '../constants/studentNav';
 import { cn } from './ui/cn';
 
 type Props = { children: React.ReactNode };
@@ -35,16 +36,9 @@ export function Layout({ children }: Props) {
   const drawerLinks: DrawerLink[] = profile
     ? [
         ...(esEstudiante
-          ? [
-              { to: '/', label: 'Inicio', end: true },
-              { to: '/unidades', label: 'Unidades' },
-              { to: '/misiones', label: 'Misiones' },
-              { to: '/progreso', label: 'Progreso' },
-              { to: '/logros', label: 'Logros' },
-              { to: '/certificados', label: 'Certificados' },
-            ]
+          ? STUDENT_DRAWER_ITEMS.map(({ to, label, end }) => ({ to, label, end }))
           : []),
-        { to: '/perfil', label: 'Mi perfil' },
+        ...(!esEstudiante ? [{ to: '/perfil', label: 'Mi perfil' }] : []),
         ...(esDocenteOAdmin ? [{ to: '/docente', label: 'Panel docente' }] : []),
         ...(profile.role === 'admin' ? [{ to: '/admin', label: 'Administración' }] : []),
       ]
