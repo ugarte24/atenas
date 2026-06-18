@@ -5,6 +5,9 @@ import { useEstudianteDashboard } from '../hooks/useEstudianteDashboard';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Input } from '../components/ui/Input';
 import { ProgressBar } from '../components/ui/ProgressBar';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Alert } from '../components/ui/Alert';
 import { Link } from 'react-router-dom';
 import type { UserRole } from '../types';
 
@@ -114,8 +117,8 @@ export default function Perfil() {
           id="panel-datos"
           role="tabpanel"
           aria-labelledby="tab-datos"
-          className="card p-5 sm:p-8"
         >
+          <Card padding="lg">
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Correo"
@@ -137,15 +140,16 @@ export default function Perfil() {
               <span className="badge-role capitalize">{(profile.role as UserRole)}</span>
             </div>
             {message === 'ok' && (
-              <p className="text-emerald-700 text-sm font-medium">Perfil actualizado correctamente.</p>
+              <Alert tone="success">Perfil actualizado correctamente.</Alert>
             )}
             {message === 'error' && (
-              <p className="text-red-700 text-sm font-medium">No se pudo actualizar. Vuelve a intentarlo.</p>
+              <Alert tone="error">No se pudo actualizar. Vuelve a intentarlo.</Alert>
             )}
-            <button type="submit" disabled={saving} className="btn-primary disabled:opacity-50">
+            <Button type="submit" disabled={saving}>
               {saving ? 'Guardando...' : 'Guardar cambios'}
-            </button>
+            </Button>
           </form>
+          </Card>
         </div>
       )}
 
@@ -166,8 +170,8 @@ export default function Perfil() {
             </div>
           )}
 
-          <div className="card p-5 sm:p-8 space-y-4">
-            <h2 className="font-semibold text-atenas-ink text-lg">Nivel y experiencia</h2>
+          <Card padding="lg" className="space-y-4">
+            <h2 className="text-lg font-bold text-atenas-ink">Nivel y experiencia</h2>
             {dash.loading && <p className="text-atenas-muted text-sm">Cargando…</p>}
             {dash.error && <p className="text-red-600 text-sm">{dash.error}</p>}
             {!dash.loading && !dash.error && (
@@ -214,10 +218,10 @@ export default function Perfil() {
                 </p>
               </>
             )}
-          </div>
+          </Card>
 
-          <div className="card p-5 sm:p-8">
-            <h2 className="font-semibold text-atenas-ink text-lg mb-4">Progreso por unidad</h2>
+          <Card padding="lg">
+            <h2 className="text-lg font-bold text-atenas-ink mb-4">Progreso por unidad</h2>
             {!dash.loading &&
               dash.unidades.map((u) => (
                 <details
@@ -266,10 +270,10 @@ export default function Perfil() {
             {!dash.loading && dash.unidades.length === 0 && (
               <p className="text-atenas-muted text-sm">Aún no hay unidades publicadas con contenido.</p>
             )}
-          </div>
+          </Card>
 
-          <div className="card p-5 sm:p-8">
-            <h2 className="font-semibold text-atenas-ink text-lg mb-3">Lo último que hiciste</h2>
+          <Card padding="lg">
+            <h2 className="text-lg font-bold text-atenas-ink mb-3">Lo último que hiciste</h2>
             {!dash.loading && dash.timeline.length === 0 && (
               <p className="text-atenas-muted text-sm">Cuando completes actividades o evaluaciones aparecerán aquí.</p>
             )}
@@ -293,10 +297,10 @@ export default function Perfil() {
                 </li>
               ))}
             </ol>
-          </div>
+          </Card>
 
-          <div className="card p-5 sm:p-8">
-            <h2 className="font-semibold text-atenas-ink text-lg mb-2">Logros</h2>
+          <Card padding="lg">
+            <h2 className="text-lg font-bold text-atenas-ink mb-2">Logros</h2>
             {!dash.loading && dash.logros.length === 0 && (
               <p className="text-atenas-muted text-sm">
                 Completa actividades y evaluaciones para desbloquear logros.
@@ -320,17 +324,17 @@ export default function Perfil() {
                 ))}
               </ul>
             )}
-          </div>
+          </Card>
         </div>
       )}
 
       {!esEstudiante && (
-        <div className="card p-5 sm:p-8">
-          <h2 className="font-semibold text-atenas-ink mb-2">Logros</h2>
+        <Card padding="lg">
+          <h2 className="text-lg font-bold text-atenas-ink mb-2">Logros</h2>
           <p className="text-atenas-muted text-sm">
             Los logros y el progreso detallado están disponibles para cuentas de estudiante.
           </p>
-        </div>
+        </Card>
       )}
     </div>
   );

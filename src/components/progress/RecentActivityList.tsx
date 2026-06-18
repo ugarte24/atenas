@@ -1,5 +1,8 @@
+import { Link } from 'react-router-dom';
 import type { ActividadReciente } from '../../hooks/useActividadReciente';
 import { ClipboardList, FileQuestion } from 'lucide-react';
+import { Skeleton } from '../ui/Skeleton';
+import { EmptyState } from '../ui/EmptyState';
 
 type Props = {
   items: ActividadReciente[];
@@ -21,8 +24,37 @@ function formatRelative(iso: string): string {
 }
 
 export function RecentActivityList({ items, loading }: Props) {
-  if (loading) return <p className="text-sm text-atenas-muted">Cargando actividad…</p>;
-  if (items.length === 0) return <p className="text-sm text-atenas-muted">Sin actividad reciente.</p>;
+  if (loading) {
+    return (
+      <ul className="space-y-3 list-none m-0 p-0" aria-busy aria-label="Cargando actividad">
+        {[0, 1, 2].map((i) => (
+          <li key={i} className="flex items-start gap-3 rounded-xl border border-atenas-mist-border bg-white p-3">
+            <Skeleton className="h-9 w-9 shrink-0 rounded-lg" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={<ClipboardList className="w-8 h-8" />}
+        title="Sin actividad reciente"
+        description="Cuando completes actividades o evaluaciones, aparecerán aquí."
+        action={
+          <Link to="/unidades" className="btn-secondary inline-flex text-sm">
+            Ir a unidades
+          </Link>
+        }
+        className="p-6"
+      />
+    );
+  }
 
   return (
     <ul className="space-y-3 list-none m-0 p-0">

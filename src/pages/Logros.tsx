@@ -4,6 +4,8 @@ import { useMisionesAlumno } from '../hooks/useMisiones';
 import { Lock, Check, TreePine, Compass, ScrollText, type LucideIcon } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
+import { Alert } from '../components/ui/Alert';
 import { cn } from '../components/ui/cn';
 
 type Filtro = 'todos' | 'desbloqueados' | 'bloqueados';
@@ -77,7 +79,17 @@ export default function Logros() {
       {loading ? (
         <SkeletonLines lines={3} />
       ) : error ? (
-        <p className="text-red-600 text-sm">{error}</p>
+        <Alert tone="error">No se pudieron cargar los logros. Intenta recargar la página.</Alert>
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={<Lock className="w-8 h-8" />}
+          title={filtro === 'desbloqueados' ? 'Aún no tienes logros' : 'No hay logros en esta vista'}
+          description={
+            filtro === 'desbloqueados'
+              ? 'Completa actividades y misiones para desbloquear insignias.'
+              : 'Prueba otro filtro o sigue aprendiendo para ganar nuevas insignias.'
+          }
+        />
       ) : (
         <section className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {filtered.map((badge) => (

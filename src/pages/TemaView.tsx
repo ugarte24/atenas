@@ -14,7 +14,9 @@ import { TemaMensajes } from '../components/TemaMensajes';
 import { MicroQuizCard } from '../components/MicroQuizCard';
 import { useTiempoEstudio } from '../hooks/useTiempoEstudio';
 import { SkeletonLines } from '../components/ui/Skeleton';
-import { Breadcrumbs } from '../components/ui/Breadcrumbs';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { LessonTabs, type LessonTab } from '../components/lesson/LessonTabs';
 import { LessonSectionNav, type SectionItem } from '../components/lesson/LessonSectionNav';
@@ -202,10 +204,10 @@ export default function TemaView() {
         <button type="button" onClick={() => navigate(`/unidades/${tema.unidad_id}`)} className="text-sm font-medium mb-4 min-h-touch text-atenas-ink hover:text-atenas-blue">
           ← Volver a la unidad
         </button>
-        <div className="card p-6 border-2 border-amber-300 bg-amber-50">
+        <Card padding="md" className="border-2 border-amber-300 bg-amber-50">
           <h1 className="text-xl font-bold text-amber-950">Tema bloqueado</h1>
           <p className="text-amber-900 mt-2">Completa el tema anterior antes de continuar.</p>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -217,30 +219,26 @@ export default function TemaView() {
   return (
     <div className={cn(readingMode && 'reading-mode', '-mx-4 sm:-mx-6 px-4 sm:px-6')}>
       {/* Header */}
-      <header className="mb-5">
-        <Breadcrumbs
-          className="mb-2"
-          items={[
-            { label: 'Inicio', to: '/' },
-            ...(unidad
-              ? [
-                  {
-                    label: tituloUnidadConOrden(unidad.orden ?? 0, unidad.title),
-                    to: `/unidades/${unidad.id}`,
-                  },
-                ]
-              : []),
-            { label: tema.title },
-          ]}
-        />
-
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-atenas-ink">{tema.title}</h1>
-            {unidad && <p className="text-sm text-atenas-muted mt-0.5">{unidad.title}</p>}
-          </div>
-          {showStudentLayout && (
-            <div className="flex items-center gap-3 shrink-0">
+      <PageHeader
+        className="mb-5 border-b-0 pb-0"
+        eyebrow={unidad ? tituloUnidadConOrden(unidad.orden ?? 0, unidad.title) : undefined}
+        title={tema.title}
+        description={unidad && unidad.title !== tema.title ? unidad.title : undefined}
+        breadcrumbs={[
+          { label: 'Inicio', to: '/' },
+          ...(unidad
+            ? [
+                {
+                  label: tituloUnidadConOrden(unidad.orden ?? 0, unidad.title),
+                  to: `/unidades/${unidad.id}`,
+                },
+              ]
+            : []),
+          { label: tema.title },
+        ]}
+        actions={
+          showStudentLayout ? (
+            <div className="flex items-center gap-2 shrink-0">
               <label className="flex items-center gap-2 text-sm text-atenas-muted-strong cursor-pointer min-h-touch">
                 <input
                   type="checkbox"
@@ -250,30 +248,35 @@ export default function TemaView() {
                 />
                 Modo lectura
               </label>
-              <button type="button" className="p-2 rounded-xl text-atenas-muted hover:bg-white/80 min-h-touch" aria-label="Pantalla completa" onClick={() => document.documentElement.requestFullscreen?.()}>
+              <button
+                type="button"
+                className="p-2 rounded-xl text-atenas-muted hover:bg-white/80 min-h-touch min-w-touch"
+                aria-label="Pantalla completa"
+                onClick={() => document.documentElement.requestFullscreen?.()}
+              >
                 <Maximize2 className="w-5 h-5" />
               </button>
             </div>
-          )}
-        </div>
+          ) : undefined
+        }
+      />
 
-        {progreso && (
-          <div className="mt-4 rounded-xl bg-white/80 border border-atenas-mist-border px-4 py-2 flex items-center gap-3">
-            <BookOpen className="w-4 h-4 text-atenas-blue shrink-0" aria-hidden />
-            <div className="flex-1">
-              <div className="h-2 rounded-full bg-atenas-mist overflow-hidden">
-                <div
-                  className="h-full bg-atenas-success rounded-full transition-all"
-                  style={{ width: `${Math.round((progreso.completadas / progreso.total) * 100)}%` }}
-                />
-              </div>
+      {progreso && (
+        <div className="mb-5 -mt-2 rounded-xl bg-white/80 border border-atenas-mist-border px-4 py-2 flex items-center gap-3">
+          <BookOpen className="w-4 h-4 text-atenas-blue shrink-0" aria-hidden />
+          <div className="flex-1">
+            <div className="h-2 rounded-full bg-atenas-mist overflow-hidden">
+              <div
+                className="h-full bg-atenas-success rounded-full transition-all"
+                style={{ width: `${Math.round((progreso.completadas / progreso.total) * 100)}%` }}
+              />
             </div>
-            <span className="text-xs font-semibold text-atenas-ink tabular-nums shrink-0">
-              {loadingProgreso ? '…' : `${progreso.completadas}/${progreso.total}`}
-            </span>
           </div>
-        )}
-      </header>
+          <span className="text-xs font-semibold text-atenas-ink tabular-nums shrink-0">
+            {loadingProgreso ? '…' : `${progreso.completadas}/${progreso.total}`}
+          </span>
+        </div>
+      )}
 
       {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion === 'inicio' && esEstudiante && (
         <div className="mb-6">
@@ -438,37 +441,40 @@ export default function TemaView() {
           </div>
 
           {/* Footer nav temas */}
-          <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-atenas-mist-border pt-6">
+          <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-atenas-mist-border pt-6 pb-safe">
             {prevTema ? (
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => navigate(`/temas/${prevTema.id}`)}
-                className="btn-secondary flex items-center gap-2 text-sm"
+                className="inline-flex items-center gap-2"
               >
                 <ChevronLeft className="w-4 h-4" aria-hidden />
                 Anterior
-              </button>
+              </Button>
             ) : (
               <span />
             )}
             {temasUnidad.length > 0 && (
-              <p className="text-sm text-atenas-muted font-medium">
+              <p className="text-sm text-atenas-muted font-medium order-last w-full text-center sm:order-none sm:w-auto">
                 Tema {temaIndex + 1} / {temasUnidad.length}
               </p>
             )}
             {nextTema ? (
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={() => navigate(`/temas/${nextTema.id}`)}
-                className="btn-primary flex items-center gap-2 text-sm"
+                className="inline-flex items-center gap-2 ml-auto sm:ml-0"
               >
                 Siguiente
                 <ChevronRight className="w-4 h-4" aria-hidden />
-              </button>
+              </Button>
             ) : (
-              <button type="button" onClick={() => navigate(`/unidades/${tema.unidad_id}`)} className="btn-primary text-sm">
+              <Button type="button" size="sm" onClick={() => navigate(`/unidades/${tema.unidad_id}`)}>
                 Volver a unidad
-              </button>
+              </Button>
             )}
           </footer>
         </>

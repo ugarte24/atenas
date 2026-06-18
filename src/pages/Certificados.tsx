@@ -4,9 +4,12 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno } from '../hooks/useMisiones';
 import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 import { Award, ExternalLink } from 'lucide-react';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { openCertificadoEnVentana } from '../lib/certificadoVentana';
@@ -75,6 +78,11 @@ export default function Certificados() {
           icon={<Award className="w-8 h-8" />}
           title="Sin certificados disponibles"
           description="Cuando haya unidades publicadas con umbral de certificado, aparecerán aquí."
+          action={
+            <Link to="/unidades" className="btn-secondary inline-flex text-sm">
+              Ver unidades
+            </Link>
+          }
         />
       )}
 
@@ -88,7 +96,7 @@ export default function Certificados() {
             const eligible = st?.eligible ?? false;
 
             return (
-              <article key={u.id} className="rounded-2xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 to-white p-6 shadow-card">
+              <Card key={u.id} padding="lg" className="border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 to-white">
                 <div className="flex gap-4">
                   <Award className="w-12 h-12 text-amber-600 shrink-0" aria-hidden />
                   <div className="flex-1 min-w-0">
@@ -106,19 +114,20 @@ export default function Certificados() {
 
                 {eligible ? (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <button
+                    <Button
                       type="button"
+                      size="sm"
                       onClick={() => abrirCertificado(titulo, st!.pct, umbral)}
-                      className="btn-primary flex items-center gap-2 text-sm"
+                      className="inline-flex items-center gap-2"
                     >
                       <ExternalLink className="w-4 h-4" aria-hidden />
                       Ver certificado
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <p className="mt-4 text-sm text-amber-800 font-medium">Completa la unidad para desbloquear el certificado.</p>
                 )}
-              </article>
+              </Card>
             );
           })}
         </div>

@@ -12,6 +12,7 @@ import { StatCard } from '../components/ui/StatCard';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { Card } from '../components/ui/Card';
+import { Alert } from '../components/ui/Alert';
 import { ProgressChart } from '../components/progress/ProgressChart';
 import { RecentActivityList } from '../components/progress/RecentActivityList';
 import { BookOpen, ClipboardCheck, Star, Flame } from 'lucide-react';
@@ -44,13 +45,17 @@ export default function Progreso() {
 
       {(loading || loadingGam) && <SkeletonLines lines={4} />}
       {error && !loading && (
-        <p className="text-sm text-red-600" role="alert">
-          No se pudo cargar tu progreso.
-        </p>
+        <Alert tone="error" className="mb-4">
+          No se pudo cargar tu progreso. Intenta recargar la página.
+        </Alert>
       )}
 
       {!loading && !error && misionesConTemas.length === 0 && (
-        <EmptyState title="Sin progreso aún" description="Cuando completes actividades, lo verás aquí." />
+        <EmptyState
+          icon={<BookOpen className="w-8 h-8" />}
+          title="Sin progreso aún"
+          description="Cuando completes actividades en tus unidades, verás aquí tu avance y XP."
+        />
       )}
 
       {!loading && !error && misionesConTemas.length > 0 && (
@@ -66,7 +71,7 @@ export default function Progreso() {
             <StatCard label="Nivel" value={loadingGam ? '–' : `${nivel.nivel}`} icon={<Flame className="w-5 h-5 text-orange-500" />} />
           </section>
 
-          <Card className="mb-6 p-5">
+          <Card className="mb-6" padding="md">
             <h2 className="text-sm font-bold text-atenas-ink mb-4">Progreso por unidad</h2>
             <ProgressChart items={chartItems} />
           </Card>

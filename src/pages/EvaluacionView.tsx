@@ -14,6 +14,7 @@ export default function EvaluacionView() {
   const { evaluacion, loading, error } = useEvaluacion(evaluacionId ?? null);
   const { guardarIntento, saving, error: saveErr, clearError } = useEvaluacionIntento(evaluacionId ?? null);
   const [sesion, setSesion] = useState(0);
+  const [preguntaActual, setPreguntaActual] = useState(1);
   const [intentosCount, setIntentosCount] = useState(0);
   const [mejorPuntuacion, setMejorPuntuacion] = useState<number | null>(null);
   const [ultimoGuardadoOk, setUltimoGuardadoOk] = useState(false);
@@ -124,17 +125,17 @@ export default function EvaluacionView() {
         <ParchmentLayout
           title={evaluacion.title}
           subtitle={evaluacion.descripcion ?? undefined}
-          step={intentosCount + 1}
-          totalSteps={ilimitado ? preguntas.length : maxIntentos ?? preguntas.length}
+          step={preguntaActual}
+          totalSteps={preguntas.length}
           footer={
             <ParchmentFooter
-              step={Math.min(preguntas.length, 1)}
+              step={preguntaActual}
               totalSteps={preguntas.length}
-              progress={preguntas.length ? Math.round((1 / preguntas.length) * 100) : 0}
+              progress={preguntas.length ? Math.round((preguntaActual / preguntas.length) * 100) : 0}
             />
           }
         >
-          <p className="text-sm text-amber-900/80 mb-4">
+          <p className="text-sm text-amber-900/80 mb-5">
             Para aprobar: <strong>{evaluacion.umbral_aprobado}%</strong>
             {!ilimitado && <> · Intentos: {intentosCount}/{maxIntentos}</>}
           </p>
@@ -151,6 +152,7 @@ export default function EvaluacionView() {
             disabled={saving}
             feedback={feedback}
             minutosExamen={modoExamen ? (evaluacion.minutos_limite ?? 30) : 0}
+            onStepChange={(step) => setPreguntaActual(step)}
           />
           {ultimoGuardadoOk && (ilimitado || intentosCount < maxIntentos!) && (
             <div className="mt-6 pt-4 border-t border-amber-200/50">
@@ -160,6 +162,7 @@ export default function EvaluacionView() {
                 onClick={() => {
                   setUltimoGuardadoOk(false);
                   clearError();
+                  setPreguntaActual(1);
                   setSesion((s) => s + 1);
                 }}
               >

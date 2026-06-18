@@ -12,6 +12,28 @@ function readPackageVersion(): string {
   return pkg.version ?? '0.0.0';
 }
 
+/** Inyecta la versión en index.html (meta + inline) para que la UI no dependa solo del JS en caché. */
+function atenasVersionHtmlPlugin(): Plugin {
+  return {
+    name: 'atenas-version-html',
+    transformIndexHtml() {
+      const version = readPackageVersion();
+      return [
+        {
+          tag: 'meta',
+          attrs: { name: 'atenas-version', content: version },
+          injectTo: 'head',
+        },
+        {
+          tag: 'script',
+          children: `window.__ATENAS_VERSION__=${JSON.stringify(version)};`,
+          injectTo: 'head',
+        },
+      ];
+    },
+  };
+}
+
 /** En dev, version.json siempre refleja package.json (evita JS empaquetado desactualizado). */
 function atenasLiveVersionPlugin(): Plugin {
   return {
@@ -44,7 +66,9 @@ export default defineConfig(({ mode }) => {
   const base = raw === '/' ? '/' : raw.endsWith('/') ? raw : `${raw}/`;
 
   return {
-    plugins: [react(), mode === 'development' ? atenasLiveVersionPlugin() : null].filter(Boolean),
+    plugins: [react(), atenasVersionHtmlPlugin(), mode === 'development' ? atenasLiveVersionPlugin() : null].filter(
+      Boolean
+    ),
     base,
     server: {
       port: 8080,

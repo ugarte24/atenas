@@ -14,6 +14,10 @@ import {
 import { ParchmentLayout, ParchmentFooter } from '../components/layout/ParchmentLayout';
 import { ResultScreen } from '../components/gamification/ResultScreen';
 import { LevelUpModal } from '../components/gamification/LevelUpModal';
+import { SkeletonLines } from '../components/ui/Skeleton';
+import { Alert } from '../components/ui/Alert';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 import type { ActividadConfig } from '../types';
 
 export default function ActividadView() {
@@ -35,19 +39,30 @@ export default function ActividadView() {
   };
 
   if (loading || !actividad) {
-    return <p className="text-atenas-muted">Cargando actividad...</p>;
+    return (
+      <div className="max-w-2xl mx-auto">
+        <SkeletonLines lines={5} />
+      </div>
+    );
   }
   if (error) {
-    return <p className="text-red-600">{error}</p>;
+    return (
+      <div className="max-w-md mx-auto space-y-4">
+        <Alert tone="error">{error}</Alert>
+        <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
+          Volver
+        </Button>
+      </div>
+    );
   }
   if (!actividad.publicada) {
     return (
-      <div className="card p-6 max-w-md">
+      <Card padding="md" className="max-w-md mx-auto">
         <p className="text-atenas-muted">Esta actividad no está publicada.</p>
-        <button type="button" onClick={() => navigate(-1)} className="btn-secondary mt-4">
+        <Button type="button" variant="secondary" className="mt-4" onClick={() => navigate(-1)}>
           Volver
-        </button>
-      </div>
+        </Button>
+      </Card>
     );
   }
 
@@ -72,14 +87,16 @@ export default function ActividadView() {
   const config = actividad.config as ActividadConfig;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <button
+    <div className="max-w-2xl mx-auto pb-safe">
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => navigate(-1)}
-        className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 text-atenas-ink hover:bg-atenas-mist"
+        className="-ml-2 mb-4"
       >
         ← Volver al tema
-      </button>
+      </Button>
       <ParchmentLayout
         title={actividad.title}
         subtitle={actividad.tipo.replace(/_/g, ' ')}

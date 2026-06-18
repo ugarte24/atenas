@@ -2,10 +2,13 @@ import { useMemo, useState } from 'react';
 import { useMisionesAlumno } from '../hooks/useMisiones';
 import { useMisionesDiarias } from '../hooks/useMisionesDiarias';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
+import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Card } from '../components/ui/Card';
+import { Alert } from '../components/ui/Alert';
 import { cn } from '../components/ui/cn';
 import { Star, Gift, Target } from 'lucide-react';
 
@@ -61,7 +64,11 @@ export default function Misiones() {
       </div>
 
       {loading && tab === 'semanales' && <SkeletonLines lines={4} />}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && (
+        <Alert tone="error" className="mb-4">
+          No se pudieron cargar las misiones. Recarga la página o inténtalo más tarde.
+        </Alert>
+      )}
 
       {!loading && tab === 'semanales' && (
         <div className="space-y-4">
@@ -70,13 +77,18 @@ export default function Misiones() {
               icon={<Target className="w-8 h-8" />}
               title="Sin misiones semanales"
               description="Cuando tu docente publique unidades, aparecerán aquí como misiones por completar."
+              action={
+                <Link to="/unidades" className="btn-secondary inline-flex text-sm">
+                  Explorar unidades
+                </Link>
+              }
             />
           ) : (
             misionesConTemas.map((m) => {
               const pct = m.totalPasos ? Math.round((m.pasosCompletados / m.totalPasos) * 100) : 0;
               const done = m.pasosCompletados >= m.totalPasos;
               return (
-                <article key={m.id} className="card p-5 flex flex-col gap-3">
+                <Card key={m.id} padding="md" className="flex flex-col gap-3">
                   <div className="flex justify-between gap-3">
                     <h2 className="font-bold text-atenas-ink">{m.titulo}</h2>
                     <span className="shrink-0 flex items-center gap-1 text-sm font-bold text-atenas-gold">
@@ -89,17 +101,17 @@ export default function Misiones() {
                   <p className="text-xs text-atenas-muted">
                     {m.pasosCompletados} / {m.totalPasos} temas completados
                   </p>
-                </article>
+                </Card>
               );
             })
           )}
-          <div className="rounded-2xl bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-200 p-5 flex items-center gap-4">
+          <Card padding="md" className="bg-gradient-to-r from-amber-100 to-amber-50 border-amber-200 flex items-center gap-4">
             <Gift className="w-10 h-10 text-amber-600 shrink-0" aria-hidden />
             <div>
               <p className="font-bold text-amber-950">Cofre semanal</p>
               <p className="text-sm text-amber-900">Completa todas las misiones semanales · +500 XP</p>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
@@ -107,9 +119,15 @@ export default function Misiones() {
         <div className="space-y-4">
           {loadingDiarias ? (
             <SkeletonLines lines={2} />
+          ) : diarias.length === 0 ? (
+            <EmptyState
+              icon={<Target className="w-8 h-8" />}
+              title="Sin misiones diarias"
+              description="Estudia hoy para avanzar en tus objetivos diarios."
+            />
           ) : (
             diarias.map((d) => (
-              <article key={d.id} className="card p-5">
+              <Card key={d.id} padding="md">
                 <div className="flex justify-between mb-2">
                   <h2 className="font-bold text-atenas-ink text-sm">{d.titulo}</h2>
                   <span className="text-xs font-bold text-atenas-gold">
@@ -123,7 +141,7 @@ export default function Misiones() {
                     <span className="ml-1">· Sigue tu racha estudiando hoy</span>
                   )}
                 </p>
-              </article>
+              </Card>
             ))
           )}
         </div>
@@ -132,7 +150,7 @@ export default function Misiones() {
       {!loading && tab === 'especiales' && (
         <div className="space-y-4">
           {especiales.map((e) => (
-            <article key={e.id} className="card p-5 border-atenas-gold/30">
+            <Card key={e.id} padding="md" className="border-atenas-gold/30">
               <div className="flex justify-between mb-2">
                 <h2 className="font-bold text-atenas-ink">{e.titulo}</h2>
                 <span className="text-sm font-bold text-atenas-gold">+{e.xp} XP</span>
@@ -141,7 +159,7 @@ export default function Misiones() {
               <p className="text-xs text-atenas-muted mt-2">
                 Completa las unidades de cada isla para avanzar en los tres mundos.
               </p>
-            </article>
+            </Card>
           ))}
         </div>
       )}

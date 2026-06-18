@@ -14,6 +14,9 @@ import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { SkeletonLines } from '../components/ui/Skeleton';
 import { cn } from '../components/ui/cn';
 import { openCertificadoEnVentana } from '../lib/certificadoVentana';
 
@@ -69,7 +72,7 @@ export default function UnidadTemas() {
   }, [user, profile?.role, unidadId, temas.length]);
 
   if (loadingUnidad || !unidad) {
-    return <p className="text-atenas-muted text-lg">Cargando...</p>;
+    return <SkeletonLines lines={4} />;
   }
 
   const umbralCert = unidad.certificado_umbral_pct;
@@ -119,7 +122,11 @@ export default function UnidadTemas() {
 
       <UnidadIntroExtended text={unidad.intro_extended} />
 
-      <div className="flex gap-1 overflow-x-auto scrollbar-nav-hide border-b border-atenas-mist-border mb-6" role="tablist">
+      <div
+        className="flex gap-1 overflow-x-auto scrollbar-nav-hide border-b border-atenas-mist-border mb-6 -mx-1 px-1"
+        role="tablist"
+        aria-label="Secciones de la unidad"
+      >
         {(
           [
             { id: 'temas' as const, label: 'Temas' },
@@ -145,25 +152,21 @@ export default function UnidadTemas() {
       </div>
 
       {tab !== 'temas' && (
-        <div className="rounded-2xl border border-atenas-mist-border bg-white p-6 mb-6 text-center shadow-card">
+        <Card padding="md" className="mb-6 text-center">
           <p className="text-atenas-muted">
             Abre cada tema para ver {tab === 'recursos' ? 'recursos' : tab} disponibles.
           </p>
           {temas[0] && !bloqueoTema[temas[0].id] && (
-            <Link to={`/temas/${temas[0].id}`} className="btn-primary inline-flex mt-4 text-sm">
+            <Button size="sm" className="mt-4" onClick={() => navigate(`/temas/${temas[0]!.id}`)}>
               Ir al primer tema
-            </Link>
+            </Button>
           )}
-        </div>
+        </Card>
       )}
 
       {tab === 'temas' && mostrarCert && (
         <div className="mb-6">
-          <button
-            type="button"
-            className="btn-primary min-h-touch"
-            disabled={certPdfLoading}
-            onClick={async () => {
+          <Button disabled={certPdfLoading} onClick={async () => {
               setCertPdfLoading(true);
               try {
                 await openCertificadoEnVentana({
@@ -181,12 +184,12 @@ export default function UnidadTemas() {
             }}
           >
             {certPdfLoading ? 'Abriendo…' : 'Ver certificado'}
-          </button>
+          </Button>
         </div>
       )}
 
       {tab === 'temas' && loading ? (
-        <p className="text-atenas-muted text-lg">Cargando temas...</p>
+        <SkeletonLines lines={5} />
       ) : tab === 'temas' ? (
         <ul className="space-y-3 list-none m-0 p-0">
           {temas.map((t, i) => {
@@ -207,7 +210,7 @@ export default function UnidadTemas() {
                 ) : (
                   <Link
                     to={`/temas/${t.id}`}
-                    className="flex items-center gap-4 p-5 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink border-2 border-atenas-mist-border bg-white shadow-card hover:shadow-card-hover transition-shadow"
+                    className="flex items-center gap-4 p-5 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink min-h-touch border-2 border-atenas-mist-border bg-white shadow-card hover:shadow-card-hover transition-shadow"
                   >
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-lg" style={{ backgroundColor: accent }}>
                       {i + 1}

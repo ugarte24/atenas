@@ -4,6 +4,8 @@ import { Mail, Lock } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Alert } from '../components/ui/Alert';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 const LOGIN_BACKGROUND_URL = `${import.meta.env.BASE_URL}login-background.png`;
 
@@ -65,13 +67,13 @@ export default function Login() {
                 alt=""
                 className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md shrink-0 rounded-2xl"
               />
-              <h2 className="font-atenas font-bold uppercase tracking-[0.1em] text-[#1F2D2A] h-16 sm:h-20 flex items-center shrink-0 text-[2.25rem] sm:text-[2.75rem] leading-none">
+              <h2 className="atenas-logo h-16 sm:h-20 flex items-center shrink-0 text-[2.25rem] sm:text-[2.75rem] leading-none">
                 ATENAS
               </h2>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-atenas-mist-border bg-white shadow-elevated p-6 sm:p-8">
+          <Card padding="lg" className="shadow-elevated">
             <h1 className="text-2xl font-bold text-atenas-ink text-center mb-6">Iniciar sesión</h1>
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && <Alert tone="error">{error}</Alert>}
@@ -98,15 +100,15 @@ export default function Login() {
                 icon={<Lock className="w-5 h-5" />}
               />
 
-              <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
+              <Button type="submit" disabled={loading} fullWidth className="mt-2">
                 {loading ? 'Entrando…' : 'Iniciar sesión'}
-              </button>
+              </Button>
             </form>
 
             <p className="mt-6 text-center text-xs text-atenas-muted leading-relaxed">
               Si olvidó su contraseña, contáctese con el administrador.
             </p>
-          </div>
+          </Card>
         </div>
       </div>
     </div>
