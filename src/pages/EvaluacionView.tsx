@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { CheckCircle2 } from 'lucide-react';
 import { useEvaluacion } from '../hooks/useEvaluacion';
 import { useEvaluacionIntento } from '../hooks/useEvaluacionIntento';
 import { Cuestionario, type FeedbackEvaluacion } from '../components/Cuestionario';
@@ -7,11 +9,14 @@ import { ParchmentLayout, ParchmentFooter } from '../components/layout/Parchment
 import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { formatMaxIntentos } from '../hooks/useResumenEvaluacionesUsuario';
+import { useMotionSafe } from '../hooks/useMotionSafe';
+import { ConfettiBurst } from '../components/motion/ConfettiBurst';
 
 export default function EvaluacionView() {
   const { evaluacionId } = useParams<{ evaluacionId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { reduceMotion, spring } = useMotionSafe();
   const { evaluacion, loading, error } = useEvaluacion(evaluacionId ?? null);
   const { guardarIntento, saving, error: saveErr, clearError } = useEvaluacionIntento(evaluacionId ?? null);
   const [sesion, setSesion] = useState(0);
@@ -122,34 +127,51 @@ export default function EvaluacionView() {
       )}
 
       {soloBloqueoInicial ? (
-        <div className="card p-6">
-          {yaAprobado ? (
-            <>
-              <p className="text-emerald-900 font-semibold text-lg">Evaluación completada</p>
-              <p className="text-atenas-muted-strong mt-2">
-                Ya aprobaste esta evaluación.
+        <div className="card p-6 relative overflow-hidden">
+          {yaAprobado && (
+            <ConfettiBurst className="pointer-events-none absolute inset-0 overflow-hidden z-0" />
+          )}
+          <motion.div
+            className="relative z-10"
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={spring}
+          >
+            {yaAprobado ? (
+              <>
+                <motion.div
+                  initial={reduceMotion ? false : { scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={spring}
+                >
+                  <CheckCircle2 className="w-12 h-12 text-emerald-600 mb-3" aria-hidden />
+                </motion.div>
+                <p className="text-emerald-900 font-semibold text-lg">Evaluación completada</p>
+                <p className="text-atenas-muted-strong mt-2">
+                  Ya aprobaste esta evaluación.
+                  {mejorPuntuacion != null && (
+                    <>
+                      {' '}
+                      Tu mejor nota: <strong>{mejorPuntuacion}%</strong>.
+                    </>
+                  )}
+                </p>
+              </>
+            ) : (
+              <p className="text-atenas-muted-strong">
+                Has alcanzado el máximo de intentos para esta evaluación.
                 {mejorPuntuacion != null && (
                   <>
                     {' '}
-                    Tu mejor nota: <strong>{mejorPuntuacion}%</strong>.
+                    Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.
                   </>
                 )}
               </p>
-            </>
-          ) : (
-            <p className="text-atenas-muted-strong">
-              Has alcanzado el máximo de intentos para esta evaluación.
-              {mejorPuntuacion != null && (
-                <>
-                  {' '}
-                  Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.
-                </>
-              )}
-            </p>
-          )}
-          <button type="button" onClick={() => navigate(-1)} className="btn-secondary mt-4">
-            Volver al tema
-          </button>
+            )}
+            <button type="button" onClick={() => navigate(-1)} className="btn-secondary mt-4">
+              Volver al tema
+            </button>
+          </motion.div>
         </div>
       ) : (
         <ParchmentLayout

@@ -1,4 +1,6 @@
+import { motion } from 'framer-motion';
 import { cn } from '../ui/cn';
+import { useMotionSafe } from '../../hooks/useMotionSafe';
 
 type Props = {
   value: number;
@@ -23,6 +25,7 @@ export function XpBar({
   variant = 'on-dark',
   className,
 }: Props) {
+  const { reduceMotion } = useMotionSafe();
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
   const h = size === 'sm' ? 'h-2' : 'h-2.5';
   const onDark = variant === 'on-dark';
@@ -61,9 +64,15 @@ export function XpBar({
           onDark ? 'bg-white/20' : 'bg-atenas-mist'
         )}
       >
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-atenas-gold to-amber-400 transition-all duration-500"
-          style={{ width: `${pct}%` }}
+        <motion.div
+          className="h-full rounded-full bg-gradient-to-r from-atenas-gold to-amber-400"
+          initial={reduceMotion ? false : { width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={
+            reduceMotion
+              ? { duration: 0 }
+              : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+          }
           role="progressbar"
           aria-valuenow={value}
           aria-valuemin={0}

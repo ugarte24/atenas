@@ -1,5 +1,6 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, BookOpen, Maximize2 } from 'lucide-react';
 import { useTema } from '../hooks/useTema';
 import { useUnidad } from '../hooks/useUnidad';
@@ -14,6 +15,7 @@ import { TemaMensajes } from '../components/TemaMensajes';
 import { MicroQuizCard } from '../components/MicroQuizCard';
 import { EvaluacionTemaCard } from '../components/EvaluacionTemaCard';
 import { useResumenEvaluacionesUsuario } from '../hooks/useResumenEvaluacionesUsuario';
+import { useMotionSafe } from '../hooks/useMotionSafe';
 import { useTiempoEstudio } from '../hooks/useTiempoEstudio';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -113,6 +115,8 @@ export default function TemaView() {
     evaluacionIds,
     esEstudiante ? user?.id : undefined
   );
+
+  const { reduceMotion, quick } = useMotionSafe();
 
   const sections = useMemo(() => {
     const list: SectionItem[] = [];
@@ -338,7 +342,15 @@ export default function TemaView() {
 
             <div className="min-w-0 space-y-6">
               {tab === 'contenido' && (
-                <>
+                <AnimatePresence mode="wait">
+                  {activeSection ? (
+                    <motion.div
+                      key={activeSection}
+                      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+                      transition={quick}
+                    >
                   {activeSection === 'teoria' && hasTheoryBlock && (
                     <section id="section-teoria" className="rounded-2xl bg-white border border-atenas-mist-border p-5 sm:p-6 shadow-card scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-4">Introducción</h2>
@@ -425,7 +437,9 @@ export default function TemaView() {
                   {activeSection && (
                     <MascotTip>Lee con atención cada sección y completa las actividades para ganar XP.</MascotTip>
                   )}
-                </>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               )}
 
               {tab === 'recursos' && (

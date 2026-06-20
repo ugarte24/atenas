@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { PreguntaEvaluacion } from '../types';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
+import { useMotionSafe } from '../hooks/useMotionSafe';
+import { ConfettiBurst } from './motion/ConfettiBurst';
+import { MascotLottie } from './MascotLottie';
 
 export type FeedbackEvaluacion = 'completo' | 'errores_sin_solucion' | 'solo_nota';
 
@@ -33,6 +37,7 @@ export function Cuestionario({
   minutosExamen = 0,
   onStepChange,
 }: Props) {
+  const { reduceMotion, quick, spring } = useMotionSafe();
   const [respuestas, setRespuestas] = useState<Record<number, number>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enviado, setEnviado] = useState(false);
@@ -121,6 +126,12 @@ export function Cuestionario({
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  const questionVariants = {
+    enter: reduceMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: 12 },
+    center: { opacity: 1, x: 0 },
+    exit: reduceMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 },
+  };
+
   if (total === 0) {
     return (
       <p className="text-atenas-muted-strong text-lg" role="status">
@@ -144,38 +155,49 @@ export function Cuestionario({
 
       {!enviado && preguntaActual ? (
         <>
-          <Card padding="md" className="border-atenas-mist-border">
-            <p className="text-xs font-semibold uppercase tracking-wide text-atenas-muted mb-2">
-              Pregunta {currentIndex + 1} de {total}
-            </p>
-            <h2 className="text-lg sm:text-xl font-bold text-atenas-ink leading-snug mb-5">
-              {preguntaActual.enunciado}
-            </h2>
-            <ul
-              className="space-y-3 list-none m-0 p-0"
-              role="radiogroup"
-              aria-label={`Opciones de la pregunta ${currentIndex + 1}`}
+          <AnimatePresence mode={reduceMotion ? 'sync' : 'wait'} initial={false}>
+            <motion.div
+              key={currentIndex}
+              variants={questionVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={quick}
             >
-              {preguntaActual.opciones.map((op, opcionIdx) => (
-                <li key={opcionIdx}>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={respuestas[currentIndex] === opcionIdx}
-                    onClick={() => handleSelect(opcionIdx)}
-                    disabled={disabled}
-                    className={`w-full text-left px-4 py-4 min-h-touch rounded-xl border-2 transition text-base disabled:opacity-70 ${
-                      respuestas[currentIndex] === opcionIdx
-                        ? 'border-atenas-ink bg-atenas-mist text-atenas-ink'
-                        : 'border-atenas-mist-border bg-white hover:border-atenas-ink/40 text-atenas-ink'
-                    }`}
-                  >
-                    {op.texto}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </Card>
+              <Card padding="md" className="border-atenas-mist-border">
+                <p className="text-xs font-semibold uppercase tracking-wide text-atenas-muted mb-2">
+                  Pregunta {currentIndex + 1} de {total}
+                </p>
+                <h2 className="text-lg sm:text-xl font-bold text-atenas-ink leading-snug mb-5">
+                  {preguntaActual.enunciado}
+                </h2>
+                <ul
+                  className="space-y-3 list-none m-0 p-0"
+                  role="radiogroup"
+                  aria-label={`Opciones de la pregunta ${currentIndex + 1}`}
+                >
+                  {preguntaActual.opciones.map((op, opcionIdx) => (
+                    <li key={opcionIdx}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={respuestas[currentIndex] === opcionIdx}
+                        onClick={() => handleSelect(opcionIdx)}
+                        disabled={disabled}
+                        className={`w-full text-left px-4 py-4 min-h-touch rounded-xl border-2 transition text-base disabled:opacity-70 ${
+                          respuestas[currentIndex] === opcionIdx
+                            ? 'border-atenas-ink bg-atenas-mist text-atenas-ink'
+                            : 'border-atenas-mist-border bg-white hover:border-atenas-ink/40 text-atenas-ink'
+                        }`}
+                      >
+                        {op.texto}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </motion.div>
+          </AnimatePresence>
 
           <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1 pb-safe">
             <Button
@@ -219,22 +241,31 @@ export function Cuestionario({
           </p>
         </>
       ) : enviado ? (
-        <div className="space-y-5">
-          <div
-            className={`p-6 rounded-xl border-2 ${
+        <div className="space-y-5 relative">
+          {aprobado && <ConfettiBurst className="pointer-events-none absolute inset-0 overflow-hidden z-0" />}
+          <motion.div
+            className={`relative z-10 p-6 rounded-xl border-2 ${
               aprobado
                 ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
                 : 'bg-amber-50 border-amber-300 text-amber-950'
             }`}
             role="status"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={spring}
           >
+            {aprobado && (
+              <div className="mb-3 flex justify-center">
+                <MascotLottie variant="celebrate" loop={false} className="w-16 h-16" />
+              </div>
+            )}
             <h3 className="text-xl font-bold">
               {aprobado ? 'Aprobado' : 'No alcanzaste el umbral'}
             </h3>
             <p className="mt-2 text-base">
               Tu puntuación: <strong>{puntuacion}%</strong> (mínimo para aprobar: {umbralAprobado}%)
             </p>
-          </div>
+          </motion.div>
 
           {feedback === 'solo_nota' ? (
             <p className="text-atenas-muted text-sm">

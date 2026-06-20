@@ -345,3 +345,23 @@
     @apply max-w-6xl w-full mx-auto px-4 sm:px-6;
   }
 }
+
+@keyframes mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.mascot-bob {
+  animation: mascot-bob 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-bob {
+    animation: none;
+  }
+}

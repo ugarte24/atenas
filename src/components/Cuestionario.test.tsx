@@ -2,6 +2,16 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Cuestionario } from './Cuestionario';
 
+vi.mock('../hooks/useMotionSafe', () => ({
+  useMotionSafe: () => ({
+    reduceMotion: true,
+    spring: { duration: 0 },
+    fade: { duration: 0 },
+    quick: { duration: 0 },
+    stagger: 0,
+  }),
+}));
+
 const preguntas = [
   {
     enunciado: '¿Capital de España?',
