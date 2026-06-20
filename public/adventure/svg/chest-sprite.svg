@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 128" width="384" height="128">
+  <defs>
+    <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </linearGradient>
+  </defs>
+  <!-- Frame 0: cerrado -->
+  <g transform="translate(64 72)">
+    <ellipse cx="0" cy="14" rx="18" ry="5" fill="#000" opacity="0.2"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 20 14 L -20 14 Z" fill="#92400e"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 0 16 Z" fill="#b45309"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 0 10 Z" fill="url(#cg)"/>
+    <rect x="-20" y="8" width="40" height="4" fill="#ca8a04"/>
+    <rect x="-3" y="2" width="6" height="8" rx="1" fill="#fbbf24"/>
+  </g>
+  <!-- Frame 1: abriendo -->
+  <g transform="translate(192 72)">
+    <ellipse cx="0" cy="14" rx="18" ry="5" fill="#000" opacity="0.2"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 20 14 L -20 14 Z" fill="#92400e"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 0 16 Z" fill="#b45309"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 20 -2 L 0 -14 L -20 -2 Z" fill="#f59e0b"/>
+    <rect x="-20" y="8" width="40" height="4" fill="#ca8a04"/>
+    <rect x="-3" y="2" width="6" height="8" rx="1" fill="#fbbf24"/>
+    <circle cx="0" cy="-6" r="4" fill="#fef08a" opacity="0.8"/>
+  </g>
+  <!-- Frame 2: abierto -->
+  <g transform="translate(320 72)">
+    <ellipse cx="0" cy="14" rx="18" ry="5" fill="#000" opacity="0.2"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 20 14 L -20 14 Z" fill="#92400e"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 0 16 Z" fill="#b45309"/>
+    <path d="M -20 4 L 0 -8 L 20 4 L 20 -2 L 0 -18 L -20 -2 Z" fill="#fbbf24"/>
+    <rect x="-20" y="8" width="40" height="4" fill="#ca8a04"/>
+    <circle cx="-6" cy="0" r="3" fill="#fde047"/>
+    <circle cx="4" cy="2" r="2.5" fill="#fde047"/>
+    <circle cx="0" cy="-4" r="2" fill="#fef08a"/>
+  </g>
+</svg>

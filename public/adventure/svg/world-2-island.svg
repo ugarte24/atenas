@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 980" width="400" height="980">
+  <defs>
+    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="980" fill="url(#ocean)" opacity="0"/>
+  <rect x="0" y="680" width="400" height="300" fill="url(#ocean)"/>
+  <ellipse cx="200" cy="720" rx="175" ry="22" fill="#002d62" opacity="0.2"/>
+  <path d="M 12 680 C 20 580 60 480 120 420 C 180 360 260 350 320 400 C 370 440 395 520 388 620 C 382 680 340 730 280 760 C 220 790 140 790 80 760 C 40 740 12 710 12 680 Z" fill="url(#sand)" stroke="#ca8a04" stroke-width="2"/>
+  <path d="M 28 660 C 35 560 72 470 130 420 C 188 370 268 365 318 410 C 358 445 375 530 368 610 C 362 660 328 700 268 720 C 208 740 128 735 78 710 C 48 695 28 675 28 660 Z" fill="url(#grass)" stroke="#166534" stroke-width="2"/>
+  <path d="M 240 420 L 310 280 L 360 380 L 340 450 L 260 460 Z" fill="#64748b"/>
+        <path d="M 200 380 Q 195 520 190 640 Q 180 690 200 730" stroke="#0284c7" stroke-width="16" fill="none"/>
+        <rect x="258" y="310" width="24" height="18" fill="#d6b88a"/>
+</svg>
