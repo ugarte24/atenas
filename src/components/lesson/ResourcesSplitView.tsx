@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { FileText, Image, Map, Video, Music, FileDown } from 'lucide-react';
 import type { Recurso } from '../../types';
 import { cn } from '../ui/cn';
+import { ExternalImage } from '../ui/ExternalImage';
+import { VideoEmbed } from '../ui/VideoEmbed';
 
 const ICONS: Record<string, typeof FileText> = {
   texto: FileText,
@@ -62,10 +64,10 @@ export function ResourcesSplitView({ recursos }: Props) {
             <div className="whitespace-pre-wrap text-atenas-muted-strong leading-relaxed">{selected.contenido || selected.url}</div>
           )}
           {(selected.tipo === 'imagen' || selected.tipo === 'mapa') && selected.url && (
-            <img src={selected.url} alt={selected.title ?? ''} className="max-w-full rounded-xl" />
+            <ExternalImage src={selected.url} alt={selected.title ?? ''} className="max-w-full rounded-xl" />
           )}
           {selected.tipo === 'video' && selected.url && (
-            <video src={selected.url} controls className="max-w-full rounded-xl" />
+            <VideoEmbed url={selected.url} title={selected.title ?? undefined} className="mt-0" />
           )}
           {selected.tipo === 'audio' && selected.url && (
             <audio src={selected.url} controls className="w-full" />

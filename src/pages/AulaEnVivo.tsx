@@ -1,59 +1,113 @@
+import { useState } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Badge } from '../components/ui/Badge';
-import { Users, MessageCircle, Radio, Construction } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Textarea } from '../components/ui/Input';
+import { Alert } from '../components/ui/Alert';
+import { EmptyState } from '../components/ui/EmptyState';
+import { useAulaEnVivo } from '../hooks/useAulaEnVivo';
+import { useAuthContext } from '../contexts/AuthContext';
+import { MessageCircle, Radio, Users } from 'lucide-react';
 
-/** Vista placeholder de aula en vivo (Fase G — sin backend Realtime aún) */
 export default function AulaEnVivo() {
+  const { profile } = useAuthContext();
+  const { mensajes, loading, error, enviando, enviar } = useAulaEnVivo();
+  const [texto, setTexto] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const ok = await enviar(texto);
+    if (ok) setTexto('');
+  }
+
+  const participantes = new Set(mensajes.map((m) => m.user_id)).size;
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-safe">
       <PageHeader
         title="Aula en vivo"
-        description="Sesiones sincrónicas con tu docente. Esta función está en desarrollo."
+        description="Chat grupal en tiempo real con tu clase. La videollamada se integrará en una próxima versión."
       />
 
       <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3 shadow-card">
-        <Construction className="w-6 h-6 text-amber-700 shrink-0 mt-0.5" aria-hidden />
+        <Radio className="w-6 h-6 text-amber-700 shrink-0 mt-0.5" aria-hidden />
         <div>
           <p className="font-bold text-amber-950 flex items-center gap-2">
-            Próximamente
-            <Badge tone="warning">En desarrollo</Badge>
+            Chat en vivo
+            <Badge tone="success">Activo</Badge>
           </p>
           <p className="text-sm text-amber-900 mt-1">
-            El aula en vivo permitirá chat, preguntas del docente y progreso grupal en tiempo real.
-            Por ahora puedes seguir estudiando en tus unidades y temas.
+            Escribe preguntas o comentarios. Los mensajes se actualizan automáticamente.
+            {profile?.role === 'docente' && ' Como docente, guía la conversación desde aquí.'}
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-atenas-mist-border bg-atenas-sidebar text-white overflow-hidden shadow-elevated opacity-90">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-          <Radio className="w-4 h-4 text-red-400" aria-hidden />
-          <span className="text-sm font-semibold">Vista previa · Sin sesión activa</span>
-        </div>
+      <div className="grid md:grid-cols-[1fr_14rem] gap-4">
+        <Card padding="md" className="flex flex-col min-h-[320px]">
+          {error && (
+            <Alert tone="warning" className="mb-4">
+              {error}
+            </Alert>
+          )}
 
-        <div className="grid md:grid-cols-[1fr_16rem] gap-0">
-          <div className="p-6 min-h-[240px] flex flex-col items-center justify-center bg-gradient-to-b from-atenas-sidebar to-[#001a40] text-center">
-            <img src="/mascot-owl.svg" alt="" className="w-24 h-24 mb-4 opacity-60" />
-            <p className="text-blue-100 max-w-sm text-sm">
-              Cuando tu docente inicie una clase en vivo, verás aquí las preguntas, el chat y el progreso grupal.
-            </p>
+          <div className="flex-1 overflow-y-auto space-y-3 mb-4 max-h-[360px]">
+            {loading ? (
+              <p className="text-sm text-atenas-muted">Cargando chat…</p>
+            ) : mensajes.length === 0 ? (
+              <EmptyState
+                icon={<MessageCircle className="w-8 h-8" />}
+                title="Chat vacío"
+                description="Inicia la conversación con una pregunta o saludo."
+                className="p-4"
+              />
+            ) : (
+              mensajes.map((m) => (
+                <div key={m.id} className="rounded-xl border border-atenas-mist-border bg-atenas-page/80 p-3">
+                  <p className="text-xs font-semibold text-atenas-ink">
+                    {m.authorName}
+                    <span className="text-atenas-muted font-normal ml-2">
+                      {new Date(m.created_at).toLocaleTimeString('es-PE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </p>
+                  <p className="text-sm text-atenas-muted-strong mt-1 whitespace-pre-wrap">{m.cuerpo}</p>
+                </div>
+              ))
+            )}
           </div>
 
-          <aside className="border-t md:border-t-0 md:border-l border-white/10 p-4 space-y-4 bg-black/20">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wide text-blue-200 mb-2 flex items-center gap-1">
-                <Users className="w-4 h-4" /> Participantes
-              </h3>
-              <p className="text-sm text-blue-100/80">Disponible en una próxima versión</p>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wide text-blue-200 mb-2 flex items-center gap-1">
-                <MessageCircle className="w-4 h-4" /> Chat en vivo
-              </h3>
-              <p className="text-sm text-blue-100/80">Disponible en una próxima versión</p>
-            </div>
-          </aside>
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-3 border-t border-atenas-mist-border pt-4">
+            <Textarea
+              label="Tu mensaje"
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+              rows={3}
+              placeholder="Escribe aquí…"
+              maxLength={1000}
+            />
+            <Button type="submit" disabled={enviando || !texto.trim()} fullWidth>
+              {enviando ? 'Enviando…' : 'Enviar mensaje'}
+            </Button>
+          </form>
+        </Card>
+
+        <aside className="space-y-4">
+          <Card padding="md">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-atenas-muted mb-2 flex items-center gap-1">
+              <Users className="w-4 h-4" /> Participantes
+            </h3>
+            <p className="text-2xl font-bold text-atenas-ink">{participantes}</p>
+            <p className="text-xs text-atenas-muted mt-1">Con al menos un mensaje en esta sesión.</p>
+          </Card>
+          <Card padding="md" className="bg-atenas-sidebar text-white border-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-blue-200 mb-2">Videollamada</p>
+            <p className="text-sm text-blue-100/90">Próximamente: enlace Meet/Jitsi desde el panel docente.</p>
+          </Card>
+        </aside>
       </div>
     </div>
   );

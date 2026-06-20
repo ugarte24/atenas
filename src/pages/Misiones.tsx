@@ -10,7 +10,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Card } from '../components/ui/Card';
 import { Alert } from '../components/ui/Alert';
 import { cn } from '../components/ui/cn';
-import { Star, Gift, Target } from 'lucide-react';
+import { Gift, Target, Star } from 'lucide-react';
 
 type TabMision = 'diarias' | 'semanales' | 'especiales';
 
@@ -22,19 +22,6 @@ export default function Misiones() {
 
   const misionesConTemas = useMemo(() => misiones.filter((m) => m.totalPasos > 0), [misiones]);
 
-  const especiales = useMemo(
-    () => [
-      {
-        id: 'e1',
-        titulo: 'Explora los 3 mundos del Abya Yala',
-        progreso: misionesConTemas.filter((m) => m.pasosCompletados >= m.totalPasos).length,
-        total: 3,
-        xp: 500,
-      },
-    ],
-    [misionesConTemas]
-  );
-
   const tabs: { id: TabMision; label: string }[] = [
     { id: 'diarias', label: 'Diarias' },
     { id: 'semanales', label: 'Semanales' },
@@ -43,7 +30,7 @@ export default function Misiones() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PageHeader title="Misiones" description="Completa misiones y gana XP extra." />
+      <PageHeader title="Misiones" description="Completa misiones y avanza en tus unidades." />
 
       <div className="flex rounded-xl border border-atenas-mist-border bg-white p-1 mb-6 shadow-card" role="tablist">
         {tabs.map(({ id, label }) => (
@@ -86,15 +73,10 @@ export default function Misiones() {
           ) : (
             misionesConTemas.map((m) => {
               const pct = m.totalPasos ? Math.round((m.pasosCompletados / m.totalPasos) * 100) : 0;
-              const done = m.pasosCompletados >= m.totalPasos;
               return (
                 <Card key={m.id} padding="md" className="flex flex-col gap-3">
                   <div className="flex justify-between gap-3">
                     <h2 className="font-bold text-atenas-ink">{m.titulo}</h2>
-                    <span className="shrink-0 flex items-center gap-1 text-sm font-bold text-atenas-gold">
-                      <Star className="w-4 h-4 fill-atenas-gold" aria-hidden />
-                      +{done ? 100 : 50} XP
-                    </span>
                   </div>
                   <p className="text-sm text-atenas-muted">{m.descripcion}</p>
                   <ProgressBar value={pct} showPercent size="md" tone="success" />
@@ -109,7 +91,7 @@ export default function Misiones() {
             <Gift className="w-10 h-10 text-amber-600 shrink-0" aria-hidden />
             <div>
               <p className="font-bold text-amber-950">Cofre semanal</p>
-              <p className="text-sm text-amber-900">Completa todas las misiones semanales · +500 XP</p>
+              <p className="text-sm text-amber-900">Próximamente: bonificación al completar todas las misiones semanales.</p>
             </div>
           </Card>
         </div>
@@ -130,8 +112,8 @@ export default function Misiones() {
               <Card key={d.id} padding="md">
                 <div className="flex justify-between mb-2">
                   <h2 className="font-bold text-atenas-ink text-sm">{d.titulo}</h2>
-                  <span className="text-xs font-bold text-atenas-gold">
-                    {d.progreso >= d.total ? `+${d.xp} XP` : `+${d.xp} XP`}
+                  <span className="text-xs font-semibold text-atenas-muted uppercase tracking-wide">
+                    Objetivo diario
                   </span>
                 </div>
                 <ProgressBar value={d.total ? (d.progreso / d.total) * 100 : 0} size="sm" tone="success" />
@@ -148,20 +130,11 @@ export default function Misiones() {
       )}
 
       {!loading && tab === 'especiales' && (
-        <div className="space-y-4">
-          {especiales.map((e) => (
-            <Card key={e.id} padding="md" className="border-atenas-gold/30">
-              <div className="flex justify-between mb-2">
-                <h2 className="font-bold text-atenas-ink">{e.titulo}</h2>
-                <span className="text-sm font-bold text-atenas-gold">+{e.xp} XP</span>
-              </div>
-              <ProgressBar value={e.total ? (e.progreso / e.total) * 100 : 0} showPercent tone="success" />
-              <p className="text-xs text-atenas-muted mt-2">
-                Completa las unidades de cada isla para avanzar en los tres mundos.
-              </p>
-            </Card>
-          ))}
-        </div>
+        <EmptyState
+          icon={<Star className="w-8 h-8" />}
+          title="Misiones especiales"
+          description="Próximamente: retos extra al completar las tres islas del Abya Yala."
+        />
       )}
     </div>
   );

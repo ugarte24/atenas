@@ -10,6 +10,7 @@ export type AchievementRow = {
   description: string | null;
   icon: string;
   orden: number;
+  activo?: boolean;
 };
 
 export type LogroVista = AchievementRow & { unlocked: boolean };
@@ -41,7 +42,7 @@ export function useLogrosUsuario() {
       try {
         const { data, error: e } = await supabase
           .from('achievements')
-          .select('id, slug, title, description, icon, orden')
+          .select('id, slug, title, description, icon, orden, activo')
           .order('orden', { ascending: true });
         if (e) throw e;
         if (!cancelled) setRows((data as AchievementRow[]) ?? []);
@@ -92,10 +93,12 @@ export function useLogrosUsuario() {
   }, [user, profile?.role, rows, flags]);
 
   const logros: LogroVista[] = useMemo(() => {
-    return rows.map((r) => ({
-      ...r,
-      unlocked: flags[r.slug as keyof typeof flags] ?? false,
-    }));
+    return rows
+      .filter((r) => r.activo !== false)
+      .map((r) => ({
+        ...r,
+        unlocked: flags[r.slug as keyof typeof flags] ?? false,
+      }));
   }, [rows, flags]);
 
   const loading = loadingMisiones || loadingDb;

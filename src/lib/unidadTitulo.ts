@@ -14,6 +14,6 @@ export function tituloUnidadConOrden(
       : fallbackIndex != null && fallbackIndex >= 0
         ? fallbackIndex + 1
         : 1;
-  const stripped = titulo.replace(/^\s*Unidad\s+\d+\s*[·•.\-]\s*/i, '').trim();
+  const stripped = titulo.replace(/^\s*Unidad\s+\d+\s*[·•.-]\s*/i, '').trim();
   return `Unidad ${num} · ${stripped || titulo}`;
 }

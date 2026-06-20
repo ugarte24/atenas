@@ -1,5 +1,6 @@
 import { MapPin } from 'lucide-react';
 import type { Recurso } from '../../types';
+import { ExternalImage } from '../ui/ExternalImage';
 
 type Props = {
   recursos: Recurso[];
@@ -17,7 +18,7 @@ export function LessonMapWidget({ recursos }: Props) {
       </h3>
       <div className="rounded-xl overflow-hidden border border-atenas-mist-border bg-sky-50 aspect-video relative">
         {mapa.url ? (
-          <img src={mapa.url} alt={mapa.title ?? 'Mapa'} className="w-full h-full object-cover" loading="lazy" />
+          <ExternalImage src={mapa.url} alt={mapa.title ?? 'Mapa'} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-atenas-muted text-sm">Mapa</div>
         )}

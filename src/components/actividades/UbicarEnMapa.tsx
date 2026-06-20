@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ConfigUbicarEnMapa } from '../../types';
+import { ExternalImage } from '../ui/ExternalImage';
 
 type Props = {
   config: ConfigUbicarEnMapa;
@@ -39,7 +40,7 @@ export function UbicarEnMapa({ config, onSubmit, disabled }: Props) {
     <div className="space-y-4">
       <p className="font-medium">Arrastra cada etiqueta a su zona correcta en el mapa.</p>
       <div className="relative inline-block max-w-full">
-        <img
+        <ExternalImage
           src={config.imagenUrl}
           alt="Mapa"
           className="max-w-full rounded-lg border"

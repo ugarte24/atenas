@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
 import { SkeletonLines } from '../../components/ui/Skeleton';
 import { Link } from 'react-router-dom';
 import { useUnidades } from '../../hooks/useUnidades';
@@ -249,9 +250,9 @@ export default function DocenteContenidos() {
         description="Crea y organiza las unidades del curso. Publica cuando estén listas para los estudiantes."
         actions={
           !creating && !editingId ? (
-            <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
+            <Button type="button" onClick={() => setCreating(true)}>
               + Nueva unidad
-            </button>
+            </Button>
           ) : undefined
         }
       />
@@ -298,32 +299,32 @@ export default function DocenteContenidos() {
           </div>
           {formCamposVisuales}
           <div className="flex gap-3 pt-2">
-            <button type="submit" className="btn-primary">
+            <Button type="submit">
               Guardar
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => {
                 setCreating(false);
                 resetForm();
               }}
-              className="btn-secondary"
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       ) : (
-        <button
+        <Button
           type="button"
+          className="mb-6"
           onClick={() => {
             resetForm();
             setCreating(true);
           }}
-          className="btn-primary mb-6"
         >
           + Nueva unidad
-        </button>
+        </Button>
       )}
 
       <ul className="space-y-2 list-none m-0 p-0">
@@ -358,19 +359,19 @@ export default function DocenteContenidos() {
                 </div>
                 {formCamposVisuales}
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <button type="submit" className="btn-primary">
+                  <Button type="submit">
                     Guardar
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={() => {
                       setEditingId(null);
                       resetForm();
                     }}
-                    className="btn-secondary"
                   >
                     Cancelar
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (

@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTema } from '../../hooks/useTema';
 import { useRecursos, type RecursoTipo } from '../../hooks/useRecursos';
+import { Button } from '../../components/ui/Button';
+import { ExternalImage } from '../../components/ui/ExternalImage';
+import { VideoEmbed } from '../../components/ui/VideoEmbed';
 
 const TIPO_LABELS: Record<RecursoTipo, string> = {
   texto: 'Texto',
@@ -154,9 +157,9 @@ export default function DocenteRecursos() {
                 rows={6}
                 required
               />
-              <button type="submit" className="btn-primary">
+              <Button type="submit">
                 Guardar texto
-              </button>
+              </Button>
             </form>
           ) : (
             <>
@@ -168,9 +171,9 @@ export default function DocenteRecursos() {
                     placeholder="URL del recurso"
                     className="input-field"
                   />
-                  <button type="submit" className="btn-primary">
+                  <Button type="submit">
                     Agregar por URL
-                  </button>
+                  </Button>
                 </form>
               )}
               {permiteArchivo && (
@@ -183,29 +186,29 @@ export default function DocenteRecursos() {
                       onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                       className="input-field py-2 file:mr-2 file:rounded file:border-0 file:bg-atenas-mist file:px-3 file:py-1 file:text-atenas-ink"
                     />
-                    <button type="submit" disabled={!file} className="btn-primary disabled:opacity-50">
+                    <Button type="submit" disabled={!file}>
                       Subir archivo
-                    </button>
+                    </Button>
                   </form>
                 </>
               )}
             </>
           )}
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => {
               setAdding(false);
               resetForm();
             }}
-            className="btn-secondary"
           >
             Cancelar
-          </button>
+          </Button>
         </div>
       ) : (
-        <button type="button" onClick={() => setAdding(true)} className="btn-primary mb-6">
+        <Button type="button" className="mb-6" onClick={() => setAdding(true)}>
           + Nuevo recurso
-        </button>
+        </Button>
       )}
 
       {loading ? (
@@ -237,14 +240,14 @@ export default function DocenteRecursos() {
                   </>
                 )}
                 {(r.tipo === 'imagen' || r.tipo === 'mapa') && r.url && (
-                  <img
+                  <ExternalImage
                     src={r.url}
                     alt={r.title ?? ''}
                     className="mt-2 max-h-32 rounded-lg object-contain"
                   />
                 )}
                 {r.tipo === 'video' && r.url && (
-                  <video src={r.url} controls className="mt-2 max-w-full rounded-lg" />
+                  <VideoEmbed url={r.url} title={r.title ?? undefined} compact />
                 )}
                 {r.tipo === 'audio' && r.url && (
                   <audio src={r.url} controls className="mt-2 w-full" />

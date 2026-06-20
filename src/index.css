@@ -323,6 +323,21 @@
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
+  /** Espacio para StudentBottomNav fijo (móvil/tablet < lg) */
+  .pb-student-bottom-nav {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .mb-student-bottom-nav {
+    margin-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  @media (min-width: 1024px) {
+    .pb-student-bottom-nav {
+      padding-bottom: 0;
+    }
+    .mb-student-bottom-nav {
+      margin-bottom: 0;
+    }
+  }
   .pt-safe {
     padding-top: max(0.5rem, env(safe-area-inset-top));
   }

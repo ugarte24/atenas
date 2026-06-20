@@ -122,7 +122,7 @@ export const PLANTILLAS_ACTIVIDADES: PlantillaActividad[] = [
     tituloSugerido: 'Ubica en el mapa',
     configJson: JSON.stringify(
       {
-        imagenUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Bolivia_departments_named.png/400px-Bolivia_departments_named.png',
+        imagenUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Bolivia_departments_named.png/500px-Bolivia_departments_named.png',
         zonas: [
           { id: 'norte', etiqueta: 'Norte', x: 50, y: 15 },
           { id: 'sur', etiqueta: 'Sur', x: 50, y: 85 },

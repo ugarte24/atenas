@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useEstudianteDashboard } from '../hooks/useEstudianteDashboard';
+import { useLogrosUsuario } from '../hooks/useLogrosUsuario';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Input } from '../components/ui/Input';
 import { ProgressBar } from '../components/ui/ProgressBar';
@@ -21,6 +22,8 @@ export default function Perfil() {
   const [message, setMessage] = useState<'ok' | 'error' | null>(null);
   const esEstudiante = profile?.role === 'estudiante';
   const dash = useEstudianteDashboard(esEstudiante);
+  const { logros: logrosUsuario, loading: loadingLogros } = useLogrosUsuario();
+  const logrosDesbloqueados = logrosUsuario.filter((l) => l.unlocked);
 
   if (!profile) return null;
 
@@ -61,7 +64,7 @@ export default function Perfil() {
             </div>
             <div className="flex gap-2 text-center text-sm">
               <Link to="/logros" className="rounded-xl bg-white/15 px-4 py-2 hover:bg-white/25 min-h-touch flex flex-col justify-center">
-                <span className="font-bold text-atenas-gold">{dash.logros.length}</span>
+                <span className="font-bold text-atenas-gold">{logrosDesbloqueados.length}</span>
                 <span className="sidebar-muted text-xs font-medium">Logros</span>
               </Link>
               <Link to="/certificados" className="rounded-xl bg-white/15 px-4 py-2 hover:bg-white/25 min-h-touch flex flex-col justify-center">
@@ -301,24 +304,24 @@ export default function Perfil() {
 
           <Card padding="lg">
             <h2 className="text-lg font-bold text-atenas-ink mb-2">Logros</h2>
-            {!dash.loading && dash.logros.length === 0 && (
+            {!loadingLogros && logrosDesbloqueados.length === 0 && (
               <p className="text-atenas-muted text-sm">
                 Completa actividades y evaluaciones para desbloquear logros.
               </p>
             )}
-            {dash.logros.length > 0 && (
+            {logrosDesbloqueados.length > 0 && (
               <ul className="mt-2 grid gap-3 sm:grid-cols-2">
-                {dash.logros.map((l) => (
+                {logrosDesbloqueados.map((l) => (
                   <li key={l.id} className="flex items-start gap-3 rounded-xl bg-atenas-mist p-3 border border-atenas-mist-border">
                     <div
                       className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-bold bg-emerald-500"
                       aria-hidden
                     >
-                      ⭐
+                      {l.icon || '⭐'}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-atenas-ink">{l.titulo}</p>
-                      <p className="text-xs text-atenas-muted mt-0.5">{l.descripcion}</p>
+                      <p className="text-sm font-semibold text-atenas-ink">{l.title}</p>
+                      <p className="text-xs text-atenas-muted mt-0.5">{l.description ?? ''}</p>
                     </div>
                   </li>
                 ))}

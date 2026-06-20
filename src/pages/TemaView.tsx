@@ -27,6 +27,7 @@ import { LessonForumWidget } from '../components/lesson/LessonForumWidget';
 import { RecursoItem, ResourcesSplitView } from '../components/lesson';
 import { MascotTip } from '../components/gamification/MascotTip';
 import { cn } from '../components/ui/cn';
+import { normalizeHtmlExternalImages } from '../lib/externalImageUrl';
 
 type ProgresoTema = { total: number; completadas: number };
 
@@ -109,18 +110,27 @@ export default function TemaView() {
   }, [hasTheoryBlock, recursosTeoria.length, hasVideoBlock, hasActividades, hasEvaluaciones]);
 
   useEffect(() => {
-    if (sections.length && !activeSection) setActiveSection(sections[0]!.id);
+    setActiveSection(null);
+  }, [temaId]);
+
+  useEffect(() => {
+    if (!sections.length) {
+      setActiveSection(null);
+      return;
+    }
+    if (!activeSection || !sections.some((s) => s.id === activeSection)) {
+      setActiveSection(sections[0]!.id);
+    }
   }, [sections, activeSection]);
 
   const temaIndex = temasUnidad.findIndex((t) => t.id === temaId);
   const prevTema = temaIndex > 0 ? temasUnidad[temaIndex - 1] : null;
   const nextTema = temaIndex >= 0 && temaIndex < temasUnidad.length - 1 ? temasUnidad[temaIndex + 1] : null;
 
-  const scrollToSection = useCallback((id: string) => {
+  const selectSection = useCallback((id: string) => {
     setActiveSection(id);
     setTab('contenido');
-    const el = document.getElementById(`section-${id}`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const openForumTab = useCallback(() => {
@@ -193,6 +203,12 @@ export default function TemaView() {
     };
   }, [user, tema?.prerequisito_tema_id, tema?.id]);
 
+  const temaContentHtml = useMemo(() => {
+    const content = tema?.content;
+    if (!content || !temaContentEsHtml(content)) return null;
+    return normalizeHtmlExternalImages(content);
+  }, [tema?.content]);
+
   if (loadingTema || !tema) return <SkeletonLines lines={5} />;
   if (authLoading || !profile) return <p className="text-atenas-muted text-lg">Cargando perfil...</p>;
   if (tema.prerequisito_tema_id && !prereqResolved) {
@@ -214,7 +230,6 @@ export default function TemaView() {
 
   const showStudentLayout = esEstudiante;
   const normalizedTemaContent = normalizeTemaContent(tema.content);
-  const temaContentHtml = tema.content && temaContentEsHtml(tema.content) ? tema.content : null;
 
   return (
     <div className={cn(readingMode && 'reading-mode', '-mx-4 sm:-mx-6 px-4 sm:px-6')}>
@@ -293,27 +308,27 @@ export default function TemaView() {
               variant="horizontal"
               sections={sections}
               activeId={activeSection}
-              onSelect={scrollToSection}
+              onSelect={selectSection}
             />
           )}
 
           <div className="mt-5 grid grid-cols-1 lg:grid-cols-[11rem_minmax(0,1fr)_17rem] xl:grid-cols-[12rem_minmax(0,1fr)_18rem] gap-5 lg:gap-6">
             {tab === 'contenido' && (
               <aside className="hidden lg:block">
-                <LessonSectionNav sections={sections} activeId={activeSection} onSelect={scrollToSection} />
+                <LessonSectionNav sections={sections} activeId={activeSection} onSelect={selectSection} />
               </aside>
             )}
 
             <div className="min-w-0 space-y-6">
               {tab === 'contenido' && (
                 <>
-                  {hasTheoryBlock && (
+                  {activeSection === 'teoria' && hasTheoryBlock && (
                     <section id="section-teoria" className="rounded-2xl bg-white border border-atenas-mist-border p-5 sm:p-6 shadow-card scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-4">Introducción</h2>
                       {tema.content && (
                         temaContentHtml ? (
                           <div
-                            className="prose prose-sm max-w-none text-atenas-muted-strong leading-relaxed mb-6 [&_h3]:text-atenas-ink [&_h3]:font-bold [&_h3]:mt-4 [&_blockquote]:border-l-4 [&_blockquote]:border-atenas-gold [&_blockquote]:pl-4 [&_blockquote]:italic"
+                            className="prose prose-sm max-w-none text-atenas-muted-strong leading-relaxed mb-6 [&_h3]:text-atenas-ink [&_h3]:font-bold [&_h3]:mt-4 [&_blockquote]:border-l-4 [&_blockquote]:border-atenas-gold [&_blockquote]:pl-4 [&_blockquote]:italic [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4"
                             dangerouslySetInnerHTML={{ __html: temaContentHtml }}
                           />
                         ) : (
@@ -337,13 +352,13 @@ export default function TemaView() {
                     </section>
                   )}
 
-                  {recursosTeoria.length >= 2 && (
+                  {activeSection === 'timeline' && recursosTeoria.length >= 2 && (
                     <div id="section-timeline" className="scroll-mt-4">
                       <TimelineSection recursos={recursosTeoria} />
                     </div>
                   )}
 
-                  {hasVideoBlock && (
+                  {activeSection === 'video' && hasVideoBlock && (
                     <section id="section-video" className="rounded-2xl bg-white border border-atenas-mist-border p-5 shadow-card scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-4">Video y audio</h2>
                       <ul className="space-y-4 list-none m-0 p-0">
@@ -357,7 +372,7 @@ export default function TemaView() {
                     </section>
                   )}
 
-                  {hasActividades && (
+                  {activeSection === 'actividades' && hasActividades && (
                     <section id="section-actividades" className="scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-3">Actividades</h2>
                       <ul className="space-y-3 list-none m-0 p-0">
@@ -373,7 +388,7 @@ export default function TemaView() {
                     </section>
                   )}
 
-                  {hasEvaluaciones && (
+                  {activeSection === 'evaluacion' && hasEvaluaciones && (
                     <section id="section-evaluacion" className="scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-3">Evaluación</h2>
                       <ul className="space-y-3 list-none m-0 p-0">
@@ -389,7 +404,9 @@ export default function TemaView() {
                     </section>
                   )}
 
-                  <MascotTip>Lee con atención cada sección y completa las actividades para ganar XP.</MascotTip>
+                  {activeSection && (
+                    <MascotTip>Lee con atención cada sección y completa las actividades para ganar XP.</MascotTip>
+                  )}
                 </>
               )}
 
@@ -441,41 +458,58 @@ export default function TemaView() {
           </div>
 
           {/* Footer nav temas */}
-          <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-atenas-mist-border pt-6 pb-safe">
-            {prevTema ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate(`/temas/${prevTema.id}`)}
-                className="inline-flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" aria-hidden />
-                Anterior
-              </Button>
-            ) : (
-              <span />
-            )}
+          <footer className="mt-8 border-t border-atenas-mist-border pt-5 mb-student-bottom-nav lg:mb-0">
             {temasUnidad.length > 0 && (
-              <p className="text-sm text-atenas-muted font-medium order-last w-full text-center sm:order-none sm:w-auto">
-                Tema {temaIndex + 1} / {temasUnidad.length}
+              <p className="text-sm text-atenas-muted font-medium text-center mb-4 tabular-nums">
+                Tema {temaIndex + 1} de {temasUnidad.length}
               </p>
             )}
-            {nextTema ? (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => navigate(`/temas/${nextTema.id}`)}
-                className="inline-flex items-center gap-2 ml-auto sm:ml-0"
-              >
-                Siguiente
-                <ChevronRight className="w-4 h-4" aria-hidden />
-              </Button>
-            ) : (
-              <Button type="button" size="sm" onClick={() => navigate(`/unidades/${tema.unidad_id}`)}>
-                Volver a unidad
-              </Button>
-            )}
+            <div
+              className={cn(
+                'grid gap-3 max-w-xl mx-auto md:max-w-none',
+                prevTema ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'
+              )}
+            >
+              {prevTema ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  fullWidth
+                  onClick={() => navigate(`/temas/${prevTema.id}`)}
+                  className="inline-flex items-center justify-center gap-2 min-h-touch"
+                >
+                  <ChevronLeft className="w-4 h-4 shrink-0" aria-hidden />
+                  <span className="truncate">Anterior</span>
+                </Button>
+              ) : null}
+              {nextTema ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  fullWidth
+                  onClick={() => navigate(`/temas/${nextTema.id}`)}
+                  className={cn(
+                    'inline-flex items-center justify-center gap-2 min-h-touch',
+                    !prevTema && 'col-span-1'
+                  )}
+                >
+                  <span className="truncate">Siguiente</span>
+                  <ChevronRight className="w-4 h-4 shrink-0" aria-hidden />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  fullWidth
+                  onClick={() => navigate(`/unidades/${tema.unidad_id}`)}
+                  className="inline-flex items-center justify-center gap-2 min-h-touch"
+                >
+                  <span className="truncate sm:hidden">Unidad</span>
+                  <span className="truncate hidden sm:inline">Volver a unidad</span>
+                </Button>
+              )}
+            </div>
           </footer>
         </>
       ) : (

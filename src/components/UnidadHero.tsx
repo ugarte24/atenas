@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Unidad } from '../types';
 import { resolveAccentColor, resolveCoverImageUrl } from '../lib/unidadVisual';
+import { ExternalImage } from './ui/ExternalImage';
 import { limpiarDescripcionUnidad } from '../lib/unidadDescripcion';
 
 type Props = {
@@ -18,7 +19,7 @@ export function UnidadHero({ unidad, listIndex = 0, children }: Props) {
   return (
     <div className="rounded-3xl overflow-hidden shadow-xl mb-8 relative text-white">
       <div className="absolute inset-0" style={{ backgroundColor: accent }} />
-      <img
+      <ExternalImage
         src={cover}
         alt=""
         className="absolute inset-0 w-full h-full object-cover opacity-30"

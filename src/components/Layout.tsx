@@ -152,7 +152,8 @@ export function Layout({ children }: Props) {
         <main
           className={cn(
             'flex-1 page-container py-5 sm:py-8',
-            esEstudiante && 'pb-24 lg:pb-8',
+            esEstudiante &&
+              (enLeccion ? 'pb-4 lg:pb-8' : 'pb-student-bottom-nav lg:pb-8'),
             showDocenteSidebar && 'pb-24 lg:pb-8',
             enLeccion && esEstudiante && 'lesson-cream-bg max-w-none rounded-none'
           )}

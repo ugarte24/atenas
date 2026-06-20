@@ -14,12 +14,28 @@ Trazabilidad completa: [`docs/PRD_TRAZABILIDAD.md`](../docs/PRD_TRAZABILIDAD.md)
 
 ## Orden recomendado
 
-1. `migrations/20250318_atenas_features.sql` — columnas, tablas, intentos múltiples.
+1. `migrations/20250318_atenas_features.sql` — columnas, tablas, **intentos múltiples en evaluaciones**.
 2. **`migrations/20250319_rls_docente_unidad_tema_mensajes.sql`** — RLS en `docente_unidad` y `tema_mensajes`.
+3. Migraciones PRD v1.0 (20260615_*).
+4. `migrations/20260620_tema_notas.sql` — notas de lección sincronizadas.
+5. `migrations/20260620_aula_mensajes.sql` — chat del aula en vivo.
+6. `migrations/20260620_achievements_activo.sql` — columna `activo` en logros.
 
 En Supabase: **SQL Editor** → ejecutar en orden (o `supabase db push`).
 
-Sin la migración 1, fallarán columnas nuevas en `evaluaciones` y el modelo de intentos.
+Sin la migración 1, fallarán columnas nuevas en `evaluaciones` y el modelo de intentos. Si al enviar una evaluación aparece *"intento único por evaluación"*, falta el paso 1.
+
+### Verificación post-migración (evaluaciones)
+
+Tras ejecutar `20250318_atenas_features.sql`, comprueba que la PK de `evaluacion_intentos` ya no sea `(user_id, evaluacion_id)`:
+
+```sql
+SELECT conname, pg_get_constraintdef(oid)
+FROM pg_constraint
+WHERE conrelid = 'public.evaluacion_intentos'::regclass;
+```
+
+Debe existir una PK sobre la columna `id` (uuid), no solo user_id + evaluacion_id.
 
 ## Seed de contenido (unidades, temas, actividades, evaluaciones)
 

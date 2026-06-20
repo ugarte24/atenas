@@ -1,4 +1,15 @@
-/** XP: actividades, evaluaciones y calificaciones */
+/**
+ * XP oficial ATENAS: suma de puntuaciones de todos los intentos
+ * (actividades + evaluaciones). Usado en Home, Progreso y Perfil.
+ */
+export function xpDesdePuntuacionIntentos(
+  sumaPuntuacionActividades: number,
+  sumaPuntuacionEvaluaciones: number
+): number {
+  return sumaPuntuacionActividades + sumaPuntuacionEvaluaciones;
+}
+
+/** @deprecated Usar xpDesdePuntuacionIntentos para coherencia entre pantallas */
 export function calcularXp(params: {
   actividadesCompletadas: number;
   evaluacionesCompletadas: number;

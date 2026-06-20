@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { dedupeRecursos } from '../lib/dedupeRecursos';
 import type { Recurso } from '../types';
 
 const BUCKET = 'recursos';
@@ -28,7 +29,7 @@ export function useRecursos(temaId: string | null) {
       setError(e.message);
       setRecursos([]);
     } else {
-      setRecursos((data as Recurso[]) ?? []);
+      setRecursos(dedupeRecursos((data as Recurso[]) ?? []));
     }
     setLoading(false);
   }

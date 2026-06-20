@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
+import { EmptyState } from './ui/EmptyState';
+import { Button } from './ui/Button';
+import { Textarea } from './ui/Input';
+import { Alert } from './ui/Alert';
+import { Card } from './ui/Card';
+import { MessageCircle } from 'lucide-react';
 
 type Msg = {
   id: string;
   cuerpo: string;
   created_at: string;
+  user_id: string;
   profiles: { full_name: string } | null;
 };
 
@@ -15,16 +22,19 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
   const [cuerpo, setCuerpo] = useState('');
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function cargar() {
     setLoading(true);
-    const { data, error } = await supabase
+    setError(null);
+    const { data, error: e } = await supabase
       .from('tema_mensajes')
       .select('id, cuerpo, created_at, user_id')
       .eq('tema_id', temaId)
       .order('created_at', { ascending: false })
       .limit(50);
-    if (error || !data) {
+    if (e || !data) {
+      setError('No se pudieron cargar los mensajes.');
       setLista([]);
       setLoading(false);
       return;
@@ -37,6 +47,7 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
         id: r.id,
         cuerpo: r.cuerpo,
         created_at: r.created_at,
+        user_id: r.user_id,
         profiles: { full_name: map.get(r.user_id) ?? 'Usuario' },
       }))
     );
@@ -44,66 +55,85 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
   }
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, [temaId]);
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !cuerpo.trim()) return;
     setEnviando(true);
-    const { error } = await supabase.from('tema_mensajes').insert({
+    setError(null);
+    const { error: e2 } = await supabase.from('tema_mensajes').insert({
       tema_id: temaId,
       user_id: user.id,
       cuerpo: cuerpo.trim(),
     });
     setEnviando(false);
-    if (!error) {
-      setCuerpo('');
-      cargar();
+    if (e2) {
+      setError('No se pudo enviar el mensaje. Inténtalo de nuevo.');
+      return;
     }
+    setCuerpo('');
+    void cargar();
   }
 
   if (!user) return null;
-  // En el flujo actual, el estudiante no debe ver ni enviar mensajes del tema
-  if (profile?.role === 'estudiante') return null;
+
+  const esDocenteOAdmin = profile?.role === 'docente' || profile?.role === 'admin';
 
   return (
-    <section className="mt-10 card p-5 border border-atenas-mist-border" aria-labelledby="tema-msj-h">
-      <h2 id="tema-msj-h" className="text-lg font-semibold text-atenas-ink mb-3">
-        Mensajes del tema
+    <Card padding="md" className="border border-atenas-mist-border" aria-labelledby="tema-msj-h">
+      <h2 id="tema-msj-h" className="text-lg font-bold text-atenas-ink mb-1">
+        Foro del tema
       </h2>
       <p className="text-sm text-atenas-muted mb-4">
-        Docentes y administradores pueden dejar un mensaje visible para quienes cursan este tema.
+        {esDocenteOAdmin
+          ? 'Comparte avisos o responde dudas de quienes cursan este tema.'
+          : 'Pregunta dudas o comparte ideas con tus compañeros y docentes.'}
       </p>
-      <form onSubmit={enviar} className="flex flex-col sm:flex-row gap-2 mb-6">
-        <label htmlFor="tema-msj-input" className="sr-only">
-          Escribe tu mensaje
-        </label>
-        <input
+
+      {error && (
+        <Alert tone="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
+
+      <form onSubmit={enviar} className="flex flex-col gap-2 mb-6">
+        <Textarea
           id="tema-msj-input"
-          className="input-field flex-1"
+          label="Tu mensaje"
           value={cuerpo}
           onChange={(e) => setCuerpo(e.target.value)}
           placeholder="Escribe un mensaje…"
           maxLength={2000}
+          rows={3}
         />
-        <button type="submit" className="btn-primary shrink-0" disabled={enviando || !cuerpo.trim()}>
+        <Button type="submit" disabled={enviando || !cuerpo.trim()} className="self-start shrink-0">
           {enviando ? 'Enviando…' : 'Enviar'}
-        </button>
+        </Button>
       </form>
+
       {loading ? (
         <p className="text-atenas-muted text-sm">Cargando mensajes…</p>
       ) : lista.length === 0 ? (
-        <p className="text-atenas-muted text-sm">Aún no hay mensajes.</p>
+        <EmptyState
+          icon={<MessageCircle className="w-8 h-8" />}
+          title="Sin mensajes aún"
+          description="Sé el primero en comentar en este tema."
+          className="p-6"
+        />
       ) : (
         <ul className="space-y-3 list-none m-0 p-0">
           {lista.map((m) => (
             <li
               key={m.id}
-              className="border border-atenas-mist-border rounded-lg p-3 bg-atenas-page/80"
+              className="border border-atenas-mist-border rounded-xl p-3 bg-atenas-page/80"
             >
               <p className="text-sm font-medium text-atenas-ink">
                 {m.profiles?.full_name ?? 'Usuario'}
+                {m.user_id === user.id && (
+                  <span className="text-xs text-atenas-muted font-normal ml-1">(tú)</span>
+                )}
                 <span className="text-atenas-muted font-normal ml-2">
                   {new Date(m.created_at).toLocaleString('es-PE', {
                     dateStyle: 'short',
@@ -116,6 +146,6 @@ export function TemaMensajes({ temaId }: { temaId: string }) {
           ))}
         </ul>
       )}
-    </section>
+    </Card>
   );
 }

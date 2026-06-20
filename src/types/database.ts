@@ -144,6 +144,75 @@ export interface Database {
           updated_at?: string;
         };
       };
+      tema_notas: {
+        Row: {
+          user_id: string;
+          tema_id: string;
+          contenido: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          tema_id: string;
+          contenido?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          tema_id?: string;
+          contenido?: string;
+          updated_at?: string;
+        };
+      };
+      aula_mensajes: {
+        Row: {
+          id: string;
+          user_id: string;
+          cuerpo: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          cuerpo: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          cuerpo?: string;
+          created_at?: string;
+        };
+      };
+      achievements: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          description: string | null;
+          icon: string;
+          orden: number;
+          activo: boolean;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          description?: string | null;
+          icon?: string;
+          orden?: number;
+          activo?: boolean;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          description?: string | null;
+          icon?: string;
+          orden?: number;
+          activo?: boolean;
+        };
+      };
     };
   };
 }

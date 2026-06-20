@@ -1,15 +1,31 @@
-/* ATENAS — service worker ligero (caché de shell + red primero) */
-const CACHE = 'atenas-shell-v1';
+/* ATENAS — service worker (caché shell + red primero, respeta subpath GitHub Pages) */
+const CACHE = 'atenas-shell-v2';
+
+function basePath() {
+  const path = new URL(self.location.href).pathname;
+  return path.replace(/sw\.js(\?.*)?$/, '');
+}
+
+function shellUrls() {
+  const base = basePath();
+  return [base || '/', `${base}index.html`, `${base}manifest.webmanifest`, `${base}offline.html`, `${base}version.json`];
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(['/', '/index.html', '/manifest.webmanifest']))
+    caches.open(CACHE).then((cache) =>
+      cache.addAll(shellUrls().filter(Boolean)).catch(() => undefined)
+    )
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', (event) => {
@@ -18,15 +34,28 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  const base = basePath();
+  const indexUrl = `${base}index.html`;
+  const offlineUrl = `${base}offline.html`;
+
   event.respondWith(
     fetch(request)
       .then((res) => {
-        if (res.ok && (url.pathname === '/' || url.pathname === '/index.html')) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('/index.html', copy));
+        if (res.ok) {
+          const path = url.pathname;
+          if (path === base || path === `${base}index.html` || path.endsWith('/index.html')) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(indexUrl, copy));
+          }
         }
         return res;
       })
-      .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))
+      .catch(() =>
+        caches.match(request).then(
+          (r) =>
+            r ||
+            caches.match(indexUrl).then((idx) => idx || caches.match(offlineUrl).then((o) => o || caches.match('/')))
+        )
+      )
   );
 });

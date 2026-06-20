@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { SkeletonLines } from '../../components/ui/Skeleton';
+import { Button } from '../../components/ui/Button';
 import { useUnidad } from '../../hooks/useUnidad';
 import { useTemas } from '../../hooks/useTemas';
 
@@ -94,9 +95,9 @@ export default function DocenteTemas() {
         description="Temas de esta unidad"
         actions={
           !creating ? (
-            <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
+            <Button type="button" onClick={() => setCreating(true)}>
               + Nuevo tema
-            </button>
+            </Button>
           ) : undefined
         }
       />
@@ -132,14 +133,14 @@ export default function DocenteTemas() {
             ))}
           </select>
           <div className="flex gap-3">
-            <button type="submit" className="btn-primary">Guardar</button>
-            <button type="button" onClick={() => setCreating(false)} className="btn-secondary">Cancelar</button>
+            <Button type="submit">Guardar</Button>
+            <Button type="button" variant="secondary" onClick={() => setCreating(false)}>Cancelar</Button>
           </div>
         </form>
       ) : (
-        <button type="button" onClick={() => setCreating(true)} className="btn-primary mb-6">
+        <Button type="button" className="mb-6" onClick={() => setCreating(true)}>
           + Nuevo tema
-        </button>
+        </Button>
       )}
 
       {loading ? (
@@ -179,8 +180,8 @@ export default function DocenteTemas() {
                       ))}
                   </select>
                   <div className="flex gap-2">
-                    <button type="submit" className="btn-primary py-2 text-sm">Guardar</button>
-                    <button type="button" onClick={() => setEditingId(null)} className="btn-secondary py-2 text-sm">Cancelar</button>
+                    <Button type="submit" size="sm">Guardar</Button>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => setEditingId(null)}>Cancelar</Button>
                   </div>
                 </form>
               ) : (

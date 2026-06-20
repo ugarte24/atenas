@@ -29,6 +29,7 @@ const DocenteRecursos = lazy(() => import('./pages/docente/DocenteRecursos'));
 const DocenteActividades = lazy(() => import('./pages/docente/DocenteActividades'));
 const DocenteEvaluaciones = lazy(() => import('./pages/docente/DocenteEvaluaciones'));
 const DocenteProgreso = lazy(() => import('./pages/docente/DocenteProgreso'));
+const DocenteLogros = lazy(() => import('./pages/docente/DocenteLogros'));
 
 function PageLoader() {
   return (
@@ -268,6 +269,14 @@ function App() {
               element={
                 <Suspense fallback={<PageLoader />}>
                   <DocenteProgreso />
+                </Suspense>
+              }
+            />
+            <Route
+              path="logros"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <DocenteLogros />
                 </Suspense>
               }
             />

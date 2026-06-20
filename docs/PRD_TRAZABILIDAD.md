@@ -77,7 +77,9 @@ Documento de correspondencia entre requisitos del PRD y la implementación en c�
 | M8-F1 | Mapa de progreso | Implementado | `Home.tsx` | Mapa vertical por mundos |
 | M8-F2 | Misiones | Implementado | `useMisiones.ts`, `/progreso` | Una misión por unidad |
 | M8-F3 | Logros | Implementado | `Logros.tsx`, `achievements` | Insignias desbloqueables |
-| M8-F4 | Niveles | Implementado | `gamificacion.ts`, XP en perfil | Niveles por XP |
+| M8-F4 | Niveles | Implementado | `gamificacion.ts`, XP unificado vía `xpDesdePuntuacionIntentos` | Niveles por XP |
+
+> **Notas (jun 2026):** Foro por tema habilitado para estudiantes. XP unificado entre Home, Progreso y Perfil. Misiones especiales/cofre marcadas como próximamente hasta persistir bonificaciones.
 
 ## Módulo 9 — Progreso académico
 

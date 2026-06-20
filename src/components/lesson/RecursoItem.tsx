@@ -1,4 +1,6 @@
 import type { Recurso } from '../../types';
+import { ExternalImage } from '../ui/ExternalImage';
+import { VideoEmbed } from '../ui/VideoEmbed';
 
 export function RecursoItem({ r }: { r: Recurso }) {
   return (
@@ -10,12 +12,14 @@ export function RecursoItem({ r }: { r: Recurso }) {
         </div>
       )}
       {r.tipo === 'imagen' && (
-        <img src={r.url} alt={r.title ?? ''} className="max-w-full rounded-lg mt-2" loading="lazy" />
+        <ExternalImage src={r.url} alt={r.title ?? ''} className="max-w-full rounded-lg mt-2" loading="lazy" />
       )}
       {r.tipo === 'mapa' && (
-        <img src={r.url} alt={r.title ?? 'Mapa'} className="max-w-full rounded-lg mt-2" loading="lazy" />
+        <ExternalImage src={r.url} alt={r.title ?? 'Mapa'} className="max-w-full rounded-lg mt-2" loading="lazy" />
       )}
-      {r.tipo === 'video' && <video src={r.url} controls className="max-w-full rounded-lg mt-2" />}
+      {r.tipo === 'video' && r.url && (
+        <VideoEmbed url={r.url} title={r.title ?? undefined} />
+      )}
       {r.tipo === 'audio' && <audio src={r.url} controls className="w-full mt-2" />}
       {r.tipo === 'pdf' && r.url && (
         <div className="mt-2 space-y-2">

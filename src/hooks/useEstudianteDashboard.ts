@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
-  calcularXp,
+  xpDesdePuntuacionIntentos,
   nivelDesdeXp,
   diasConActividad,
   calcularRachaActual,
   hoyTieneActividad,
-  construirLogros,
-  type LogroGamificacion,
 } from '../lib/gamificacion';
 
 export type TemaProgresoRow = {
@@ -43,7 +41,6 @@ export type EstudianteDashboard = {
   racha: number;
   /** Racha ≥2 y aún no practicó hoy (recordatorio suave) */
   rachaEnRiesgo: boolean;
-  logros: LogroGamificacion[];
   loading: boolean;
   error: string | null;
 };
@@ -51,9 +48,8 @@ export type EstudianteDashboard = {
 export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
   const { user } = useAuthContext();
   const [state, setState] = useState<
-    Omit<EstudianteDashboard, 'nivel' | 'logros' | 'rachaEnRiesgo'> & {
+    Omit<EstudianteDashboard, 'nivel' | 'rachaEnRiesgo'> & {
       nivel: ReturnType<typeof nivelDesdeXp> | null;
-      logros: LogroGamificacion[];
       racha: number;
       rachaEnRiesgo: boolean;
     }
@@ -64,7 +60,6 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
     nivel: null,
     racha: 0,
     rachaEnRiesgo: false,
-    logros: [],
     loading: true,
     error: null,
   });
@@ -79,7 +74,6 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
         nivel: null,
         racha: 0,
         rachaEnRiesgo: false,
-        logros: [],
         loading: false,
         error: null,
       }));
@@ -238,21 +232,8 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
         const timelineTop = timeline.slice(0, 25);
 
         const sumaAct = actRows.reduce((s, r) => s + r.puntuacion, 0);
-        const bestEval = new Map<string, number>();
-        const aprobadoEval = new Set<string>();
-        for (const r of evalRows) {
-          const prev = bestEval.get(r.evaluacion_id) ?? 0;
-          bestEval.set(r.evaluacion_id, Math.max(prev, r.puntuacion));
-          if (r.aprobado) aprobadoEval.add(r.evaluacion_id);
-        }
-        const sumaEval = [...bestEval.values()].reduce((s, v) => s + v, 0);
-        const evalDistintas = bestEval.size;
-        const xp = calcularXp({
-          actividadesCompletadas: actRows.length,
-          evaluacionesCompletadas: evalDistintas,
-          sumaPuntuacionAct: sumaAct,
-          sumaPuntuacionEval: sumaEval,
-        });
+        const sumaEval = evalRows.reduce((s, r) => s + r.puntuacion, 0);
+        const xp = xpDesdePuntuacionIntentos(sumaAct, sumaEval);
         const nivel = nivelDesdeXp(xp);
 
         const fechas = [
@@ -264,28 +245,6 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
 
         const hoyOk = hoyTieneActividad(dias);
         const rachaEnRiesgo = racha >= 2 && !hoyOk;
-        const aprobadas = aprobadoEval.size;
-        const maxEval = evalRows.length ? Math.max(...evalRows.map((e) => e.puntuacion)) : 0;
-        const primeraEvalAprobada = aprobadoEval.size > 0;
-        let dias7 = 0;
-        for (let i = 0; i < 7; i++) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const da = String(d.getDate()).padStart(2, '0');
-          if (dias.has(`${y}-${m}-${da}`)) dias7++;
-        }
-
-        const logros = construirLogros({
-          actividadesCompletadas: actRows.length,
-          evaluacionesCompletadas: evalDistintas,
-          aprobadas,
-          maxEval,
-          primeraEvalAprobada,
-          diasDistintosUltimos7: dias7,
-          racha,
-        });
 
         setState({
           unidades,
@@ -294,7 +253,6 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
           nivel,
           racha,
           rachaEnRiesgo,
-          logros,
           loading: false,
           error: null,
         });
@@ -308,7 +266,6 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
             nivel: null,
             racha: 0,
             rachaEnRiesgo: false,
-            logros: [],
             loading: false,
             error: e instanceof Error ? e.message : 'Error al cargar',
           }));
@@ -329,7 +286,6 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
     nivel: state.nivel ?? nivelDesdeXp(0),
     racha: state.racha,
     rachaEnRiesgo: state.rachaEnRiesgo,
-    logros: state.logros,
     loading: state.loading,
     error: state.error,
   };

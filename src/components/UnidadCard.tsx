@@ -7,6 +7,7 @@ import { limpiarDescripcionUnidad } from '../lib/unidadDescripcion';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
 import { ProgressBar } from './ui/ProgressBar';
 import { Badge } from './ui/Badge';
+import { ExternalImage } from './ui/ExternalImage';
 
 type Props = {
   unidad: Unidad;
@@ -28,7 +29,7 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
       className="group block rounded-card overflow-hidden shadow-card hover:shadow-card-hover border border-atenas-mist-border bg-atenas-card transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2"
     >
       <div className="aspect-video overflow-hidden relative bg-atenas-mist">
-        <img
+        <ExternalImage
           src={cover}
           alt=""
           loading="lazy"

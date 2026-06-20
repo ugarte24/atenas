@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useEstudianteDashboard } from './useEstudianteDashboard';
-import { calcularXp, nivelDesdeXp } from '../lib/gamificacion';
+import { xpDesdePuntuacionIntentos, nivelDesdeXp } from '../lib/gamificacion';
 
 const UNIDADES = [{ id: 'u1', title: 'Unidad 1', orden: 1 }];
 const TEMAS = [{ id: 't1', title: 'Tema 1', orden: 1, unidad_id: 'u1' }];
@@ -86,7 +86,7 @@ describe('useEstudianteDashboard', () => {
     expect(result.current.unidades[0].porcentaje).toBe(67);
   });
 
-  it('XP usa la mejor nota por evaluación, no la suma de intentos', async () => {
+  it('XP suma puntuación de todos los intentos (actividades + evaluaciones)', async () => {
     const dosIntentos = [
       { evaluacion_id: 'e1', puntuacion: 40, aprobado: false, completado_at: '2025-01-01' },
       { evaluacion_id: 'e1', puntuacion: 90, aprobado: true, completado_at: '2025-01-02' },
@@ -96,21 +96,8 @@ describe('useEstudianteDashboard', () => {
     const { result } = renderHook(() => useEstudianteDashboard(true));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    const esperado = calcularXp({
-      actividadesCompletadas: 1,
-      evaluacionesCompletadas: 1,
-      sumaPuntuacionAct: 100,
-      sumaPuntuacionEval: 90,
-    });
+    const esperado = xpDesdePuntuacionIntentos(100, 40 + 90);
     expect(result.current.xp).toBe(esperado);
-
-    const malSiSuma = calcularXp({
-      actividadesCompletadas: 1,
-      evaluacionesCompletadas: 1,
-      sumaPuntuacionAct: 100,
-      sumaPuntuacionEval: 130,
-    });
-    expect(result.current.xp).not.toBe(malSiSuma);
     expect(result.current.nivel).toEqual(nivelDesdeXp(esperado));
   });
 });

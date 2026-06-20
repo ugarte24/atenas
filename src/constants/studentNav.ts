@@ -41,7 +41,6 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     icon: Radio,
     homeQuickLink: true,
     homeQuickLinkColor: 'from-red-500 to-rose-600',
-    comingSoon: true,
   },
 ];
 

@@ -54,7 +54,7 @@ Copia `.env.example` a `.env` y rellena las variables (ver siguiente sección). 
    | 3 | `supabase/migrations/003_actividades_intentos.sql` | Tablas: `actividades`, `actividad_intentos` |
    | 4 | `supabase/migrations/004_evaluaciones.sql` | Tablas: `evaluaciones`, `evaluacion_intentos` |
    | 5 | `supabase/migrations/005_profiles_activo_admin.sql` | Columna `activo` en `profiles` y política para que admin actualice perfiles |
-   | 6+ | Ver `supabase/README_MIGRACIONES.md` y migraciones `20250318_*` … `20260615_*` | Features, gamificación, RLS, **PRD v1.0** (unidades publicadas, recursos ampliados, tiempo en evaluaciones, tiempo de estudio, permisos admin) |
+   | 6+ | Ver `supabase/README_MIGRACIONES.md` y migraciones `20250318_*` … `20260620_*` | Features, gamificación, RLS, notas, aula en vivo |
 
    **Migraciones PRD (jun 2026)** — ejecutar después de las anteriores:
    - `20260615_unidades_publicada.sql`
@@ -99,6 +99,7 @@ El primer usuario debe ser administrador y se crea desde el panel de Supabase (n
 | `npm run build` | Build de producción |
 | `npm run preview` | Vista previa del build |
 | `npm run lint` | Ejecutar ESLint |
+| `npm test` | Tests unitarios (Vitest) |
 
 ---
 
@@ -123,6 +124,9 @@ Los estudiantes **no** se registran solos; solo el docente o el administrador lo
 - `/` — Inicio estudiante con mapa vertical gamificado (niveles del Abya Yala y progreso).
 - `/perfil` — Ver y editar nombre (y en el futuro avatar).
 - `/progreso` — Vista de progreso global del estudiante por unidad/misión.
+- `/misiones` — Misiones diarias y semanales por unidad.
+- `/certificados` — Certificados PDF al alcanzar el umbral por unidad.
+- `/aula-en-vivo` — Chat grupal en tiempo real (videollamada próximamente).
 - `/logros` — Galería de insignias y logros desbloqueados.
 
 ### Estudiante / todos los autenticados
@@ -140,9 +144,10 @@ Los estudiantes **no** se registran solos; solo el docente o el administrador lo
 - `/docente/temas/:temaId/actividades` — Actividades del tema (CRUD, publicar/no publicar).
 - `/docente/temas/:temaId/evaluaciones` — Evaluaciones del tema (CRUD, publicar/no publicar).
 - `/docente/progreso` — Tabla de progreso de estudiantes (actividades y evaluaciones realizadas, promedios).
+- `/docente/logros` — Catálogo de insignias (activar/desactivar, desbloqueos).
 
 ### Solo admin
-- `/admin` — Gestión de usuarios (listar, crear, editar, activar/desactivar).
+- `/admin` — Gestión de usuarios (listar, crear, editar, activar/desactivar). Ver [`docs/ADMIN_USUARIOS.md`](docs/ADMIN_USUARIOS.md).
 
 ---
 
@@ -162,8 +167,8 @@ src/
 ├── lib/
 │   └── supabase.ts      # Cliente Supabase
 ├── pages/               # Páginas por ruta
-│   ├── docente/         # Panel docente (Contenidos, Temas, Recursos, Actividades, Evaluaciones, Progreso)
-│   ├── Login.tsx, Home.tsx, Perfil.tsx
+│   ├── docente/         # Panel docente (Contenidos, Temas, Recursos, Actividades, Evaluaciones, Progreso, Logros)
+│   ├── Login.tsx, Home.tsx, Perfil.tsx, Misiones.tsx, Certificados.tsx, AulaEnVivo.tsx, Logros.tsx, Progreso.tsx
 │   ├── Unidades.tsx, UnidadTemas.tsx, TemaView.tsx
 │   ├── ActividadView.tsx, EvaluacionView.tsx
 │   └── AdminPanel.tsx

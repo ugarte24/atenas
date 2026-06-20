@@ -9,6 +9,7 @@ import { PLANTILLAS_ACTIVIDADES } from '../../constants/plantillasActividades';
 import { EJEMPLO_CONFIG_ACTIVIDAD } from '../../constants/ejemploConfigActividad';
 import { DocenteDetalleIntentosModal } from '../../components/docente/DocenteDetalleIntentosModal';
 import { DocentePreviewModal } from '../../components/docente/DocentePreviewModal';
+import { Button } from '../../components/ui/Button';
 import { ActividadPreviewBody } from '../../components/docente/ActividadPreviewBody';
 import {
   ActividadConfigEditor,
@@ -351,10 +352,10 @@ export default function DocenteActividades() {
           />
           <ActividadConfigJsonToggle config={configEdit} onApplyJson={setConfigEdit} />
           <div className="flex flex-wrap gap-3">
-            <button type="submit" className="btn-primary">Guardar cambios</button>
-            <button type="button" onClick={() => setEditing(null)} className="btn-secondary">
+            <Button type="submit">Guardar cambios</Button>
+            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       ) : null}
@@ -419,23 +420,23 @@ export default function DocenteActividades() {
           />
           <ActividadConfigJsonToggle config={configCreate} onApplyJson={setConfigCreate} />
           <div className="flex gap-3">
-            <button type="submit" className="btn-primary">Crear actividad</button>
-            <button type="button" onClick={() => setAdding(false)} className="btn-secondary">Cancelar</button>
+            <Button type="submit">Crear actividad</Button>
+            <Button type="button" variant="secondary" onClick={() => setAdding(false)}>Cancelar</Button>
           </div>
         </form>
       ) : (
-        <button
+        <Button
           type="button"
+          className="mb-6"
           onClick={() => {
             setEditing(null);
             setAdding(true);
             setPlantillaActividadId('');
             setConfigCreate(cfgPorTipo(tipo));
           }}
-          className="btn-primary mb-6"
         >
           + Nueva actividad
-        </button>
+        </Button>
       )}
 
       {loading ? (
@@ -565,14 +566,14 @@ export default function DocenteActividades() {
               </option>
             ))}
           </select>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             disabled={moviendo || !moverActividadId || !moverTemaDestinoId}
             onClick={handleMoverActividadAOtroTema}
-            className="btn-secondary"
           >
             {moviendo ? 'Moviendo…' : 'Mover al tema'}
-          </button>
+          </Button>
         </section>
       )}
 

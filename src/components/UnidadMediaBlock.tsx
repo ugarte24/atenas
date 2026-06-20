@@ -1,4 +1,5 @@
 import { getVideoEmbedInfo } from '../lib/unidadVisual';
+import { VideoEmbed } from './ui/VideoEmbed';
 
 type Props = {
   coverVideoUrl: string | null | undefined;
@@ -9,8 +10,7 @@ export function UnidadMediaBlock({ coverVideoUrl, className = '' }: Props) {
   const raw = coverVideoUrl?.trim();
   if (!raw) return null;
 
-  const info = getVideoEmbedInfo(raw);
-  if (!info) {
+  if (!getVideoEmbedInfo(raw)) {
     return (
       <div className={`rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 ${className}`}>
         <p className="font-medium">Vídeo no reconocido</p>
@@ -21,27 +21,9 @@ export function UnidadMediaBlock({ coverVideoUrl, className = '' }: Props) {
     );
   }
 
-  if (info.kind === 'iframe') {
-    return (
-      <div className={`rounded-2xl overflow-hidden shadow-lg border border-atenas-mist-border bg-black ${className}`}>
-        <div className="aspect-video w-full">
-          <iframe
-            src={info.src}
-            title={info.title}
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={`rounded-2xl overflow-hidden shadow-lg border border-atenas-mist-border bg-black ${className}`}>
-      <video src={info.src} controls className="w-full max-h-[480px]" playsInline>
-        Tu navegador no reproduce vídeo HTML5.
-      </video>
+    <div className={className}>
+      <VideoEmbed url={raw} title="Vídeo de la unidad" className="mt-0 shadow-lg" />
     </div>
   );
 }

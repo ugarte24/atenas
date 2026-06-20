@@ -10,6 +10,7 @@ import { PREGUNTAS_EJEMPLO_EVALUACION } from '../../constants/preguntasEjemploEv
 import { DocentePreviewModal } from '../../components/docente/DocentePreviewModal';
 import { DocenteDetalleIntentosModal } from '../../components/docente/DocenteDetalleIntentosModal';
 import { Cuestionario } from '../../components/Cuestionario';
+import { Button } from '../../components/ui/Button';
 
 export default function DocenteEvaluaciones() {
   const { temaId } = useParams<{ temaId: string }>();
@@ -504,10 +505,10 @@ export default function DocenteEvaluaciones() {
             rows={14}
           />
           <div className="flex flex-wrap gap-3">
-            <button type="submit" className="btn-primary">Guardar cambios</button>
-            <button type="button" onClick={() => setEditing(null)} className="btn-secondary">
+            <Button type="submit">Guardar cambios</Button>
+            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       ) : null}
@@ -636,13 +637,14 @@ export default function DocenteEvaluaciones() {
             Formato: array de {"{ enunciado, opciones: [ { texto, correcta } ] }"}
           </p>
           <div className="flex gap-3">
-            <button type="submit" className="btn-primary">Crear evaluación</button>
-            <button type="button" onClick={() => setAdding(false)} className="btn-secondary">Cancelar</button>
+            <Button type="submit">Crear evaluación</Button>
+            <Button type="button" variant="secondary" onClick={() => setAdding(false)}>Cancelar</Button>
           </div>
         </form>
       ) : (
-        <button
+        <Button
           type="button"
+          className="mb-6"
           onClick={() => {
             setEditing(null);
             setPlantillaEvalId('');
@@ -650,10 +652,9 @@ export default function DocenteEvaluaciones() {
             setEsMicroQuiz(false);
             setMicroUbicacion('post_contenido');
           }}
-          className="btn-primary mb-6"
         >
           + Nueva evaluación
-        </button>
+        </Button>
       )}
 
       {loading ? (
@@ -783,14 +784,14 @@ export default function DocenteEvaluaciones() {
               </option>
             ))}
           </select>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             disabled={moviendoEval || !moverEvaluacionId || !moverEvalTemaDestinoId}
             onClick={handleMoverEvaluacionAOtroTema}
-            className="btn-secondary"
           >
             {moviendoEval ? 'Moviendo…' : 'Mover al tema'}
-          </button>
+          </Button>
         </section>
       )}
 

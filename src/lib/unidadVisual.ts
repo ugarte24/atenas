@@ -1,4 +1,5 @@
 import type { Unidad } from '../types';
+import { normalizeExternalImageUrl } from './externalImageUrl';
 
 /** Imágenes genéricas cuando no hay `cover_image_url` ni tema reconocido */
 const GENERIC_FALLBACK_COVERS = [
@@ -34,7 +35,7 @@ export function resolveCoverImageUrl(
   listIndex: number
 ): string {
   const fromDb = u.cover_image_url?.trim();
-  if (fromDb) return fromDb;
+  if (fromDb) return normalizeExternalImageUrl(fromDb);
   const key = normalizeVisualThemeKey(u.visual_theme ?? undefined);
   const themed = THEME_FALLBACK_COVERS[key];
   if (themed) return themed;

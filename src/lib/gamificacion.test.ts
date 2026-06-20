@@ -1,11 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import {
+  xpDesdePuntuacionIntentos,
   calcularXp,
   nivelDesdeXp,
   calcularRachaActual,
   diasConActividad,
   construirLogros,
 } from './gamificacion';
+
+describe('xpDesdePuntuacionIntentos', () => {
+  it('suma puntuaciones de actividades y evaluaciones', () => {
+    expect(xpDesdePuntuacionIntentos(0, 0)).toBe(0);
+    expect(xpDesdePuntuacionIntentos(100, 85)).toBe(185);
+  });
+});
 
 describe('calcularXp', () => {
   it('suma actividades, evaluaciones y notas', () => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Pencil, Check } from 'lucide-react';
+import { useTemaNotas } from '../../hooks/useTemaNotas';
 
 const STORAGE_PREFIX = 'atenas-notas-tema';
 
@@ -7,7 +8,7 @@ function storageKey(userId: string): string {
   return `${STORAGE_PREFIX}:${userId}`;
 }
 
-function loadNotes(userId: string, temaId: string): string {
+function loadNotesLocal(userId: string, temaId: string): string {
   try {
     const raw = localStorage.getItem(storageKey(userId));
     if (!raw) return '';
@@ -18,7 +19,7 @@ function loadNotes(userId: string, temaId: string): string {
   }
 }
 
-function saveNotes(userId: string, temaId: string, text: string) {
+function saveNotesLocal(userId: string, temaId: string, text: string) {
   try {
     const raw = localStorage.getItem(storageKey(userId));
     const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
@@ -36,25 +37,37 @@ type Props = {
 };
 
 export function LessonNotesWidget({ temaId, userId, compact }: Props) {
-  const [text, setText] = useState('');
+  const { contenido, setContenido, loading, saving, error, guardar } = useTemaNotas(
+    temaId,
+    userId
+  );
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [useLocal, setUseLocal] = useState(false);
+  const [localText, setLocalText] = useState('');
 
   useEffect(() => {
-    if (!userId) {
-      setText('');
-      return;
+    if (!userId) return;
+    if (error) {
+      setUseLocal(true);
+      setLocalText(loadNotesLocal(userId, temaId));
+    } else {
+      setUseLocal(false);
     }
-    setText(loadNotes(userId, temaId));
-    setSaved(false);
-  }, [temaId, userId]);
+  }, [userId, temaId, error]);
 
-  function handleBlur() {
-    if (userId) {
-      saveNotes(userId, temaId, text);
-      setSaved(true);
-      window.setTimeout(() => setSaved(false), 2000);
+  const text = useLocal ? localText : contenido;
+  const setText = useLocal ? setLocalText : setContenido;
+
+  async function handleBlur() {
+    if (!userId) return;
+    if (useLocal) {
+      saveNotesLocal(userId, temaId, localText);
+    } else {
+      await guardar(contenido);
     }
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
     setEditing(false);
   }
 
@@ -77,6 +90,7 @@ export function LessonNotesWidget({ temaId, userId, compact }: Props) {
               Guardado
             </span>
           )}
+          {saving && <span className="text-[10px] text-amber-800">Guardando…</span>}
           {!compact && (
             <button
               type="button"
@@ -89,7 +103,12 @@ export function LessonNotesWidget({ temaId, userId, compact }: Props) {
           )}
         </div>
       </div>
-      {compact && !editing ? (
+      {useLocal && (
+        <p className="text-[10px] text-amber-800 mb-2">Modo local (aplica migración tema_notas en Supabase).</p>
+      )}
+      {loading && !useLocal ? (
+        <p className="text-sm text-amber-900/70">Cargando notas…</p>
+      ) : compact && !editing ? (
         <button
           type="button"
           onClick={() => setEditing(true)}
@@ -101,7 +120,7 @@ export function LessonNotesWidget({ temaId, userId, compact }: Props) {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onBlur={handleBlur}
+          onBlur={() => void handleBlur()}
           onFocus={() => setEditing(true)}
           rows={compact ? 3 : 6}
           placeholder="Escribe tus ideas, dudas o resumen…"

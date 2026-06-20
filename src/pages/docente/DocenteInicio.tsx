@@ -2,17 +2,21 @@ import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useUnidades } from '../../hooks/useUnidades';
 import { useProgresoEstudiantes } from '../../hooks/useProgresoEstudiantes';
+import { useProgresoUnidadesAgregado } from '../../hooks/useProgresoUnidadesAgregado';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatCard } from '../../components/ui/StatCard';
 import { SkeletonLines } from '../../components/ui/Skeleton';
 import { ProgressChart } from '../../components/progress/ProgressChart';
-import { BookOpen, Users, ClipboardCheck, FolderOpen, TrendingUp } from 'lucide-react';
+import { Card } from '../../components/ui/Card';
+import { BookOpen, Users, ClipboardCheck, FolderOpen, TrendingUp, Trophy } from 'lucide-react';
 
 export default function DocenteInicio() {
   const { unidades, loading: loadingU } = useUnidades();
   const { estudiantes, loading: loadingE } = useProgresoEstudiantes();
+  const unidadIds = useMemo(() => unidades.map((u) => u.id), [unidades]);
+  const { items: progresoUnidades, loading: loadingProg } = useProgresoUnidadesAgregado(unidadIds);
 
-  const loading = loadingU || loadingE;
+  const loading = loadingU || loadingE || loadingProg;
 
   const promedioGeneral = useMemo(() => {
     if (!estudiantes.length) return 0;
@@ -22,11 +26,11 @@ export default function DocenteInicio() {
 
   const chartItems = useMemo(
     () =>
-      unidades.slice(0, 5).map((u, i) => ({
-        label: `U${u.orden ?? i + 1}`,
-        value: Math.min(100, Math.round(((estudiantes.filter((e) => e.actividadesCompletadas > 0).length / Math.max(estudiantes.length, 1)) * 100) * (0.6 + i * 0.1))),
+      progresoUnidades.slice(0, 7).map((p) => ({
+        label: p.label,
+        value: p.porcentajePromedio,
       })),
-    [unidades, estudiantes]
+    [progresoUnidades]
   );
 
   const feed = useMemo(
@@ -69,11 +73,11 @@ export default function DocenteInicio() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
-            <div className="rounded-2xl border border-atenas-mist-border bg-white p-5 shadow-card">
-              <h2 className="text-sm font-bold text-atenas-ink mb-4">Progreso general por unidad</h2>
+            <Card padding="md">
+              <h2 className="text-sm font-bold text-atenas-ink mb-4">Progreso promedio por unidad</h2>
               <ProgressChart items={chartItems} />
-            </div>
-            <div className="rounded-2xl border border-atenas-mist-border bg-white p-5 shadow-card">
+            </Card>
+            <Card padding="md">
               <h2 className="text-sm font-bold text-atenas-ink mb-4">Actividad reciente</h2>
               {feed.length === 0 ? (
                 <p className="text-sm text-atenas-muted">Sin actividad registrada aún.</p>
@@ -86,12 +90,12 @@ export default function DocenteInicio() {
                   ))}
                 </ul>
               )}
-            </div>
+            </Card>
           </div>
         </>
       )}
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link
           to="/docente/contenidos"
           className="flex items-center gap-4 p-6 card-hover rounded-2xl border border-atenas-mist-border bg-white"
@@ -114,6 +118,18 @@ export default function DocenteInicio() {
           <div>
             <h2 className="font-bold text-atenas-ink text-lg">Progreso estudiantes</h2>
             <p className="text-atenas-muted text-sm">Tabla detallada y exportación CSV</p>
+          </div>
+        </Link>
+        <Link
+          to="/docente/logros"
+          className="flex items-center gap-4 p-6 card-hover rounded-2xl border border-atenas-mist-border bg-white"
+        >
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-white bg-gradient-to-br from-violet-500 to-purple-600">
+            <Trophy className="w-7 h-7" aria-hidden />
+          </div>
+          <div>
+            <h2 className="font-bold text-atenas-ink text-lg">Logros e insignias</h2>
+            <p className="text-atenas-muted text-sm">Activar logros y ver desbloqueos</p>
           </div>
         </Link>
       </div>

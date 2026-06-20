@@ -54,7 +54,7 @@ INSERT INTO public.recursos (id, tema_id, tipo, url, title, contenido)
 VALUES
   ('ffffa001-0000-4000-8000-000000000001'::uuid, 'bbbb0001-0000-4000-8000-000000000001'::uuid,
    'imagen',
-   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/640px-The_Earth_seen_from_Apollo_17.jpg',
+   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/960px-The_Earth_seen_from_Apollo_17.jpg',
    'La Tierra desde el espacio', NULL),
   ('ffffa002-0000-4000-8000-000000000001'::uuid, 'bbbb0003-0000-4000-8000-000000000001'::uuid,
    'imagen',
