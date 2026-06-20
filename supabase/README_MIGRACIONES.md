@@ -35,7 +35,9 @@ FROM pg_constraint
 WHERE conrelid = 'public.evaluacion_intentos'::regclass;
 ```
 
-Debe existir una PK sobre la columna `id` (uuid), no solo user_id + evaluacion_id.
+Debe existir una PK sobre la columna `id` (uuid). **No** debe quedar un UNIQUE sobre `(user_id, evaluacion_id)` (nombre típico: `evaluacion_intentos_user_eval_unique`).
+
+Si ya ejecutaste `20250318_atenas_features.sql` y el error persiste, ejecuta también `20260621_evaluacion_intentos_multi_fix.sql`.
 
 ## Seed de contenido (unidades, temas, actividades, evaluaciones)
 

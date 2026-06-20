@@ -12,6 +12,8 @@ import { supabase } from '../lib/supabase';
 import { usuarioCumplePrerequisitoTema } from '../lib/prerequisitoTema';
 import { TemaMensajes } from '../components/TemaMensajes';
 import { MicroQuizCard } from '../components/MicroQuizCard';
+import { EvaluacionTemaCard } from '../components/EvaluacionTemaCard';
+import { useResumenEvaluacionesUsuario } from '../hooks/useResumenEvaluacionesUsuario';
 import { useTiempoEstudio } from '../hooks/useTiempoEstudio';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -92,10 +94,25 @@ export default function TemaView() {
   const hasTheoryBlock = !!(tema?.content || recursosTeoria.length > 0 || recursosPdf.length > 0);
   const hasVideoBlock = recursosVideo.length > 0 || recursosAudio.length > 0;
   const hasActividades = actividades.filter((a) => a.publicada).length > 0;
-  const hasEvaluaciones =
-    evaluaciones.filter((e) =>
-      esEstudiante ? e.publicada && e.es_micro_quiz !== true : e.publicada
-    ).length > 0;
+  const evaluacionesListadas = useMemo(
+    () =>
+      evaluaciones.filter((e) =>
+        esEstudiante ? e.publicada && e.es_micro_quiz !== true : e.publicada
+      ),
+    [evaluaciones, esEstudiante]
+  );
+
+  const hasEvaluaciones = evaluacionesListadas.length > 0;
+
+  const evaluacionIds = useMemo(
+    () => evaluacionesListadas.map((e) => e.id),
+    [evaluacionesListadas]
+  );
+
+  const { porId: resumenEvaluaciones, loading: loadingResumenEval } = useResumenEvaluacionesUsuario(
+    evaluacionIds,
+    esEstudiante ? user?.id : undefined
+  );
 
   const sections = useMemo(() => {
     const list: SectionItem[] = [];
@@ -392,12 +409,13 @@ export default function TemaView() {
                     <section id="section-evaluacion" className="scroll-mt-4">
                       <h2 className="text-lg font-bold text-atenas-ink mb-3">Evaluación</h2>
                       <ul className="space-y-3 list-none m-0 p-0">
-                        {(esEstudiante ? evaluaciones.filter((e) => e.publicada && e.es_micro_quiz !== true) : evaluaciones.filter((e) => e.publicada)).map((e) => (
+                        {evaluacionesListadas.map((e) => (
                           <li key={e.id}>
-                            <Link to={`/evaluaciones/${e.id}`} className="block p-4 rounded-xl border border-atenas-mist-border bg-white shadow-card card-hover">
-                              <span className="text-xs font-semibold uppercase text-atenas-ink">Cuestionario</span>
-                              <h3 className="font-bold text-atenas-ink mt-1">{e.title}</h3>
-                            </Link>
+                            <EvaluacionTemaCard
+                              evaluacion={e}
+                              resumen={resumenEvaluaciones[e.id]}
+                              loadingResumen={loadingResumenEval}
+                            />
                           </li>
                         ))}
                       </ul>
@@ -433,11 +451,13 @@ export default function TemaView() {
                           </Link>
                         </li>
                       ))}
-                      {(esEstudiante ? evaluaciones.filter((e) => e.publicada && e.es_micro_quiz !== true) : evaluaciones.filter((e) => e.publicada)).map((e) => (
+                      {evaluacionesListadas.map((e) => (
                         <li key={e.id}>
-                          <Link to={`/evaluaciones/${e.id}`} className="block p-4 rounded-xl border bg-white shadow-card card-hover">
-                            <h3 className="font-bold text-atenas-ink">{e.title}</h3>
-                          </Link>
+                          <EvaluacionTemaCard
+                            evaluacion={e}
+                            resumen={resumenEvaluaciones[e.id]}
+                            loadingResumen={loadingResumenEval}
+                          />
                         </li>
                       ))}
                     </ul>

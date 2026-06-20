@@ -18,11 +18,16 @@ export function useEvaluacionIntento(evaluacionId: string | null) {
       setSaving(true);
       setError(null);
       try {
-        const { count } = await supabase
+        const { data: previos, count } = await supabase
           .from('evaluacion_intentos')
-          .select('id', { count: 'exact', head: true })
+          .select('id, aprobado', { count: 'exact' })
           .eq('user_id', user.id)
           .eq('evaluacion_id', evaluacionId);
+
+        if ((previos ?? []).some((r) => r.aprobado === true)) {
+          setError('Ya aprobaste esta evaluación; no puedes enviar más intentos.');
+          return false;
+        }
 
         const numeroIntento = (count ?? 0) + 1;
 
@@ -44,7 +49,7 @@ export function useEvaluacionIntento(evaluacionId: string | null) {
             msg.includes('23505')
           ) {
             setError(
-              'Tu base aún tiene un intento único por evaluación. Ejecuta la migración en supabase/migrations/20250318_atenas_features.sql para permitir varios intentos.'
+              'No se pudo guardar un nuevo intento: la base de datos aún limita a uno por evaluación. En Supabase ejecuta supabase/migrations/20260621_evaluacion_intentos_multi_fix.sql (elimina UNIQUE user_id+evaluacion_id).'
             );
           } else if (msg.includes('max_intentos')) {
             setError('Has alcanzado el máximo de intentos para esta evaluación.');

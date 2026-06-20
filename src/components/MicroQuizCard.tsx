@@ -21,13 +21,19 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
   const [sesion, setSesion] = useState(0);
   const [intentosCount, setIntentosCount] = useState(0);
   const [mejorPuntuacion, setMejorPuntuacion] = useState<number | null>(null);
+  const [yaAprobado, setYaAprobado] = useState(false);
   const [ultimoGuardadoOk, setUltimoGuardadoOk] = useState(false);
+  const [ultimoIntentoAprobado, setUltimoIntentoAprobado] = useState(false);
   const [tickIntentos, setTickIntentos] = useState(0);
 
   const maxIntentos = evaluacion.max_intentos ?? null;
   const ilimitado = maxIntentos == null || maxIntentos <= 0;
   const agotado = !ilimitado && maxIntentos != null && intentosCount >= maxIntentos;
-  const soloBloqueoInicial = agotado && !ultimoGuardadoOk;
+  const soloBloqueoInicial = (yaAprobado || agotado) && !ultimoGuardadoOk;
+  const puedeReintentar =
+    !yaAprobado &&
+    !ultimoIntentoAprobado &&
+    (ilimitado || (maxIntentos != null && intentosCount < maxIntentos));
 
   useEffect(() => {
     if (!user) return;
@@ -35,14 +41,19 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
     void (async () => {
       const { data, error: e } = await supabase
         .from('evaluacion_intentos')
-        .select('puntuacion')
+        .select('puntuacion, aprobado')
         .eq('user_id', user.id)
         .eq('evaluacion_id', evaluacion.id);
       if (cancelled || e) return;
-      const rows = (data ?? []) as { puntuacion: number }[];
+      const rows = (data ?? []) as { puntuacion: number; aprobado: boolean }[];
       setIntentosCount(rows.length);
-      if (rows.length) setMejorPuntuacion(Math.max(...rows.map((r) => r.puntuacion)));
-      else setMejorPuntuacion(null);
+      if (rows.length) {
+        setMejorPuntuacion(Math.max(...rows.map((r) => r.puntuacion)));
+        setYaAprobado(rows.some((r) => r.aprobado));
+      } else {
+        setMejorPuntuacion(null);
+        setYaAprobado(false);
+      }
     })();
     return () => {
       cancelled = true;
@@ -58,6 +69,7 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
     ) => {
       const ok = await guardarIntento(respuestas, puntuacion, aprobado, tiempoSegundos);
       setUltimoGuardadoOk(ok);
+      setUltimoIntentoAprobado(aprobado);
       if (ok) setTickIntentos((t) => t + 1);
     },
     [guardarIntento]
@@ -104,7 +116,11 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
 
         {!abierto ? (
           <div className="text-sm text-atenas-muted-strong">
-            {ilimitado ? (
+            {yaAprobado ? (
+              <span>
+                Completada{mejorPuntuacion != null ? ` · Mejor nota: ${mejorPuntuacion}%` : ''}.
+              </span>
+            ) : ilimitado ? (
               <span>Cuando quieras, responde y mejora tu puntaje.</span>
             ) : agotado ? (
               <span>
@@ -118,13 +134,26 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
           </div>
         ) : soloBloqueoInicial ? (
           <div className="p-4 border border-atenas-mist-border rounded-xl bg-atenas-page">
-            <p className="text-atenas-ink font-semibold">Máximo de intentos alcanzado</p>
-            {mejorPuntuacion != null ? (
-              <p className="text-sm text-atenas-muted-strong mt-1">
-                Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.
-              </p>
+            {yaAprobado ? (
+              <>
+                <p className="text-atenas-ink font-semibold">Reto completado</p>
+                {mejorPuntuacion != null ? (
+                  <p className="text-sm text-atenas-muted-strong mt-1">
+                    Tu mejor nota: <strong>{mejorPuntuacion}%</strong>.
+                  </p>
+                ) : null}
+              </>
             ) : (
-              <p className="text-sm text-atenas-muted-strong mt-1">Aún no tienes resultados guardados.</p>
+              <>
+                <p className="text-atenas-ink font-semibold">Máximo de intentos alcanzado</p>
+                {mejorPuntuacion != null ? (
+                  <p className="text-sm text-atenas-muted-strong mt-1">
+                    Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.
+                  </p>
+                ) : (
+                  <p className="text-sm text-atenas-muted-strong mt-1">Aún no tienes resultados guardados.</p>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -155,13 +184,14 @@ export function MicroQuizCard({ evaluacion, defaultCollapsed = true }: Props) {
               minutosExamen={modoExamen ? (evaluacion.minutos_limite ?? 30) : 0}
             />
 
-            {ultimoGuardadoOk && (ilimitado || intentosCount < maxIntentos!) ? (
+            {ultimoGuardadoOk && puedeReintentar ? (
               <div className="mt-6 pt-4 border-t border-atenas-mist-border">
                 <button
                   type="button"
                   className="btn-secondary"
                   onClick={() => {
                     setUltimoGuardadoOk(false);
+                    setUltimoIntentoAprobado(false);
                     clearError();
                     setSesion((s) => s + 1);
                   }}

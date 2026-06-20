@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS public.tema_mensajes (
 );
 CREATE INDEX IF NOT EXISTS idx_tema_mensajes_tema ON public.tema_mensajes(tema_id);
 
--- 6) Múltiples intentos en evaluaciones (quitar PK compuesta user_id+evaluacion_id)
+-- 6) Múltiples intentos en evaluaciones (quitar PK compuesta y UNIQUE user_id+evaluacion_id)
 ALTER TABLE public.evaluacion_intentos
   ADD COLUMN IF NOT EXISTS id uuid DEFAULT gen_random_uuid();
 
@@ -47,6 +47,26 @@ BEGIN
     FROM pg_constraint
     WHERE conrelid = 'public.evaluacion_intentos'::regclass
       AND contype = 'p'
+  LOOP
+    EXECUTE format('ALTER TABLE public.evaluacion_intentos DROP CONSTRAINT %I', r.conname);
+  END LOOP;
+END $$;
+
+-- UNIQUE (user_id, evaluacion_id) de 004_evaluaciones.sql — bloquea el 2.º intento aunque la PK sea id
+ALTER TABLE public.evaluacion_intentos
+  DROP CONSTRAINT IF EXISTS evaluacion_intentos_user_eval_unique;
+
+DO $$
+DECLARE
+  r record;
+BEGIN
+  FOR r IN
+    SELECT conname
+    FROM pg_constraint
+    WHERE conrelid = 'public.evaluacion_intentos'::regclass
+      AND contype = 'u'
+      AND pg_get_constraintdef(oid) ~ 'user_id'
+      AND pg_get_constraintdef(oid) ~ 'evaluacion_id'
   LOOP
     EXECUTE format('ALTER TABLE public.evaluacion_intentos DROP CONSTRAINT %I', r.conname);
   END LOOP;

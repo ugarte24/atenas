@@ -6,6 +6,7 @@ import { Cuestionario, type FeedbackEvaluacion } from '../components/Cuestionari
 import { ParchmentLayout, ParchmentFooter } from '../components/layout/ParchmentLayout';
 import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { formatMaxIntentos } from '../hooks/useResumenEvaluacionesUsuario';
 
 export default function EvaluacionView() {
   const { evaluacionId } = useParams<{ evaluacionId: string }>();
@@ -17,14 +18,20 @@ export default function EvaluacionView() {
   const [preguntaActual, setPreguntaActual] = useState(1);
   const [intentosCount, setIntentosCount] = useState(0);
   const [mejorPuntuacion, setMejorPuntuacion] = useState<number | null>(null);
+  const [yaAprobado, setYaAprobado] = useState(false);
   const [ultimoGuardadoOk, setUltimoGuardadoOk] = useState(false);
+  const [ultimoIntentoAprobado, setUltimoIntentoAprobado] = useState(false);
   const [tickIntentos, setTickIntentos] = useState(0);
 
   const maxIntentos = evaluacion?.max_intentos ?? null;
   const ilimitado = maxIntentos == null || maxIntentos <= 0;
   const agotado = !ilimitado && maxIntentos != null && intentosCount >= maxIntentos;
-  /** Sin intentos al entrar (no mostrar bloqueo si acaba de terminar y debe ver resultado) */
-  const soloBloqueoInicial = agotado && !ultimoGuardadoOk;
+  /** Bloqueo al entrar: ya aprobó o agotó intentos (salvo que acaba de terminar y debe ver resultado) */
+  const soloBloqueoInicial = (yaAprobado || agotado) && !ultimoGuardadoOk;
+  const puedeReintentar =
+    !yaAprobado &&
+    !ultimoIntentoAprobado &&
+    (ilimitado || (maxIntentos != null && intentosCount < maxIntentos));
 
   useEffect(() => {
     if (!user || !evaluacionId) return;
@@ -32,16 +39,18 @@ export default function EvaluacionView() {
     (async () => {
       const { data, error: e } = await supabase
         .from('evaluacion_intentos')
-        .select('puntuacion')
+        .select('puntuacion, aprobado')
         .eq('user_id', user.id)
         .eq('evaluacion_id', evaluacionId);
       if (cancelled || e) return;
-      const rows = (data ?? []) as { puntuacion: number }[];
+      const rows = (data ?? []) as { puntuacion: number; aprobado: boolean }[];
       setIntentosCount(rows.length);
       if (rows.length) {
         setMejorPuntuacion(Math.max(...rows.map((r) => r.puntuacion)));
+        setYaAprobado(rows.some((r) => r.aprobado));
       } else {
         setMejorPuntuacion(null);
+        setYaAprobado(false);
       }
     })();
     return () => {
@@ -58,6 +67,7 @@ export default function EvaluacionView() {
     ) => {
       const ok = await guardarIntento(respuestas, puntuacion, aprobado, tiempoSegundos);
       setUltimoGuardadoOk(ok);
+      setUltimoIntentoAprobado(aprobado);
       if (ok) setTickIntentos((t) => t + 1);
     },
     [guardarIntento]
@@ -113,10 +123,30 @@ export default function EvaluacionView() {
 
       {soloBloqueoInicial ? (
         <div className="card p-6">
-          <p className="text-atenas-muted-strong">
-            Has alcanzado el máximo de intentos para esta evaluación.
-            {mejorPuntuacion != null && <> Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.</>}
-          </p>
+          {yaAprobado ? (
+            <>
+              <p className="text-emerald-900 font-semibold text-lg">Evaluación completada</p>
+              <p className="text-atenas-muted-strong mt-2">
+                Ya aprobaste esta evaluación.
+                {mejorPuntuacion != null && (
+                  <>
+                    {' '}
+                    Tu mejor nota: <strong>{mejorPuntuacion}%</strong>.
+                  </>
+                )}
+              </p>
+            </>
+          ) : (
+            <p className="text-atenas-muted-strong">
+              Has alcanzado el máximo de intentos para esta evaluación.
+              {mejorPuntuacion != null && (
+                <>
+                  {' '}
+                  Tu mejor resultado fue <strong>{mejorPuntuacion}%</strong>.
+                </>
+              )}
+            </p>
+          )}
           <button type="button" onClick={() => navigate(-1)} className="btn-secondary mt-4">
             Volver al tema
           </button>
@@ -137,8 +167,33 @@ export default function EvaluacionView() {
         >
           <p className="text-sm text-amber-900/80 mb-5">
             Para aprobar: <strong>{evaluacion.umbral_aprobado}%</strong>
-            {!ilimitado && <> · Intentos: {intentosCount}/{maxIntentos}</>}
+            {' · '}
+            Intentos:{' '}
+            {ilimitado
+              ? intentosCount > 0
+                ? `${intentosCount} (ilimitados)`
+                : formatMaxIntentos(maxIntentos)
+              : `${intentosCount}/${maxIntentos}`}
           </p>
+          {intentosCount > 0 && !ultimoGuardadoOk && !yaAprobado && (
+            <div className="mb-5 p-4 rounded-xl border border-sky-200 bg-sky-50 text-sm text-sky-950">
+              Llevas {intentosCount} {intentosCount === 1 ? 'intento' : 'intentos'}.
+              {mejorPuntuacion != null && (
+                <>
+                  {' '}
+                  Tu mejor nota: <strong>{mejorPuntuacion}%</strong>.
+                </>
+              )}
+              {!ilimitado && maxIntentos != null && (
+                <>
+                  {' '}
+                  Te {maxIntentos - intentosCount === 1 ? 'queda' : 'quedan'}{' '}
+                  <strong>{maxIntentos - intentosCount}</strong>{' '}
+                  {maxIntentos - intentosCount === 1 ? 'intento' : 'intentos'}.
+                </>
+              )}
+            </div>
+          )}
           {modoExamen && (
             <p className="text-sm font-medium text-amber-900 mb-4 bg-amber-100/50 border border-amber-200 rounded-lg px-3 py-2">
               Modo examen activo.
@@ -154,13 +209,14 @@ export default function EvaluacionView() {
             minutosExamen={modoExamen ? (evaluacion.minutos_limite ?? 30) : 0}
             onStepChange={(step) => setPreguntaActual(step)}
           />
-          {ultimoGuardadoOk && (ilimitado || intentosCount < maxIntentos!) && (
+          {ultimoGuardadoOk && puedeReintentar && (
             <div className="mt-6 pt-4 border-t border-amber-200/50">
               <button
                 type="button"
                 className="btn-secondary"
                 onClick={() => {
                   setUltimoGuardadoOk(false);
+                  setUltimoIntentoAprobado(false);
                   clearError();
                   setPreguntaActual(1);
                   setSesion((s) => s + 1);
