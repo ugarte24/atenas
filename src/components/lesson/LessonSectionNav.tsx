@@ -34,10 +34,10 @@ export function LessonSectionNav({ sections, activeId, onSelect, variant = 'vert
               type="button"
               onClick={() => onSelect(s.id)}
               className={cn(
-                'relative shrink-0 flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold min-h-touch transition-colors border',
+                'relative isolate shrink-0 flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold min-h-touch transition-colors border',
                 active
-                  ? 'text-white border-atenas-sidebar'
-                  : 'bg-white text-atenas-muted-strong border-atenas-mist-border hover:border-atenas-ink/30'
+                  ? 'bg-atenas-sidebar text-white border-atenas-sidebar shadow-sm'
+                  : 'bg-white text-atenas-ink border-atenas-mist-border hover:border-atenas-ink/30'
               )}
             >
               {active && !reduceMotion && (
@@ -47,18 +47,22 @@ export function LessonSectionNav({ sections, activeId, onSelect, variant = 'vert
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 />
               )}
-              {active && reduceMotion && (
-                <span className="absolute inset-0 rounded-full bg-atenas-sidebar border border-atenas-sidebar -z-10" />
-              )}
               <span
                 className={cn(
-                  'relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
-                  active ? 'bg-atenas-gold text-atenas-ink' : 'bg-atenas-mist text-atenas-muted'
+                  'relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
+                  active ? 'bg-atenas-gold text-atenas-ink' : 'bg-atenas-mist text-atenas-muted-strong'
                 )}
               >
                 {s.step}
               </span>
-              <span className="relative whitespace-nowrap">{s.title}</span>
+              <span
+                className={cn(
+                  'relative z-10 whitespace-nowrap',
+                  active ? 'text-white font-semibold' : 'text-atenas-ink'
+                )}
+              >
+                {s.title}
+              </span>
             </button>
           );
         })}

@@ -40,7 +40,7 @@ export function UnidadCard({ unidad, listIndex, progressPct }: Props) {
           aria-hidden
         />
         <div className="absolute top-3 left-3">
-          <Badge tone="gold" className="text-[10px] font-bold shadow-sm">
+          <Badge tone="gold" className="text-[10px] font-bold shadow-md ring-1 ring-atenas-ink/10">
             {isla.shortLabel}
           </Badge>
         </div>

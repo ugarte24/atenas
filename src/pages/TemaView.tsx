@@ -12,7 +12,6 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { usuarioCumplePrerequisitoTema } from '../lib/prerequisitoTema';
 import { TemaMensajes } from '../components/TemaMensajes';
-import { MicroQuizCard } from '../components/MicroQuizCard';
 import { EvaluacionTemaCard } from '../components/EvaluacionTemaCard';
 import { useResumenEvaluacionesUsuario } from '../hooks/useResumenEvaluacionesUsuario';
 import { useMotionSafe } from '../hooks/useMotionSafe';
@@ -76,14 +75,9 @@ export default function TemaView() {
 
   const { recursos, loading: loadingRecursos } = useRecursos(temaIdContenido);
   const { actividades, loading: loadingActividades } = useActividades(temaIdContenido);
-  const { evaluaciones, loading: loadingEvaluaciones } = useEvaluaciones(temaIdContenido);
+  const { evaluaciones } = useEvaluaciones(temaIdContenido);
 
   useTiempoEstudio(temaIdContenido);
-
-  const microQuizEvaluacion =
-    !loadingEvaluaciones && Array.isArray(evaluaciones)
-      ? evaluaciones.find((e) => e.publicada && e.es_micro_quiz === true)
-      : null;
 
   const recursosVideo = useMemo(() => recursos.filter((r) => r.tipo === 'video'), [recursos]);
   const recursosTeoria = useMemo(
@@ -97,11 +91,8 @@ export default function TemaView() {
   const hasVideoBlock = recursosVideo.length > 0 || recursosAudio.length > 0;
   const hasActividades = actividades.filter((a) => a.publicada).length > 0;
   const evaluacionesListadas = useMemo(
-    () =>
-      evaluaciones.filter((e) =>
-        esEstudiante ? e.publicada && e.es_micro_quiz !== true : e.publicada
-      ),
-    [evaluaciones, esEstudiante]
+    () => evaluaciones.filter((e) => e.publicada),
+    [evaluaciones]
   );
 
   const hasEvaluaciones = evaluacionesListadas.length > 0;
@@ -314,12 +305,6 @@ export default function TemaView() {
         </div>
       )}
 
-      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion === 'inicio' && esEstudiante && (
-        <div className="mb-6">
-          <MicroQuizCard evaluacion={microQuizEvaluacion} defaultCollapsed />
-        </div>
-      )}
-
       {showStudentLayout ? (
         <>
           <LessonTabs active={tab} onChange={setTab} />
@@ -492,7 +477,7 @@ export default function TemaView() {
           </div>
 
           {/* Footer nav temas */}
-          <footer className="mt-8 border-t border-atenas-mist-border pt-5 mb-student-bottom-nav lg:mb-0">
+          <footer className="mt-8 border-t border-atenas-mist-border pt-5">
             {temasUnidad.length > 0 && (
               <p className="text-sm text-atenas-muted font-medium text-center mb-4 tabular-nums">
                 Tema {temaIndex + 1} de {temasUnidad.length}
@@ -554,12 +539,6 @@ export default function TemaView() {
           )}
           <ResourcesSplitView recursos={recursos} />
           <TemaMensajes temaId={tema.id} />
-        </div>
-      )}
-
-      {microQuizEvaluacion && microQuizEvaluacion.micro_ubicacion !== 'inicio' && esEstudiante && (
-        <div className="mt-8">
-          <MicroQuizCard evaluacion={microQuizEvaluacion} defaultCollapsed />
         </div>
       )}
     </div>

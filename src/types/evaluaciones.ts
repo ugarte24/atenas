@@ -20,9 +20,9 @@ export interface Evaluacion {
   minutos_limite?: number | null;
   /** Si true, no se muestra la opción correcta al fallar */
   ocultar_respuesta_correcta?: boolean;
-  /** Si true, se muestra como micro-quiz en la vista de tema (tarjeta rápida) */
+  /** Legacy: evaluaciones marcadas como micro-quiz en BD (ya no se muestran aparte) */
   es_micro_quiz?: boolean;
-  /** Dónde mostrarlo en la vista de tema (inicio|post_contenido) */
+  /** Legacy: ubicación del micro-quiz en la vista de tema */
   micro_ubicacion?: string;
 }
 

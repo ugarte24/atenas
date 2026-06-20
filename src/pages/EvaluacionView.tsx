@@ -7,6 +7,7 @@ import { useEvaluacionIntento } from '../hooks/useEvaluacionIntento';
 import { Cuestionario, type FeedbackEvaluacion } from '../components/Cuestionario';
 import { ParchmentLayout, ParchmentFooter } from '../components/layout/ParchmentLayout';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useMascotVisitorContext } from '../contexts/MascotVisitorContext';
 import { supabase } from '../lib/supabase';
 import { formatMaxIntentos } from '../hooks/useResumenEvaluacionesUsuario';
 import { useMotionSafe } from '../hooks/useMotionSafe';
@@ -19,6 +20,7 @@ export default function EvaluacionView() {
   const { reduceMotion, spring } = useMotionSafe();
   const { evaluacion, loading, error } = useEvaluacion(evaluacionId ?? null);
   const { guardarIntento, saving, error: saveErr, clearError } = useEvaluacionIntento(evaluacionId ?? null);
+  const { triggerTip } = useMascotVisitorContext();
   const [sesion, setSesion] = useState(0);
   const [preguntaActual, setPreguntaActual] = useState(1);
   const [intentosCount, setIntentosCount] = useState(0);
@@ -73,9 +75,12 @@ export default function EvaluacionView() {
       const ok = await guardarIntento(respuestas, puntuacion, aprobado, tiempoSegundos);
       setUltimoGuardadoOk(ok);
       setUltimoIntentoAprobado(aprobado);
-      if (ok) setTickIntentos((t) => t + 1);
+      if (ok) {
+        setTickIntentos((t) => t + 1);
+        if (aprobado) triggerTip('post_evaluacion_aprobada');
+      }
     },
-    [guardarIntento]
+    [guardarIntento, triggerTip]
   );
 
   if (loading || !evaluacion) {

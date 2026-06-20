@@ -250,8 +250,8 @@ export function Cuestionario({
                 : 'bg-amber-50 border-amber-300 text-amber-950'
             }`}
             role="status"
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={spring}
           >
             {aprobado && (

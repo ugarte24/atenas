@@ -18,6 +18,7 @@ import { SkeletonLines } from '../components/ui/Skeleton';
 import { Alert } from '../components/ui/Alert';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { useMascotVisitorContext } from '../contexts/MascotVisitorContext';
 import type { ActividadConfig } from '../types';
 
 export default function ActividadView() {
@@ -26,6 +27,7 @@ export default function ActividadView() {
   const { actividad, loading, error } = useActividad(actividadId ?? null);
   const { guardarIntento, saving } = useIntento(actividadId ?? null);
   const { puntos } = useGamificacionEstudiante();
+  const { triggerTip } = useMascotVisitorContext();
   const [resultado, setResultado] = useState<{ puntuacion: number } | null>(null);
   const [nivelAnterior] = useState(() => nivelDesdeXp(puntos).nivel);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -35,6 +37,7 @@ export default function ActividadView() {
   const handleSubmit = async (respuestas: Record<string, unknown>, puntuacion: number) => {
     await guardarIntento(respuestas, puntuacion);
     setResultado({ puntuacion });
+    triggerTip('post_actividad');
     if (nivelActual.nivel > nivelAnterior) setShowLevelUp(true);
   };
 

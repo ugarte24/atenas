@@ -7,6 +7,8 @@ import { StudentSidebar } from './StudentSidebar';
 import { DocenteSidebar } from './DocenteSidebar';
 import { AppDrawer, type DrawerLink } from './AppDrawer';
 import { STUDENT_DRAWER_ITEMS } from '../constants/studentNav';
+import { MascotVisitorProvider } from '../contexts/MascotVisitorContext';
+import { MascotVisitor } from './gamification/MascotVisitor';
 import { cn } from './ui/cn';
 
 type Props = { children: React.ReactNode };
@@ -54,6 +56,71 @@ export function Layout({ children }: Props) {
       )}
 
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {esEstudiante ? (
+          <MascotVisitorProvider>
+            <LayoutMain
+              profile={profile}
+              esEstudiante={esEstudiante}
+              enLeccion={enLeccion}
+              showDocenteSidebar={showDocenteSidebar}
+              showStudentSidebar={showStudentSidebar}
+              drawerOpen={drawerOpen}
+              setDrawerOpen={setDrawerOpen}
+              drawerLinks={drawerLinks}
+              handleSignOut={handleSignOut}
+            >
+              {children}
+            </LayoutMain>
+            <MascotVisitor />
+            <StudentBottomNav />
+          </MascotVisitorProvider>
+        ) : (
+          <LayoutMain
+            profile={profile}
+            esEstudiante={esEstudiante}
+            enLeccion={enLeccion}
+            showDocenteSidebar={showDocenteSidebar}
+            showStudentSidebar={showStudentSidebar}
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+            drawerLinks={drawerLinks}
+            handleSignOut={handleSignOut}
+          >
+            {children}
+          </LayoutMain>
+        )}
+      </div>
+    </div>
+  );
+}
+
+type LayoutMainProps = {
+  children: React.ReactNode;
+  profile: ReturnType<typeof useAuthContext>['profile'];
+  esEstudiante: boolean;
+  enLeccion: boolean;
+  showDocenteSidebar: boolean;
+  showStudentSidebar: boolean;
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
+  drawerLinks: DrawerLink[];
+  handleSignOut: () => Promise<void>;
+};
+
+function LayoutMain({
+  children,
+  profile,
+  esEstudiante,
+  enLeccion,
+  showDocenteSidebar,
+  showStudentSidebar,
+  drawerOpen,
+  setDrawerOpen,
+  drawerLinks,
+  handleSignOut,
+}: LayoutMainProps) {
+  return (
+    <>
         {/* Barra superior móvil / admin sin sidebar */}
         <header
           className={cn(
@@ -152,17 +219,13 @@ export function Layout({ children }: Props) {
         <main
           className={cn(
             'flex-1 page-container py-5 sm:py-8',
-            esEstudiante &&
-              (enLeccion ? 'pb-4 lg:pb-8' : 'pb-student-bottom-nav lg:pb-8'),
+            esEstudiante && 'pb-student-bottom-nav lg:pb-8',
             showDocenteSidebar && 'pb-24 lg:pb-8',
             enLeccion && esEstudiante && 'lesson-cream-bg max-w-none rounded-none'
           )}
         >
           {children}
         </main>
-
-        {esEstudiante && <StudentBottomNav />}
-      </div>
-    </div>
+    </>
   );
 }

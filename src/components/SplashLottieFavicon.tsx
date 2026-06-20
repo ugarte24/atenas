@@ -1,4 +1,4 @@
-import Lottie from 'lottie-react';
+import { Lottie } from '../lib/lottieReact';
 import splashFaviconLoop from '../assets/lottie/splash-favicon.json';
 
 type Props = { className?: string };

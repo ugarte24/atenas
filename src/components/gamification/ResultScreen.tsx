@@ -43,8 +43,8 @@ export function ResultScreen({
       {aprobado === true && <ConfettiBurst className="pointer-events-none absolute inset-0 overflow-hidden z-0" />}
       <motion.div
         className="relative z-10 rounded-3xl bg-white border border-atenas-mist-border shadow-elevated p-8"
-        initial={reduceMotion ? false : { opacity: 0, y: 16, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={spring}
       >
         <motion.div
