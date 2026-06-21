@@ -7,12 +7,49 @@ import { StudentSidebar } from './StudentSidebar';
 import { DocenteSidebar } from './DocenteSidebar';
 import { AppDrawer, type DrawerLink } from './AppDrawer';
 import { STUDENT_DRAWER_ITEMS } from '../constants/studentNav';
-import { StudentMobileGamificationChip } from './gamification/StudentMobileGamificationChip';
+import {
+  DOCENTE_ACCOUNT_NAV_ITEMS,
+  DOCENTE_MAIN_NAV_ITEMS,
+} from '../constants/docenteNav';
+import { LayoutDashboard } from 'lucide-react';
+import { Badge } from './ui/Badge';
 import { MascotVisitorProvider } from '../contexts/MascotVisitorContext';
 import { MascotVisitor } from './gamification/MascotVisitor';
 import { cn } from './ui/cn';
 
 type Props = { children: React.ReactNode };
+
+const ROL_LABEL: Record<string, string> = {
+  estudiante: 'Estudiante',
+  docente: 'Docente',
+  admin: 'Administrador',
+};
+
+function profileInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+/** Nombre compacto: primer nombre, segundo abreviado y apellidos completos. Ej. «gustavo e. ugarte canaza». */
+function profileShortName(fullName: string, email: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return email.split('@')[0] ?? 'Usuario';
+  if (parts.length === 1) return parts[0]!;
+  if (parts.length === 2) return `${parts[0]} ${parts[1]}`;
+  if (parts.length === 3) return `${parts[0]} ${parts[1]} ${parts[2]}`;
+  const segundoInicial = parts[1]![0]?.toLowerCase() ?? '';
+  const apellidos = parts.slice(2).join(' ');
+  return `${parts[0]} ${segundoInicial}. ${apellidos}`;
+}
+
+function roleBadgeTone(role: string): 'gold' | 'default' | 'success' {
+  if (role === 'docente' || role === 'admin') return 'gold';
+  return 'default';
+}
 
 export function Layout({ children }: Props) {
   const { profile, signOut } = useAuthContext();
@@ -50,17 +87,46 @@ export function Layout({ children }: Props) {
         ...(esEstudiante
           ? STUDENT_DRAWER_ITEMS.map(({ to, label, end, icon }) => ({ to, label, end, icon }))
           : []),
-        ...(esDocenteOAdmin
-          ? [
-              {
-                to: '/docente',
-                label: profile.role === 'docente' ? 'Inicio' : 'Panel docente',
-                end: true,
-              },
-            ]
+        ...(profile.role === 'docente'
+          ? DOCENTE_MAIN_NAV_ITEMS.map(({ to, label, end, icon, match }) => ({
+              to,
+              label,
+              end,
+              icon,
+              match,
+              section: 'main' as const,
+            }))
+          : esDocenteOAdmin && enDocente
+            ? DOCENTE_MAIN_NAV_ITEMS.map(({ to, label, end, icon, match }) => ({
+                to,
+                label: to === '/docente' ? 'Panel docente' : label,
+                end,
+                icon,
+                match,
+                section: 'main' as const,
+              }))
+            : esDocenteOAdmin
+              ? [
+                  {
+                    to: '/docente',
+                    label: 'Panel docente',
+                    end: true,
+                    icon: LayoutDashboard,
+                    section: 'main' as const,
+                  },
+                ]
+              : []),
+        ...(!esEstudiante
+          ? DOCENTE_ACCOUNT_NAV_ITEMS.filter(
+              (item) => item.id !== 'admin' || profile.role === 'admin'
+            ).map(({ to, label, end, icon }) => ({
+              to,
+              label,
+              end,
+              icon,
+              section: 'account' as const,
+            }))
           : []),
-        ...(!esEstudiante ? [{ to: '/perfil', label: 'Mi perfil' }] : []),
-        ...(profile.role === 'admin' ? [{ to: '/admin', label: 'Administración' }] : []),
       ]
     : [];
 
@@ -148,17 +214,15 @@ function LayoutMain({
   handleSignOut,
   homeTo,
 }: LayoutMainProps) {
-  const isStaff = profile && !esEstudiante;
-  const showMobileStaffMenu =
+  const hasDesktopSidebar = showStudentSidebar || showDocenteSidebar;
+  const showMobileMenu =
     profile &&
-    (showStudentSidebar || showDocenteSidebar || profile.role === 'admin');
-  const staffRoleLabel =
-    profile?.role === 'docente'
-      ? 'Docente'
-      : profile?.role === 'admin'
-        ? 'Administrador'
-        : profile?.role;
-  const staffDisplayName = profile?.full_name?.trim() || profile?.email || 'Usuario';
+    (hasDesktopSidebar || profile.role === 'admin' || profile.role === 'docente');
+  const roleLabel = profile ? (ROL_LABEL[profile.role] ?? profile.role) : '';
+  const displayName = profile?.full_name?.trim() || profile?.email || 'Usuario';
+  const headerName = profile
+    ? profileShortName(profile.full_name?.trim() || '', profile.email || '')
+    : 'Usuario';
   const todayShortLabel = new Date().toLocaleDateString('es', {
     weekday: 'short',
     day: 'numeric',
@@ -167,115 +231,69 @@ function LayoutMain({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 lg:h-full lg:overflow-hidden">
-        {/* Barra superior móvil / admin sin sidebar */}
         <header
           className={cn(
             'shrink-0 sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-atenas-mist-border shadow-soft pt-safe',
-            (showStudentSidebar || showDocenteSidebar) && 'lg:hidden'
+            hasDesktopSidebar && 'lg:hidden'
           )}
         >
-          <div
-            className={cn(
-              'page-container py-3 min-w-0',
-              esEstudiante && 'flex flex-col gap-2',
-              isStaff && 'flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-3'
-            )}
-          >
-            <div
-              className={cn(
-                'flex items-center gap-2 min-w-0 w-full',
-                esEstudiante && 'justify-between sm:justify-start sm:w-auto',
-                isStaff && 'justify-between lg:w-auto lg:shrink-0'
-              )}
-            >
-              {showMobileStaffMenu && (
+          {profile ? (
+            <div className="page-container py-2.5 flex items-center gap-2 min-w-0">
+              {showMobileMenu && (
                 <button
                   type="button"
-                  className="flex lg:hidden items-center justify-center min-h-touch min-w-touch rounded-xl text-atenas-ink hover:bg-atenas-mist shrink-0"
+                  className={cn(
+                    'flex items-center justify-center min-h-touch min-w-touch rounded-xl text-atenas-ink hover:bg-atenas-mist shrink-0',
+                    hasDesktopSidebar && 'lg:hidden'
+                  )}
                   aria-label="Abrir menú"
                   onClick={() => setDrawerOpen(true)}
                 >
                   <Menu className="w-6 h-6" />
                 </button>
               )}
+
+              <button
+                type="button"
+                className="flex items-center gap-2.5 min-w-0 flex-1 rounded-xl hover:bg-atenas-mist/70 active:bg-atenas-mist transition-colors py-1.5 px-1 -mx-1 text-left min-h-touch"
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Abrir menú de cuenta"
+              >
+                <div
+                  className={cn(
+                    'w-9 h-9 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 shadow-sm',
+                    esEstudiante
+                      ? 'bg-atenas-gold text-atenas-ink border-2 border-amber-300'
+                      : 'bg-atenas-sidebar text-white'
+                  )}
+                  aria-hidden
+                >
+                  {profileInitials(displayName)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <p className="text-sm font-semibold text-atenas-ink truncate leading-tight">
+                      {headerName}
+                    </p>
+                    <Badge tone={roleBadgeTone(profile.role)} className="text-[10px] py-0 px-1.5 shrink-0">
+                      {roleLabel}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-atenas-muted capitalize leading-tight truncate">
+                    {todayShortLabel}
+                  </p>
+                </div>
+              </button>
+
               <Link
                 to={homeTo}
-                className="flex items-center gap-2 min-h-touch shrink-0 rounded-lg hover:opacity-90 transition-opacity"
+                className="flex items-center justify-center min-h-touch min-w-touch rounded-xl hover:bg-atenas-mist shrink-0 transition-colors"
+                aria-label="Inicio ATENAS"
               >
-                <img src="/logo-athena.png" alt="" className="w-9 h-9 object-contain shrink-0 rounded-2xl" />
-                <span className="font-atenas font-bold text-atenas-ink text-lg tracking-wide">
-                  ATENAS
-                </span>
+                <img src="/logo-athena.png" alt="" className="w-8 h-8 object-contain rounded-xl" />
               </Link>
-              {profile && esEstudiante && (
-                <StudentMobileGamificationChip className="ml-auto sm:ml-0" />
-              )}
-              {isStaff && (
-                <p className="text-xs text-atenas-muted capitalize leading-tight shrink-0 text-right ml-auto pl-2 lg:hidden">
-                  {todayShortLabel}
-                </p>
-              )}
             </div>
-
-            {profile && !showStudentSidebar && !showDocenteSidebar && (
-              <nav className="hidden md:flex items-center gap-2 shrink-0" aria-label="Principal">
-                {profile.role === 'docente' && (
-                  <Link
-                    to="/docente"
-                    className="text-sm font-medium text-atenas-muted hover:text-atenas-ink px-3 py-2 rounded-xl"
-                  >
-                    Inicio
-                  </Link>
-                )}
-                <Link
-                  to="/perfil"
-                  className="text-sm font-medium text-atenas-muted hover:text-atenas-ink px-3 py-2 rounded-xl"
-                >
-                  Perfil
-                </Link>
-                {profile.role === 'admin' && (
-                  <Link
-                    to="/admin"
-                    className="text-sm font-medium text-atenas-muted hover:text-atenas-ink px-3 py-2 rounded-xl"
-                  >
-                    Admin
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="text-sm font-medium text-atenas-muted hover:text-red-700 px-3 py-2 rounded-xl"
-                >
-                  Salir
-                </button>
-              </nav>
-            )}
-            {profile && esEstudiante && (
-              <div className="flex items-center justify-between gap-2 min-w-0 sm:justify-end sm:shrink">
-                <p className="text-sm font-semibold text-atenas-ink truncate leading-tight min-w-0 flex-1 sm:flex-none">
-                  {profile.full_name ?? 'Explorador'}
-                </p>
-                <p className="text-xs text-atenas-muted capitalize leading-tight shrink-0 tabular-nums">
-                  {new Date().toLocaleDateString('es', {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-            )}
-            {isStaff && (
-              <div className="flex flex-col gap-0.5 min-w-0 w-full lg:hidden">
-                <p className="text-sm font-semibold text-atenas-ink truncate leading-tight">
-                  {staffDisplayName}
-                </p>
-                <p className="text-xs text-atenas-muted capitalize leading-tight">
-                  {staffRoleLabel}
-                </p>
-              </div>
-            )}
-          </div>
+          ) : null}
         </header>
 
         {profile && (

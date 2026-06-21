@@ -1,13 +1,8 @@
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FolderOpen, Users, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { cn } from './ui/cn';
 import { AppVersionFootnote } from './AppVersionFootnote';
-
-const ITEMS = [
-  { to: '/docente', label: 'Inicio', icon: LayoutDashboard, end: true },
-  { to: '/docente/contenidos', label: 'Contenidos', icon: FolderOpen, match: 'contenidos' as const },
-  { to: '/docente/progreso', label: 'Estudiantes', icon: Users, end: true },
-];
+import { DOCENTE_MAIN_NAV_ITEMS, isDocenteNavActive } from '../constants/docenteNav';
 
 type Props = {
   onSignOut: () => void;
@@ -19,16 +14,12 @@ function linkClass(isActive: boolean) {
     'sidebar-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors min-h-touch',
     isActive
       ? 'bg-white/20 text-white shadow-sm ring-1 ring-white/25 font-semibold'
-      : 'hover:bg-white/12 hover:text-white'
+      : 'hover:bg-white/12 hover:text-white text-white/90'
   );
 }
 
 export function DocenteSidebar({ onSignOut, className }: Props) {
   const location = useLocation();
-  const inContenidos =
-    location.pathname.includes('/docente/contenidos') ||
-    location.pathname.includes('/docente/unidades') ||
-    location.pathname.includes('/docente/temas');
 
   return (
     <aside
@@ -55,16 +46,11 @@ export function DocenteSidebar({ onSignOut, className }: Props) {
         </Link>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {ITEMS.map((item) => {
-          const isActive =
-            item.match === 'contenidos'
-              ? inContenidos
-              : item.end
-                ? location.pathname === item.to
-                : location.pathname.startsWith(item.to);
+      <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Panel docente">
+        {DOCENTE_MAIN_NAV_ITEMS.map((item) => {
+          const isActive = isDocenteNavActive(item, location.pathname);
           return (
-            <NavLink key={item.to} to={item.to} end={item.end} className={linkClass(isActive)}>
+            <NavLink key={item.id} to={item.to} end={item.end} className={linkClass(isActive)}>
               <item.icon className="w-5 h-5 shrink-0" aria-hidden />
               {item.label}
             </NavLink>
