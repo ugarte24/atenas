@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useMapRewards } from './useMapRewards';
@@ -13,6 +13,13 @@ export type MisionDiaria = {
   targetUrl: string;
   completada: boolean;
   xpOtorgada: boolean;
+};
+
+type RawDiarias = {
+  temasHoy: number;
+  actividadesHoy: number;
+  targetTemaUrl: string;
+  targetActividadUrl: string;
 };
 
 function inicioDiaLocal(): string {
@@ -31,13 +38,13 @@ export function useMisionesDiarias() {
   const { user, profile } = useAuthContext();
   const isStudent = profile?.role === 'estudiante';
   const { awardMission, completedDailyKeys } = useMapRewards(isStudent);
-  const [misiones, setMisiones] = useState<MisionDiaria[]>([]);
+  const [raw, setRaw] = useState<RawDiarias | null>(null);
   const [loading, setLoading] = useState(true);
   const awardedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user || !isStudent) {
-      setMisiones([]);
+      setRaw(null);
       setLoading(false);
       return;
     }
@@ -92,49 +99,57 @@ export function useMisionesDiarias() {
           .eq('publicada', true)
           .limit(1)
           .maybeSingle();
-        if (actPub) targetActividadUrl = `/actividades/${(actPub as { id: string }).id}`;
+        if (!cancel && actPub) targetActividadUrl = `/actividades/${(actPub as { id: string }).id}`;
       }
 
-      const defs: Omit<MisionDiaria, 'completada' | 'xpOtorgada'>[] = [
-        {
-          id: 'd1',
-          titulo: 'Estudia al menos 1 tema hoy',
-          progreso: temasHoy >= 1 ? 1 : 0,
-          total: 1,
-          xp: 50,
-          targetUrl: targetTemaUrl,
-        },
-        {
-          id: 'd2',
-          titulo: 'Completa una actividad',
-          progreso: actividadesHoy >= 1 ? 1 : 0,
-          total: 1,
-          xp: 30,
-          targetUrl: targetActividadUrl,
-        },
-      ];
+      if (cancel) return;
 
-      const next = defs.map((d) => {
-        const completada = d.progreso >= d.total;
-        const xpOtorgada = completedDailyKeys.has(d.id);
-        return { ...d, completada, xpOtorgada };
-      });
-
-      setMisiones(next);
+      setRaw({ temasHoy, actividadesHoy, targetTemaUrl, targetActividadUrl });
       setLoading(false);
-
-      for (const m of next) {
-        if (m.completada && !m.xpOtorgada && !awardedRef.current.has(m.id)) {
-          awardedRef.current.add(m.id);
-          void awardMission(m.id, m.xp);
-        }
-      }
     })();
 
     return () => {
       cancel = true;
     };
-  }, [user, isStudent, completedDailyKeys, awardMission]);
+  }, [user, isStudent]);
+
+  const misiones = useMemo((): MisionDiaria[] => {
+    if (!raw) return [];
+
+    const defs: Omit<MisionDiaria, 'completada' | 'xpOtorgada'>[] = [
+      {
+        id: 'd1',
+        titulo: 'Estudia al menos 1 tema hoy',
+        progreso: raw.temasHoy >= 1 ? 1 : 0,
+        total: 1,
+        xp: 50,
+        targetUrl: raw.targetTemaUrl,
+      },
+      {
+        id: 'd2',
+        titulo: 'Completa una actividad',
+        progreso: raw.actividadesHoy >= 1 ? 1 : 0,
+        total: 1,
+        xp: 30,
+        targetUrl: raw.targetActividadUrl,
+      },
+    ];
+
+    return defs.map((d) => {
+      const completada = d.progreso >= d.total;
+      const xpOtorgada = completedDailyKeys.has(d.id);
+      return { ...d, completada, xpOtorgada };
+    });
+  }, [raw, completedDailyKeys]);
+
+  useEffect(() => {
+    for (const m of misiones) {
+      if (m.completada && !m.xpOtorgada && !awardedRef.current.has(m.id)) {
+        awardedRef.current.add(m.id);
+        void awardMission(m.id, m.xp);
+      }
+    }
+  }, [misiones, awardMission]);
 
   return { misiones, loading };
 }

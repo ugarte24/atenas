@@ -48,7 +48,7 @@ export function Layout({ children }: Props) {
   const drawerLinks: DrawerLink[] = profile
     ? [
         ...(esEstudiante
-          ? STUDENT_DRAWER_ITEMS.map(({ to, label, end }) => ({ to, label, end }))
+          ? STUDENT_DRAWER_ITEMS.map(({ to, label, end, icon }) => ({ to, label, end, icon }))
           : []),
         ...(esDocenteOAdmin
           ? [
@@ -64,8 +64,15 @@ export function Layout({ children }: Props) {
       ]
     : [];
 
+  const hasDesktopSidebar = showStudentSidebar || showDocenteSidebar;
+
   return (
-    <div className="min-h-screen flex bg-atenas-page">
+    <div
+      className={cn(
+        'flex bg-atenas-page min-h-screen',
+        hasDesktopSidebar && 'lg:h-dvh lg:min-h-0 lg:overflow-hidden'
+      )}
+    >
       {showStudentSidebar && (
         <StudentSidebar onSignOut={handleSignOut} className="hidden lg:flex" />
       )}
@@ -73,7 +80,7 @@ export function Layout({ children }: Props) {
         <DocenteSidebar onSignOut={handleSignOut} className="hidden lg:flex" />
       )}
 
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen lg:min-h-0 lg:h-full lg:overflow-hidden">
         {esEstudiante ? (
           <MascotVisitorProvider>
             <LayoutMain
@@ -159,11 +166,11 @@ function LayoutMain({
   });
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0 lg:h-full lg:overflow-hidden">
         {/* Barra superior móvil / admin sin sidebar */}
         <header
           className={cn(
-            'sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-atenas-mist-border shadow-soft pt-safe',
+            'shrink-0 sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-atenas-mist-border shadow-soft pt-safe',
             (showStudentSidebar || showDocenteSidebar) && 'lg:hidden'
           )}
         >
@@ -277,13 +284,15 @@ function LayoutMain({
             onClose={() => setDrawerOpen(false)}
             links={drawerLinks}
             role={profile.role}
+            profileName={profile.full_name ?? undefined}
             onSignOut={handleSignOut}
           />
         )}
 
         <main
           className={cn(
-            'flex-1 page-container py-5 sm:py-8',
+            'flex-1 min-h-0 page-container py-5 sm:py-8',
+            'lg:overflow-y-auto lg:overscroll-y-contain',
             esEstudiante && 'pb-student-bottom-nav lg:pb-8',
             showDocenteSidebar && 'pb-24 lg:pb-8',
             enLeccion && esEstudiante && 'lesson-cream-bg max-w-none rounded-none'
@@ -291,6 +300,6 @@ function LayoutMain({
         >
           {children}
         </main>
-    </>
+    </div>
   );
 }

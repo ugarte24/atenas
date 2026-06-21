@@ -1,16 +1,29 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Lock,
+  CheckCircle2,
+  TreePine,
+  Compass,
+  ScrollText,
+  Trophy,
+  ChevronRight,
+  type LucideIcon,
+} from 'lucide-react';
 import { useLogrosUsuario } from '../hooks/useLogrosUsuario';
 import { useMisionesAlumno } from '../hooks/useMisiones';
-import { Lock, Check, TreePine, Compass, ScrollText, type LucideIcon } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Alert } from '../components/ui/Alert';
+import { Badge } from '../components/ui/Badge';
+import { ProgressBar } from '../components/ui/ProgressBar';
+import { Card } from '../components/ui/Card';
 import { cn } from '../components/ui/cn';
 
 type Filtro = 'todos' | 'desbloqueados' | 'bloqueados';
 
-type Badge = {
+type BadgeItem = {
   id: string;
   title: string;
   description: string;
@@ -20,14 +33,23 @@ type Badge = {
   progressLabel?: string;
 };
 
+function parseProgress(label?: string): { current: number; total: number } | null {
+  if (!label) return null;
+  const m = label.match(/(\d+)\s*\/\s*(\d+)/);
+  if (!m) return null;
+  const total = Number(m[2]);
+  if (total <= 0) return null;
+  return { current: Number(m[1]), total };
+}
+
 export default function Logros() {
   const { logros, loading, error } = useLogrosUsuario();
   const { misiones } = useMisionesAlumno();
   const [filtro, setFiltro] = useState<Filtro>('todos');
 
-  const badges = useMemo((): Badge[] => {
+  const badges = useMemo((): BadgeItem[] => {
     if (logros.length > 0) {
-        return logros.map((b) => ({
+      return logros.map((b) => ({
         id: b.id,
         title: b.title,
         description: b.description ?? '',
@@ -71,6 +93,13 @@ export default function Logros() {
     ];
   }, [logros, misiones]);
 
+  const stats = useMemo(() => {
+    const desbloqueados = badges.filter((b) => b.unlocked).length;
+    const total = badges.length;
+    const pct = total > 0 ? Math.round((desbloqueados / total) * 100) : 0;
+    return { desbloqueados, total, pct };
+  }, [badges]);
+
   const filtered = badges.filter((b) => {
     if (filtro === 'desbloqueados') return b.unlocked;
     if (filtro === 'bloqueados') return !b.unlocked;
@@ -84,17 +113,60 @@ export default function Logros() {
   ];
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <PageHeader title="Mis logros" description="Insignias que desbloqueas mientras aprendes." />
+    <div className="max-w-2xl mx-auto pb-2">
+      <PageHeader
+        title="Mis logros"
+        description="Insignias que desbloqueas mientras aprendes en el archipiélago."
+      />
 
-      <div className="flex rounded-xl border border-atenas-mist-border bg-white p-1 mb-6 shadow-card">
+      {!loading && !error && badges.length > 0 && (
+        <section
+          className="mb-6 rounded-3xl border border-violet-200/70 bg-gradient-to-br from-violet-50 via-white to-purple-50/40 p-5 shadow-card"
+          aria-label="Resumen de logros"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-md">
+              <Trophy className="w-7 h-7" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wide text-violet-800/80">
+                Colección de insignias
+              </p>
+              <p className="text-2xl font-bold text-atenas-ink tabular-nums mt-0.5">
+                {stats.desbloqueados}
+                <span className="text-base font-semibold text-atenas-muted">
+                  {' '}
+                  / {stats.total} desbloqueadas
+                </span>
+              </p>
+              <div className="mt-3">
+                <ProgressBar
+                  value={stats.pct}
+                  label="Progreso de la colección"
+                  showPercent
+                  size="sm"
+                  tone="gold"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div
+        className="flex overflow-x-auto scrollbar-nav-hide rounded-xl border border-atenas-mist-border bg-white p-1 mb-6 shadow-card gap-0.5"
+        role="tablist"
+        aria-label="Filtrar logros"
+      >
         {tabs.map(({ id, label }) => (
           <button
             key={id}
             type="button"
+            role="tab"
+            aria-selected={filtro === id}
             onClick={() => setFiltro(id)}
             className={cn(
-              'segment-tab',
+              'segment-tab shrink-0 px-3 sm:flex-1',
               filtro === id ? 'segment-tab--active' : 'segment-tab--inactive'
             )}
           >
@@ -104,46 +176,138 @@ export default function Logros() {
       </div>
 
       {loading ? (
-        <SkeletonLines lines={3} />
+        <SkeletonLines lines={4} />
       ) : error ? (
         <Alert tone="error">No se pudieron cargar los logros. Intenta recargar la página.</Alert>
       ) : filtered.length === 0 ? (
         <EmptyState
-          icon={<Lock className="w-8 h-8" />}
+          icon={<Trophy className="w-8 h-8" />}
           title={filtro === 'desbloqueados' ? 'Aún no tienes logros' : 'No hay logros en esta vista'}
           description={
             filtro === 'desbloqueados'
               ? 'Completa actividades y misiones para desbloquear insignias.'
               : 'Prueba otro filtro o sigue aprendiendo para ganar nuevas insignias.'
           }
+          action={
+            filtro !== 'todos' ? (
+              <button
+                type="button"
+                className="btn-secondary inline-flex text-sm"
+                onClick={() => setFiltro('todos')}
+              >
+                Ver todos
+              </button>
+            ) : (
+              <Link to="/unidades" className="btn-secondary inline-flex text-sm gap-1.5">
+                Ir a unidades
+                <ChevronRight className="w-4 h-4" aria-hidden />
+              </Link>
+            )
+          }
         />
       ) : (
-        <section className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {filtered.map((badge) => (
-            <article
-              key={badge.id}
-              className={cn(
-                'flex flex-col items-center rounded-full aspect-square max-w-[140px] mx-auto border-4 p-4 text-center',
-                badge.unlocked
-                  ? 'border-atenas-gold bg-gradient-to-b from-amber-50 to-white shadow-card'
-                  : 'border-atenas-mist-border bg-gray-100 opacity-75 grayscale'
-              )}
-            >
-              <div className="flex-1 flex items-center justify-center mb-1">
-                {badge.emoji ? (
-                  <span className="text-3xl" aria-hidden>{badge.emoji}</span>
-                ) : badge.Icon ? (
-                  <badge.Icon className="w-10 h-10 text-atenas-gold" aria-hidden />
-                ) : null}
-              </div>
-              <h2 className="text-[11px] font-bold text-atenas-ink leading-tight line-clamp-2">{badge.title}</h2>
-              {!badge.unlocked && badge.progressLabel && (
-                <p className="text-[9px] text-atenas-muted mt-1 leading-tight">{badge.progressLabel}</p>
-              )}
-              {!badge.unlocked && <Lock className="w-4 h-4 text-atenas-muted mt-1" aria-hidden />}
-              {badge.unlocked && <Check className="w-4 h-4 text-atenas-success mt-1" aria-hidden />}
-            </article>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-2">
+          {filtered.map((badge) => {
+            const progress = parseProgress(badge.progressLabel);
+            const progressPct = progress
+              ? Math.min(100, Math.round((progress.current / progress.total) * 100))
+              : null;
+
+            return (
+              <Card
+                key={badge.id}
+                padding="none"
+                className={cn(
+                  'overflow-hidden border shadow-card transition-shadow hover:shadow-lg',
+                  badge.unlocked
+                    ? 'border-amber-300/80 ring-1 ring-amber-200/50'
+                    : 'border-atenas-mist-border'
+                )}
+              >
+                <div className="p-4 sm:p-5">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        'flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl shadow-sm',
+                        badge.unlocked
+                          ? 'bg-gradient-to-br from-atenas-gold to-amber-500 ring-2 ring-amber-300/50'
+                          : 'bg-atenas-mist grayscale opacity-80'
+                      )}
+                      aria-hidden
+                    >
+                      {badge.emoji ? (
+                        <span>{badge.emoji}</span>
+                      ) : badge.Icon ? (
+                        <badge.Icon className="w-7 h-7 text-atenas-ink" />
+                      ) : (
+                        <Trophy className="w-7 h-7 text-atenas-muted" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        {badge.unlocked ? (
+                          <Badge tone="success" className="text-[10px]">
+                            Desbloqueada
+                          </Badge>
+                        ) : (
+                          <Badge tone="muted" className="text-[10px]">
+                            Bloqueada
+                          </Badge>
+                        )}
+                      </div>
+                      <h2 className="font-bold text-atenas-ink leading-snug">{badge.title}</h2>
+                      {badge.description && (
+                        <p className="text-xs text-atenas-muted mt-1 leading-relaxed line-clamp-2">
+                          {badge.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {badge.unlocked ? (
+                      <CheckCircle2 className="w-5 h-5 shrink-0 text-atenas-success mt-0.5" aria-hidden />
+                    ) : (
+                      <Lock className="w-5 h-5 shrink-0 text-atenas-muted mt-0.5" aria-hidden />
+                    )}
+                  </div>
+
+                  {!badge.unlocked && badge.progressLabel && (
+                    <div className="mt-4 pt-3 border-t border-atenas-mist-border/80">
+                      {progressPct != null ? (
+                        <ProgressBar
+                          value={progressPct}
+                          label={badge.progressLabel}
+                          showPercent
+                          size="sm"
+                          tone="gold"
+                        />
+                      ) : (
+                        <p className="text-xs text-atenas-muted font-medium">{badge.progressLabel}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {!loading && !error && stats.desbloqueados < stats.total && (
+        <section className="mt-6 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card">
+          <p className="text-xs font-bold uppercase tracking-wide text-atenas-muted">
+            Sigue coleccionando
+          </p>
+          <p className="text-sm text-atenas-muted mt-1">
+            Completa misiones y actividades para desbloquear más insignias.
+          </p>
+          <Link
+            to="/misiones"
+            className="mt-3 btn-success inline-flex w-full sm:w-auto items-center justify-center gap-2 min-h-touch font-bold text-sm"
+          >
+            Ver misiones
+            <ChevronRight className="w-4 h-4" aria-hidden />
+          </Link>
         </section>
       )}
     </div>

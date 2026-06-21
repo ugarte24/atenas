@@ -33,7 +33,7 @@ export function DocenteSidebar({ onSignOut, className }: Props) {
   return (
     <aside
       className={cn(
-        'atenas-sidebar-panel w-[15.5rem] shrink-0 flex flex-col min-h-screen sticky top-0',
+        'atenas-sidebar-panel w-[15.5rem] shrink-0 flex flex-col h-full lg:h-dvh lg:max-h-dvh',
         className
       )}
       aria-label="Panel docente"

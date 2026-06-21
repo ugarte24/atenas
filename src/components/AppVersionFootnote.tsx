@@ -13,13 +13,18 @@ export function AppVersionFootnote({ className, variant = 'on-dark' }: Props) {
   return (
     <p
       className={cn(
-        'text-[10px] text-center px-3 pt-2 leading-snug',
-        variant === 'on-dark' ? 'sidebar-muted' : 'text-atenas-muted',
+        'text-[10px] text-center px-3 pt-2 pb-1 leading-snug',
+        variant === 'on-dark'
+          ? 'text-white/70'
+          : 'text-atenas-muted',
         className
       )}
       aria-label={`Versión ${label}`}
     >
-      ATENAS {label}
+      <span className={cn(variant === 'on-dark' && 'text-atenas-gold/90 font-semibold')}>
+        ATENAS
+      </span>{' '}
+      {label}
     </p>
   );
 }

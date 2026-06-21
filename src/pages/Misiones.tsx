@@ -137,7 +137,7 @@ export default function Misiones() {
 
       {tab === 'diarias' && (
         <div className="space-y-4">
-          {loadingDiarias ? (
+          {loadingDiarias && diarias.length === 0 ? (
             <SkeletonLines lines={2} />
           ) : diarias.length === 0 ? (
             <EmptyState
