@@ -52,4 +52,7 @@ export const STUDENT_SIDEBAR_ITEMS = STUDENT_NAV_ITEMS.filter(
 
 export const STUDENT_DRAWER_ITEMS = STUDENT_SIDEBAR_ITEMS;
 
-export const STUDENT_HOME_QUICK_LINKS = STUDENT_NAV_ITEMS.filter((i) => i.homeQuickLink);
+/** Atajos en Home: solo rutas que no están en la bottom nav móvil. */
+export const STUDENT_HOME_QUICK_LINKS = STUDENT_NAV_ITEMS.filter(
+  (i) => i.homeQuickLink && !i.mobilePrimary
+);

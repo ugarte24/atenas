@@ -16,7 +16,7 @@ const MUNDOS: MundoIsla[] = [
   },
   {
     id: 2,
-    label: 'Isla 2 · Organización',
+    label: 'Isla 2 · Territorio',
     shortLabel: 'Isla 2',
     subtitle: 'Organización y territorio',
     gradient: 'from-sky-500/90 to-blue-600/90',
