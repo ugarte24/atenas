@@ -32,6 +32,14 @@ function scrollMapToElement(
   align: 'start' | 'center',
   smooth: boolean
 ) {
+  const canScrollInside = container.scrollHeight > container.clientHeight + 2;
+  if (!canScrollInside) {
+    el.scrollIntoView({
+      behavior: smooth ? 'smooth' : 'auto',
+      block: align === 'start' ? 'start' : 'center',
+    });
+    return;
+  }
   const cRect = container.getBoundingClientRect();
   const eRect = el.getBoundingClientRect();
   const top = eRect.top - cRect.top + container.scrollTop;

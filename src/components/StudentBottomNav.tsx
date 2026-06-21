@@ -10,7 +10,7 @@ export function StudentBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-20 lg:hidden w-full"
+      className="fixed bottom-0 inset-x-0 z-50 lg:hidden w-full"
       aria-label="Navegación principal"
     >
       <div className="bg-[var(--atenas-sidebar)] border-t border-white/15 shadow-[0_-4px_24px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom,0px)]">

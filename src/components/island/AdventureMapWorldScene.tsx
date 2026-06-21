@@ -113,7 +113,7 @@ export function AdventureMapWorldScene({
 
       {mascotNode && (
         <div
-          className="absolute z-[25] pointer-events-none"
+          className="absolute z-[25] pointer-events-none hidden lg:block"
           style={nodeStyleInScene(
             nodeLocalPosition(mascotNode, zone).x,
             nodeLocalPosition(mascotNode, zone).y - 48,

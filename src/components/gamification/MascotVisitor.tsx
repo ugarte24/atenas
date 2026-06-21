@@ -21,8 +21,8 @@ export function MascotVisitor() {
           role="status"
           aria-live="polite"
           className={cn(
-            'fixed z-40 max-w-[min(20rem,calc(100vw-2rem))]',
-            'bottom-[calc(6.5rem+env(safe-area-inset-bottom,0px))] right-4',
+            'fixed z-[60] max-w-[min(20rem,calc(100vw-2rem))]',
+            'bottom-[calc(6.75rem+env(safe-area-inset-bottom,0px))] right-4',
             'lg:bottom-6 lg:right-6'
           )}
           initial={reduceMotion ? false : { opacity: 0, y: 24 }}
