@@ -4,7 +4,7 @@ import type { WorldId } from '../../../lib/adventureMapTypes';
 import { ADVENTURE_MAP_ASSETS } from '../../../lib/adventureMapAssets';
 import { getPaintedIslandConfig } from '../../../lib/paintedWorldLayout';
 import { useMotionSafe } from '../../../hooks/useMotionSafe';
-import { AdventureMapIslandIllustration } from '../AdventureMapIslandIllustration';
+import { AdventureMapWorldLayoutFallback } from '../AdventureMapWorldLayoutFallback';
 import { cn } from '../../ui/cn';
 
 type Props = {
@@ -39,7 +39,7 @@ export function AdventureMapPaintedIsland({ worldId, className }: Props) {
           )}
           style={fullBleed ? undefined : { width: `${(config?.widthPct ?? 1) * 100}%` }}
         >
-          <AdventureMapIslandIllustration worldId={worldId} className="h-full w-full" />
+          <AdventureMapWorldLayoutFallback worldId={worldId} className="h-full w-full" />
         </div>
       </div>
     );

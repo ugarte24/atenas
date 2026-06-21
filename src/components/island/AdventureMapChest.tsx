@@ -10,9 +10,17 @@ type Props = {
   opening?: boolean;
   onOpenComplete?: () => void;
   onSelect: () => void;
+  minimalOverlay?: boolean;
 };
 
-export function AdventureMapChest({ node, selected, opening, onOpenComplete, onSelect }: Props) {
+export function AdventureMapChest({
+  node,
+  selected,
+  opening,
+  onOpenComplete,
+  onSelect,
+  minimalOverlay = false,
+}: Props) {
   const { reduceMotion } = useMotionSafe();
   const locked = node.status === 'locked';
   const opened = node.status === 'completed';
@@ -26,9 +34,10 @@ export function AdventureMapChest({ node, selected, opening, onOpenComplete, onS
       aria-label={opened ? 'Cofre abierto' : locked ? 'Cofre bloqueado' : 'Cofre disponible'}
       aria-pressed={selected}
       className={cn(
-        'relative z-30 flex flex-col items-center -translate-x-1/2 -translate-y-1/2',
+        'relative z-30 flex flex-col items-center',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-xl',
-        locked && 'cursor-not-allowed opacity-75'
+        locked && 'cursor-not-allowed',
+        minimalOverlay && locked && 'opacity-75'
       )}
       animate={
         reduceMotion || locked || opened || opening
@@ -55,12 +64,17 @@ export function AdventureMapChest({ node, selected, opening, onOpenComplete, onS
         closed={!opened && !opening}
         playOpen={opening}
         onOpenComplete={onOpenComplete}
-        className={cn(selected && 'ring-2 ring-amber-300 rounded-lg')}
+        className={cn(
+          selected && 'ring-2 ring-amber-300 rounded-lg',
+          minimalOverlay && 'scale-75'
+        )}
       />
 
-      <span className="mt-0.5 text-[9px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] uppercase tracking-wide">
-        {opened ? 'Abierto' : locked ? 'Bloqueado' : opening ? 'Abriendo…' : 'Cofre'}
-      </span>
+      {!(minimalOverlay && locked) && (
+        <span className="mt-0.5 text-[9px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] uppercase tracking-wide">
+          {opened ? 'Abierto' : locked ? 'Bloqueado' : opening ? 'Abriendo…' : 'Cofre'}
+        </span>
+      )}
     </motion.button>
   );
 }

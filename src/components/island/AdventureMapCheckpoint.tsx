@@ -8,9 +8,15 @@ type Props = {
   node: AdventureMapNode;
   selected: boolean;
   onSelect: () => void;
+  minimalOverlay?: boolean;
 };
 
-export function AdventureMapCheckpoint({ node, selected, onSelect }: Props) {
+export function AdventureMapCheckpoint({
+  node,
+  selected,
+  onSelect,
+  minimalOverlay = false,
+}: Props) {
   const { reduceMotion } = useMotionSafe();
   const locked = node.status === 'locked';
   const done = node.status === 'completed';
@@ -20,11 +26,12 @@ export function AdventureMapCheckpoint({ node, selected, onSelect }: Props) {
       type="button"
       data-node-id={node.id}
       onClick={onSelect}
-      aria-label={locked ? 'Checkpoint bloqueado' : done ? 'Checkpoint superado' : 'Checkpoint disponible'}
+      aria-label={locked ? 'Portal bloqueado' : done ? 'Portal superado' : 'Portal disponible'}
       aria-pressed={selected}
       className={cn(
-        'relative z-30 flex flex-col items-center -translate-x-1/2 -translate-y-1/2',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 rounded-xl'
+        'relative z-30 flex flex-col items-center',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 rounded-xl',
+        minimalOverlay && locked && 'opacity-80'
       )}
       whileTap={{ scale: 0.94 }}
       animate={reduceMotion || locked ? undefined : { scale: done ? 1 : [1, 1.03, 1] }}
@@ -43,16 +50,19 @@ export function AdventureMapCheckpoint({ node, selected, onSelect }: Props) {
       <svg
         viewBox="-36 -32 72 80"
         className={cn(
-          'w-[4.5rem] h-[5rem] sm:w-20 sm:h-[5.5rem] drop-shadow-xl',
+          'drop-shadow-xl',
+          minimalOverlay ? 'w-11 h-12 sm:w-12 sm:h-14' : 'w-[4.5rem] h-[5rem] sm:w-20 sm:h-[5.5rem]',
           selected && 'ring-2 ring-violet-200 rounded-lg'
         )}
       >
         <IsometricPortal locked={locked} />
       </svg>
 
-      <span className="mt-0.5 text-[9px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] uppercase tracking-wide">
-        {locked ? 'Portal' : done ? 'Superado' : 'Portal'}
-      </span>
+      {!(minimalOverlay && locked) && (
+        <span className="mt-0.5 text-[9px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] uppercase tracking-wide">
+          {done ? 'Superado' : 'Portal'}
+        </span>
+      )}
     </motion.button>
   );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, Lock, Circle, CheckCircle2 } from 'lucide-react';
+import { Star, Lock, Circle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Unidad } from '../../types';
 import type { UnitAdventureProgress } from '../../lib/adventureMapTypes';
 import type { AdventureMapNode } from '../../lib/adventureMapTypes';
@@ -14,13 +14,18 @@ import {
   totalStars,
   firstAvailableNodeId,
 } from '../../lib/adventureMapState';
+import { addAdventureBonusXp, CHEST_XP_REWARD } from '../../lib/adventureMapRewards';
 import { useMotionSafe } from '../../hooks/useMotionSafe';
 import { MascotLottie } from '../MascotLottie';
 import { AdventureMapCanvas } from './AdventureMapCanvas';
 import { AdventureMapWorldScene } from './AdventureMapWorldScene';
+import { AdventureMapWorldBridge } from './AdventureMapWorldBridge';
 import { AdventureMapNodeSheet } from './AdventureMapNodeSheet';
 import { AdventureMapChestModal } from './AdventureMapChestModal';
 import { AdventureMapCompletionBurst } from './AdventureMapCompletionBurst';
+import { cn } from '../ui/cn';
+
+const MAP_SCROLL_KEY = 'atenas-map-initial-scroll-done';
 
 type Props = {
   unidades: Unidad[];
@@ -36,9 +41,11 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
   const [openedChestIds, setOpenedChestIds] = useState<Set<string>>(() => getOpenedChestIds());
   const [selectedNode, setSelectedNode] = useState<AdventureMapNode | null>(null);
   const [chestModalOpen, setChestModalOpen] = useState(false);
+  const [chestRewardXp, setChestRewardXp] = useState(CHEST_XP_REWARD);
   const [celebrateNodeId, setCelebrateNodeId] = useState<string | null>(null);
   const [celebrateBurst, setCelebrateBurst] = useState(false);
   const [openingChestId, setOpeningChestId] = useState<string | null>(null);
+  const [legendOpen, setLegendOpen] = useState(false);
   const pendingChestRef = useRef<string | null>(null);
 
   const previewAllOpen = !showProgress;
@@ -81,12 +88,14 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
   }, [progressByUnit, unidades, nodes, showProgress]);
 
   useEffect(() => {
-    if (reduceMotion || !canvasRef.current) return;
+    if (reduceMotion || !canvasRef.current || !showProgress) return;
+    if (sessionStorage.getItem(MAP_SCROLL_KEY) === '1') return;
     const id = firstAvailableNodeId(nodes);
     if (!id) return;
     const el = canvasRef.current.querySelector(`[data-node-id="${id}"]`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [nodes, reduceMotion]);
+    sessionStorage.setItem(MAP_SCROLL_KEY, '1');
+  }, [nodes, reduceMotion, showProgress]);
 
   const handleSelectNode = useCallback((node: AdventureMapNode) => {
     setSelectedNode(node);
@@ -104,6 +113,8 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
     const chestId = pendingChestRef.current;
     if (!chestId) return;
     markChestOpened(chestId);
+    addAdventureBonusXp(CHEST_XP_REWARD);
+    setChestRewardXp(CHEST_XP_REWARD);
     setOpenedChestIds((prev) => new Set([...prev, chestId]));
     pendingChestRef.current = null;
     setOpeningChestId(null);
@@ -130,7 +141,24 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
         </div>
       </div>
 
-      <ul className="flex flex-wrap gap-3 mb-3 text-[10px] font-semibold text-atenas-muted">
+      <div className="mb-3 sm:hidden">
+        <button
+          type="button"
+          onClick={() => setLegendOpen((v) => !v)}
+          className="flex w-full items-center justify-between rounded-xl border border-atenas-mist-border bg-white px-3 py-2 text-xs font-semibold text-atenas-muted"
+          aria-expanded={legendOpen}
+        >
+          Leyenda del mapa
+          {legendOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+      </div>
+
+      <ul
+        className={cn(
+          'flex flex-wrap gap-3 mb-3 text-[10px] font-semibold text-atenas-muted',
+          !legendOpen && 'hidden sm:flex'
+        )}
+      >
         <li className="flex items-center gap-1">
           <Lock className="w-3 h-3" /> Bloqueado
         </li>
@@ -151,18 +179,20 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
         transition={{ duration: 0.4 }}
       >
         <AdventureMapCanvas canvasRef={canvasRef}>
-          {ADVENTURE_WORLD_ZONES.map((zone) => (
-            <AdventureMapWorldScene
-              key={zone.worldId}
-              zone={zone}
-              nodes={nodesByWorld[zone.worldId]}
-              selectedId={selectedNode?.id ?? null}
-              celebrateNodeId={celebrateNodeId}
-              mascotNode={activeNode?.worldId === zone.worldId ? activeNode : null}
-              openingChestId={openingChestId}
-              onChestOpenComplete={handleChestAnimationComplete}
-              onSelectNode={handleSelectNode}
-            />
+          {ADVENTURE_WORLD_ZONES.map((zone, index) => (
+            <div key={zone.worldId} className="contents">
+              {index > 0 && <AdventureMapWorldBridge fromWorldId={index as 1 | 2} />}
+              <AdventureMapWorldScene
+                zone={zone}
+                nodes={nodesByWorld[zone.worldId]}
+                selectedId={selectedNode?.id ?? null}
+                celebrateNodeId={celebrateNodeId}
+                mascotNode={activeNode?.worldId === zone.worldId ? activeNode : null}
+                openingChestId={openingChestId}
+                onChestOpenComplete={handleChestAnimationComplete}
+                onSelectNode={handleSelectNode}
+              />
+            </div>
           ))}
           {celebrateBurst && (
             <AdventureMapCompletionBurst
@@ -182,6 +212,7 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
 
       <AdventureMapChestModal
         open={chestModalOpen}
+        rewardLabel={`+${chestRewardXp} XP de exploración`}
         onClose={() => setChestModalOpen(false)}
       />
     </div>

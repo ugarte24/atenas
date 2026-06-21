@@ -1,105 +1,73 @@
 import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
-import { Star, BookOpen, Flame, Lock, Check, Play, MapPin, Sparkles } from 'lucide-react';
+import {
+  Star,
+  BookOpen,
+  Flame,
+  MapPin,
+  ChevronRight,
+  Target,
+  AlertTriangle,
+} from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
-import { useMisionesAlumno, type Mision } from '../hooks/useMisiones';
+import { useMisionesAlumno } from '../hooks/useMisiones';
+import { useMisionesDiarias } from '../hooks/useMisionesDiarias';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
+import { useEstudianteDashboard } from '../hooks/useEstudianteDashboard';
+import { useUnidades } from '../hooks/useUnidades';
+import { useAdventureMapProgress } from '../hooks/useAdventureMapProgress';
 import { nivelDesdeXp } from '../lib/gamificacion';
-import { StatCard } from '../components/ui/StatCard';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { ActivityCalendar } from '../components/calendar/ActivityCalendar';
 import { cn } from '../components/ui/cn';
 import { STUDENT_HOME_QUICK_LINKS } from '../constants/studentNav';
-import { Badge } from '../components/ui/Badge';
+import { Alert } from '../components/ui/Alert';
 
-type LevelStatus = 'locked' | 'unlocked' | 'completed';
-
-type Level = {
-  id: number;
-  title: string;
-  worldLabel: string;
-  lessonsLabel: string;
-  status: LevelStatus;
-  progress: number;
-};
-
-const BASE_LEVELS: Omit<Level, 'status' | 'progress' | 'lessonsLabel'>[] = [
-  { id: 1, title: 'Principios de convivencia del Abya Yala', worldLabel: 'Isla 1 · Convivencia' },
-  { id: 2, title: 'Organización política y social del Abya Yala', worldLabel: 'Isla 2 · Organización' },
-  { id: 3, title: 'Invasión europea al Abya Yala', worldLabel: 'Isla 3 · Invasión europea' },
-];
-
-const ISLAND_COLORS = [
-  'from-emerald-400 to-teal-600',
-  'from-sky-400 to-blue-600',
-  'from-amber-400 to-orange-500',
-];
-
-function formatLeccionesLabel(totalPasos: number): string {
-  if (totalPasos === 0) return 'Sin temas publicados';
-  if (totalPasos === 1) return '1 lección';
-  return `${totalPasos} lecciones`;
-}
-
-function buildWorldLevels(
-  bases: typeof BASE_LEVELS,
-  misionesPorMundo: (Mision | undefined)[]
-): Level[] {
-  let previousWorldComplete = true;
-
-  return bases.map((base, i) => {
-    const m = misionesPorMundo[i];
-    const total = m?.totalPasos ?? 0;
-    const done = m?.pasosCompletados ?? 0;
-    const lessonsLabel = formatLeccionesLabel(total);
-
-    if (i > 0 && !previousWorldComplete) {
-      return { ...base, lessonsLabel, status: 'locked' as LevelStatus, progress: 0 };
+function findNextTema(
+  unidades: ReturnType<typeof useEstudianteDashboard>['unidades']
+) {
+  for (const u of unidades) {
+    const tema = u.temas.find((t) => t.totalItems > 0 && t.porcentaje < 100);
+    if (tema) {
+      return {
+        unidadId: u.unidadId,
+        unidadTitulo: u.titulo,
+        temaId: tema.temaId,
+        temaTitulo: tema.titulo,
+      };
     }
-    if (!m || total === 0) {
-      const status: LevelStatus = i === 0 ? 'unlocked' : 'locked';
-      previousWorldComplete = false;
-      return { ...base, lessonsLabel, status, progress: 0 };
-    }
-    const isComplete = done >= total;
-    const progress = isComplete ? 100 : Math.min(100, Math.round((done / total) * 100));
-    const status: LevelStatus = isComplete ? 'completed' : 'unlocked';
-    previousWorldComplete = isComplete;
-    return { ...base, lessonsLabel, status, progress };
-  });
+  }
+  return null;
 }
 
 export default function Home() {
-  const { profile } = useAuthContext();
+  const { profile, user } = useAuthContext();
+  const { unidades } = useUnidades();
   const { misiones } = useMisionesAlumno();
+  const { misiones: diarias, loading: loadingDiarias } = useMisionesDiarias();
   const { puntos, racha, porcentajeGlobal, loading: loadingGam } = useGamificacionEstudiante();
+  const dashboard = useEstudianteDashboard(profile?.role === 'estudiante');
+  const mapNav = useAdventureMapProgress(unidades, user?.id, profile?.role === 'estudiante');
 
   const isStudent = profile?.role === 'estudiante';
   const nivel = useMemo(() => nivelDesdeXp(puntos), [puntos]);
 
-  const misionesTresMundos = useMemo(() => {
-    const sorted = [...misiones].sort((a, b) => a.orden - b.orden);
-    return [0, 1, 2].map((i) => sorted[i]);
-  }, [misiones]);
+  const nextTema = useMemo(() => findNextTema(dashboard.unidades), [dashboard.unidades]);
 
-  const leccionesCard = useMemo(() => {
-    const valid = misionesTresMundos.filter((m): m is Mision => m != null);
-    return {
-      tot: valid.reduce((s, m) => s + m.totalPasos, 0),
-      done: valid.reduce((s, m) => s + m.pasosCompletados, 0),
-    };
-  }, [misionesTresMundos]);
-
-  const levels = useMemo(
-    () => buildWorldLevels(BASE_LEVELS, misionesTresMundos),
-    [misionesTresMundos]
+  const diariasPendientes = useMemo(
+    () => diarias.filter((d) => d.total > 0 && d.progreso < d.total).length,
+    [diarias]
   );
 
   if (!isStudent) return null;
 
+  const continueHref = nextTema
+    ? `/temas/${nextTema.temaId}`
+    : mapNav.nextUnitId
+      ? `/unidades/${mapNav.nextUnitId}`
+      : '/unidades';
+
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Barra superior: nivel + XP */}
       <div className="flex flex-wrap items-center justify-end gap-3 mb-5">
         <div className="flex items-center gap-2">
           <div className="atenas-sidebar-panel flex items-center gap-2 rounded-2xl pl-2 pr-4 py-1.5 shadow-soft">
@@ -120,159 +88,138 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Stats */}
-      <section className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard
-          label="Progreso"
-          value={loadingGam ? '–' : `${porcentajeGlobal}%`}
-          icon={<Sparkles className="w-5 h-5 text-atenas-blue" />}
-        />
-        <StatCard
-          label="Lecciones"
-          value={leccionesCard.tot > 0 ? `${leccionesCard.done}/${leccionesCard.tot}` : '–'}
-          icon={<BookOpen className="w-5 h-5 text-sky-600" />}
-        />
-        <StatCard
-          label="Racha"
-          value={loadingGam ? '–' : `${racha} d`}
-          icon={<Flame className="w-5 h-5 text-orange-500" />}
-        />
-        <StatCard
-          label="Mundos"
-          value={`${levels.filter((l) => l.status === 'completed').length}/3`}
-          icon={<MapPin className="w-5 h-5 text-emerald-600" />}
-        />
+      {dashboard.rachaEnRiesgo && (
+        <Alert tone="warning" className="mb-5 flex items-start gap-2">
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" aria-hidden />
+          <div>
+            <p className="font-semibold text-sm">¡Tu racha está en riesgo!</p>
+            <p className="text-sm mt-0.5">
+              Llevas {dashboard.racha} días seguidos. Completa una actividad hoy para mantenerla.
+            </p>
+          </div>
+        </Alert>
+      )}
+
+      <section className="mb-6 rounded-3xl border border-atenas-mist-border bg-white p-5 shadow-card">
+        <p className="text-xs font-bold uppercase tracking-wide text-atenas-muted">Continuar</p>
+        <h2 className="text-lg font-bold text-atenas-ink mt-1 leading-snug">
+          {nextTema
+            ? nextTema.temaTitulo
+            : mapNav.nextUnit
+              ? mapNav.nextUnit.title
+              : 'Explora el archipiélago'}
+        </h2>
+        {nextTema && (
+          <p className="text-sm text-atenas-muted mt-1">{nextTema.unidadTitulo}</p>
+        )}
+        <div className="mt-4 flex flex-col sm:flex-row gap-3">
+          <Link to={continueHref} className="btn-success inline-flex items-center justify-center gap-2 min-h-touch font-bold flex-1">
+            {nextTema ? 'Seguir aprendiendo' : 'Ir al mapa'}
+            <ChevronRight className="w-5 h-5" aria-hidden />
+          </Link>
+          <Link
+            to="/unidades"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-atenas-mist-border px-4 py-3 text-sm font-semibold text-atenas-ink hover:bg-atenas-mist min-h-touch"
+          >
+            <MapPin className="w-4 h-4" aria-hidden />
+            Mapa del Abya Yala
+          </Link>
+        </div>
+      </section>
+
+      <section className="mb-6 grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card">
+          <p className="text-xs font-semibold text-atenas-muted flex items-center gap-1">
+            <Flame className="w-4 h-4 text-orange-500" aria-hidden /> Racha
+          </p>
+          <p className="text-2xl font-bold text-atenas-ink mt-1">{loadingGam ? '–' : `${racha} d`}</p>
+        </div>
+        <div className="rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card">
+          <p className="text-xs font-semibold text-atenas-muted flex items-center gap-1">
+            <BookOpen className="w-4 h-4 text-sky-600" aria-hidden /> Progreso
+          </p>
+          <p className="text-2xl font-bold text-atenas-ink mt-1">
+            {loadingGam ? '–' : `${porcentajeGlobal}%`}
+          </p>
+        </div>
       </section>
 
       <div className="mb-6">
-        <ProgressBar value={porcentajeGlobal} label="Progreso general" showPercent size="lg" tone="success" />
+        <ProgressBar value={porcentajeGlobal} label="Progreso general" showPercent size="md" tone="success" />
       </div>
+
+      {!loadingDiarias && diarias.length > 0 && (
+        <section className="mb-6 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <h3 className="text-sm font-bold text-atenas-ink flex items-center gap-2">
+              <Target className="w-4 h-4" aria-hidden />
+              Misiones diarias
+            </h3>
+            <Link to="/misiones" className="text-xs font-semibold text-atenas-ink underline underline-offset-2">
+              Ver todas
+            </Link>
+          </div>
+          {diariasPendientes > 0 ? (
+            <p className="text-sm text-atenas-muted">
+              Tienes {diariasPendientes} objetivo{diariasPendientes === 1 ? '' : 's'} pendiente
+              {diariasPendientes === 1 ? '' : 's'} hoy.
+            </p>
+          ) : (
+            <p className="text-sm text-emerald-700 font-medium">¡Objetivos diarios al día!</p>
+          )}
+        </section>
+      )}
 
       <section className="mb-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {STUDENT_HOME_QUICK_LINKS.map(({ to, label, icon: Icon, homeQuickLinkColor, homeQuickLinkLabel, comingSoon }) => (
-          <Link
-            key={to}
-            to={to}
-            className={cn(
-              'relative flex flex-col items-center gap-2 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card card-hover min-h-[100px] justify-center text-center',
-              comingSoon && 'opacity-90'
-            )}
-          >
-            {comingSoon && (
-              <Badge tone="muted" className="absolute top-2 right-2 text-[9px] px-1.5 py-0">
-                Próximamente
-              </Badge>
-            )}
-            <span className={cn('flex h-12 w-12 items-center justify-center rounded-xl text-white bg-gradient-to-br shadow-md', homeQuickLinkColor)}>
-              <Icon className="w-6 h-6" aria-hidden />
-            </span>
-            <span className="text-xs font-bold text-atenas-ink leading-tight">{homeQuickLinkLabel ?? label}</span>
-          </Link>
-        ))}
+        {STUDENT_HOME_QUICK_LINKS.filter((l) => l.to !== '/unidades').map(
+          ({ to, label, icon: Icon, homeQuickLinkColor, homeQuickLinkLabel, comingSoon }) => (
+            <Link
+              key={to}
+              to={to}
+              className={cn(
+                'relative flex flex-col items-center gap-2 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card card-hover min-h-[100px] justify-center text-center',
+                comingSoon && 'opacity-90'
+              )}
+            >
+              <span
+                className={cn(
+                  'flex h-12 w-12 items-center justify-center rounded-xl text-white bg-gradient-to-br shadow-md',
+                  homeQuickLinkColor
+                )}
+              >
+                <Icon className="w-6 h-6" aria-hidden />
+              </span>
+              <span className="text-xs font-bold text-atenas-ink leading-tight">
+                {homeQuickLinkLabel ?? label}
+              </span>
+            </Link>
+          )
+        )}
       </section>
 
-      <div className="mb-8">
-        <ActivityCalendar />
-      </div>
-
-      {/* Mapa de islas */}
       <section
-        aria-label="Mapa de niveles Abya Yala"
-        className="relative rounded-3xl overflow-hidden border border-sky-200/60 shadow-elevated bg-gradient-to-b from-sky-100 via-cyan-50 to-emerald-50 p-4 sm:p-6"
+        aria-label="Acceso al mapa de aventura"
+        className="relative rounded-3xl overflow-hidden border border-sky-200/60 shadow-elevated bg-gradient-to-br from-sky-500 via-cyan-500 to-emerald-500 p-6 text-white"
       >
-        <div
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          aria-hidden
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 20% 30%, rgba(56,189,248,0.4) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(52,211,153,0.35) 0%, transparent 45%)',
-          }}
-        />
-
-        <h2 className="relative text-sm font-bold text-atenas-ink mb-2 flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-atenas-ink" aria-hidden />
-          Tu ruta por el Abya Yala
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <MapPin className="w-5 h-5" aria-hidden />
+          Mapa del Abya Yala
         </h2>
-        <p className="relative text-xs text-atenas-muted mb-4 max-w-md">
-          Cada isla agrupa varias unidades de tu recorrido.{' '}
-          <Link to="/unidades" className="font-semibold text-atenas-ink underline underline-offset-2">
-            Ver todas las unidades
-          </Link>
+        <p className="text-sm text-white/90 mt-2 max-w-md">
+          Recorre Convivencia, Territorio e Historia con ilustraciones premium, nodos de progreso y
+          cofres con recompensas.
         </p>
-
-        <div className="relative space-y-8">
-          {levels.map((level, index) => {
-            const isLocked = level.status === 'locked';
-            const isCompleted = level.status === 'completed';
-            const align = index % 2 === 0 ? 'ml-0 mr-auto' : 'ml-auto mr-0';
-
-            return (
-              <div key={level.id} className={cn('relative max-w-[85%]', align)}>
-                {index > 0 && (
-                  <div
-                    className="absolute -top-6 left-1/2 w-0.5 h-6 bg-sky-300/80 -translate-x-1/2"
-                    aria-hidden
-                  />
-                )}
-
-                <div
-                  className={cn(
-                    'rounded-2xl bg-white/95 backdrop-blur border border-white shadow-card p-4',
-                    isLocked && 'opacity-80'
-                  )}
-                >
-                  <div className="flex gap-3 items-start">
-                    <div
-                      className={cn(
-                        'w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center text-white shadow-md bg-gradient-to-br',
-                        isLocked ? 'from-gray-300 to-gray-400' : ISLAND_COLORS[index]
-                      )}
-                    >
-                      {isLocked ? (
-                        <Lock className="w-6 h-6" aria-hidden />
-                      ) : isCompleted ? (
-                        <Check className="w-6 h-6" aria-hidden />
-                      ) : (
-                        <Play className="w-6 h-6 ml-0.5" aria-hidden />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-atenas-muted">
-                        {level.worldLabel}
-                      </span>
-                      <h3 className="text-sm font-bold text-atenas-ink leading-snug mt-0.5">
-                        {level.title}
-                      </h3>
-                      <p className="text-xs text-atenas-muted mt-1">{level.lessonsLabel}</p>
-                      {!isLocked && (
-                        <div className="mt-2">
-                          <ProgressBar value={level.progress} size="sm" tone="success" showPercent />
-                        </div>
-                      )}
-                      <div className="mt-3">
-                        {isLocked ? (
-                          <span className="text-xs text-atenas-muted font-medium">Bloqueado</span>
-                        ) : (
-                          <Link
-                            to="/unidades"
-                            className={cn(
-                              'inline-flex items-center rounded-full px-4 py-1.5 text-xs font-semibold min-h-touch',
-                              isCompleted
-                                ? 'bg-atenas-mist text-atenas-ink border border-atenas-mist-border'
-                                : 'btn-success py-2'
-                            )}
-                          >
-                            {isCompleted ? 'Revisar' : 'Explorar'}
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <p className="text-xs text-white/80 mt-2">
+          {misiones.filter((m) => m.totalPasos > 0 && m.pasosCompletados >= m.totalPasos).length} de{' '}
+          {Math.min(3, misiones.length)} mundos completados
+        </p>
+        <Link
+          to="/unidades"
+          className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white text-atenas-ink px-5 py-3 text-sm font-bold min-h-touch shadow-md hover:bg-white/95"
+        >
+          Abrir mapa de aventura
+          <ChevronRight className="w-5 h-5" aria-hidden />
+        </Link>
       </section>
     </div>
   );

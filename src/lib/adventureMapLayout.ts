@@ -3,12 +3,10 @@ import { islaDesdeOrdenUnidadSafe, MUNDOS } from './mundoUnidadMap';
 import type { AdventureMapNode, AdventureMapWorldZone, MapNodeKind, WorldId } from './adventureMapTypes';
 import { ADVENTURE_MAP_VIEWBOX, ADVENTURE_SCENE } from './adventureMapTypes';
 import { applyAdventureMapState } from './adventureMapState';
-import {
-  CONVIVENCIA_NODE_LOCAL,
-  CONVIVENCIA_PATH_D,
-} from './convivenciaMapLayout';
-import { TERRITORIO_NODE_LOCAL, TERRITORIO_PATH_D } from './territorioMapLayout';
-import { HISTORIA_NODE_LOCAL, HISTORIA_PATH_D } from './historiaMapLayout';
+import { CONVIVENCIA_NODE_LOCAL } from './convivenciaMapLayout';
+import { TERRITORIO_NODE_LOCAL } from './territorioMapLayout';
+import { HISTORIA_NODE_LOCAL } from './historiaMapLayout';
+import { WORLD_LAYOUT } from './worldLayout';
 
 type NodeTemplate = {
   id: string;
@@ -21,9 +19,9 @@ type NodeTemplate = {
 
 /** Camino de tierra por mundo — coords locales a la escena (400×980) */
 export const WORLD_PATH_D: Record<WorldId, string> = {
-  1: CONVIVENCIA_PATH_D,
-  2: TERRITORIO_PATH_D,
-  3: HISTORIA_PATH_D,
+  1: WORLD_LAYOUT[1].pathD,
+  2: WORLD_LAYOUT[2].pathD,
+  3: WORLD_LAYOUT[3].pathD,
 };
 
 /** Plantilla de nodos con posiciones locales integradas al camino de cada isla */
@@ -111,25 +109,10 @@ export function buildSerpentinePath(nodes: Pick<AdventureMapNode, 'position'>[])
 
 export function buildWorldPath(
   worldId: WorldId,
-  nodes: Pick<AdventureMapNode, 'position' | 'orderIndex'>[],
-  zone: AdventureMapWorldZone
+  _nodes: Pick<AdventureMapNode, 'position' | 'orderIndex'>[],
+  _zone: AdventureMapWorldZone
 ): string {
-  const worldNodes = nodes
-    .filter((n) => n.position.y >= zone.yStart && n.position.y < zone.yEnd)
-    .sort((a, b) => a.orderIndex - b.orderIndex);
-
-  if (worldNodes.length === 0) return WORLD_PATH_D[worldId];
-
-  const first = nodeLocalPosition(worldNodes[0]!, zone);
-  let d = `M ${first.x} ${first.y}`;
-  for (let i = 1; i < worldNodes.length; i++) {
-    const prev = nodeLocalPosition(worldNodes[i - 1]!, zone);
-    const curr = nodeLocalPosition(worldNodes[i]!, zone);
-    const cpx = (prev.x + curr.x) / 2;
-    const cpy = (prev.y + curr.y) / 2 + (i % 2 === 0 ? -28 : 28);
-    d += ` Q ${cpx} ${cpy} ${curr.x} ${curr.y}`;
-  }
-  return d;
+  return WORLD_PATH_D[worldId];
 }
 
 export function nodePositionToPercent(pos: { x: number; y: number }) {
@@ -151,6 +134,8 @@ export function nodePositionInScene(
     top: `${(local.y / sceneHeight) * 100}%`,
   };
 }
+
+export { WORLD_LAYOUT, getWorldLayout } from './worldLayout';
 
 export function buildAdventureMapGraph(
   unidades: Unidad[],

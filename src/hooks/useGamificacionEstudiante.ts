@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno } from './useMisiones';
+import { getAdventureBonusXp } from '../lib/adventureMapRewards';
 
 export type GamificacionEstudiante = {
   puntos: number;
@@ -44,9 +45,17 @@ export function useGamificacionEstudiante(): GamificacionEstudiante {
   const { user, profile } = useAuthContext();
   const { misiones, loading: loadingMisiones } = useMisionesAlumno();
   const [puntos, setPuntos] = useState(0);
+  const [bonusXp, setBonusXp] = useState(0);
   const [racha, setRacha] = useState(0);
   const [loadingExtra, setLoadingExtra] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setBonusXp(getAdventureBonusXp());
+    const onBonus = () => setBonusXp(getAdventureBonusXp());
+    window.addEventListener('atenas:bonus-xp-changed', onBonus);
+    return () => window.removeEventListener('atenas:bonus-xp-changed', onBonus);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,7 +127,7 @@ export function useGamificacionEstudiante(): GamificacionEstudiante {
   const loading = loadingMisiones || loadingExtra;
 
   return {
-    puntos,
+    puntos: puntos + bonusXp,
     racha,
     porcentajeGlobal,
     energia,

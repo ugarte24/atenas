@@ -1,22 +1,19 @@
 import type { WorldId } from './adventureMapTypes';
+import { WORLD_LAYOUT } from './worldLayout';
 
-/** Layout visual premium — Mundo 3 Historia (coords locales escena 400×980) */
 export const HISTORIA_ISLAND = {
-  widthPct: 1,
-  anchorX: 200,
-  anchorY: 560,
+  widthPct: WORLD_LAYOUT[3].widthPct,
+  anchorX: WORLD_LAYOUT[3].anchorX,
+  anchorY: WORLD_LAYOUT[3].anchorY,
   paintedArt: true as const,
-} as const;
+};
 
-/** Sendero: ruinas → patio → cofre en acantilado */
-export const HISTORIA_PATH_D =
-  'M 285 300 Q 210 380 175 470 Q 185 580 200 720';
-
-export const HISTORIA_NODE_LOCAL = {
-  unit0: { x: 285, y: 300 },
-  unit1: { x: 175, y: 470 },
-  chest: { x: 200, y: 720 },
-} as const;
+export const HISTORIA_PATH_D = WORLD_LAYOUT[3].pathD;
+export const HISTORIA_NODE_LOCAL = WORLD_LAYOUT[3].nodes as {
+  unit0: { x: number; y: number };
+  unit1: { x: number; y: number };
+  chest: { x: number; y: number };
+};
 
 export function isHistoriaWorld(worldId: WorldId): worldId is 3 {
   return worldId === 3;

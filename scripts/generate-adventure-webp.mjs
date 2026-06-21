@@ -1,6 +1,8 @@
 /**
- * Genera WebP del Adventure Map desde SVG en public/adventure/svg/
- * Ejecutar: npm run adventure:assets
+ * Genera WebP del Adventure Map.
+ * PNG pintado → WebP 800×1960 (viewBox 400×980 @2x).
+ * Si el PNG ya tiene ratio ~400:980 usa fill; si es apaisado, cover con crop por mundo.
+ * Ejecutar: npm run adventure:assets | npm run adventure:calibrate
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -136,11 +138,29 @@ const paintedWorldPng = {
   3: path.join(__dirname, 'adventure', 'historia-island-painted.png'),
 };
 
-async function paintedPngToWebp(pngPath, outPath) {
-  await sharp(pngPath)
-    .resize(SCENE_W * SCALE, SCENE_H * SCALE, { fit: 'cover', position: 'centre' })
-    .webp({ quality: 92, effort: 6 })
-    .toFile(outPath);
+const PAINTED_CROP_POSITION = {
+  1: 'centre',
+  2: 'centre',
+  3: 'centre',
+};
+
+async function paintedPngToWebp(pngPath, outPath, worldId) {
+  const meta = await sharp(pngPath).metadata();
+  const targetW = SCENE_W * SCALE;
+  const targetH = SCENE_H * SCALE;
+  const targetRatio = targetW / targetH;
+  const sourceRatio = meta.width / meta.height;
+
+  let pipeline = sharp(pngPath);
+  if (Math.abs(sourceRatio - targetRatio) < 0.05) {
+    pipeline = pipeline.resize(targetW, targetH, { fit: 'fill' });
+  } else {
+    pipeline = pipeline.resize(targetW, targetH, {
+      fit: 'cover',
+      position: PAINTED_CROP_POSITION[worldId] ?? 'centre',
+    });
+  }
+  await pipeline.webp({ quality: 92, effort: 6 }).toFile(outPath);
 }
 
 async function svgToWebp(svgPath, outPath, width, height, opts = {}) {
@@ -168,7 +188,7 @@ ensureDir(outDir);
 writeSvg('chest-sprite.svg', chestSpriteSvg);
 
 if (fs.existsSync(paintedWorldPng[1])) {
-  await paintedPngToWebp(paintedWorldPng[1], path.join(outDir, 'world-1-island.webp'));
+  await paintedPngToWebp(paintedWorldPng[1], path.join(outDir, 'world-1-island.webp'), 1);
   console.log('OK: world-1-island.webp desde ilustración pintada');
 } else if (fs.existsSync(convivenciaPremiumSvg)) {
   fs.copyFileSync(convivenciaPremiumSvg, path.join(svgDir, 'world-1-island.svg'));
@@ -178,7 +198,7 @@ if (fs.existsSync(paintedWorldPng[1])) {
 
 for (const id of [2, 3]) {
   if (fs.existsSync(paintedWorldPng[id])) {
-    await paintedPngToWebp(paintedWorldPng[id], path.join(outDir, `world-${id}-island.webp`));
+    await paintedPngToWebp(paintedWorldPng[id], path.join(outDir, `world-${id}-island.webp`), id);
     console.log(`OK: world-${id}-island.webp desde ilustración pintada`);
   } else {
     writeSvg(`world-${id}-island.svg`, worldIslandSvg(id));

@@ -11,6 +11,7 @@ type Props = {
   celebrate: boolean;
   onSelect: () => void;
   label: string;
+  minimalOverlay?: boolean;
 };
 
 const WORLD_COLOR: Record<1 | 2 | 3, string> = {
@@ -31,7 +32,14 @@ const WORLD_RING: Record<1 | 2 | 3, string> = {
   3: 'ring-amber-300',
 };
 
-export function AdventureMapUnitNode({ node, selected, celebrate, onSelect, label }: Props) {
+export function AdventureMapUnitNode({
+  node,
+  selected,
+  celebrate,
+  onSelect,
+  label,
+  minimalOverlay = false,
+}: Props) {
   const { reduceMotion } = useMotionSafe();
   const { status, worldId, unitNumber, stars } = node;
   const color = WORLD_COLOR[worldId];
@@ -49,7 +57,7 @@ export function AdventureMapUnitNode({ node, selected, celebrate, onSelect, labe
       aria-label={label}
       aria-pressed={selected}
       className={cn(
-        'relative z-30 flex flex-col items-center -translate-x-1/2 -translate-y-[58%]',
+        'relative z-30 flex flex-col items-center',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-atenas-ink focus-visible:ring-offset-2 rounded-full',
         locked && 'cursor-not-allowed opacity-85'
       )}
@@ -96,9 +104,10 @@ export function AdventureMapUnitNode({ node, selected, celebrate, onSelect, labe
 
       <span
         className={cn(
-          'relative flex h-[3.4rem] w-[3.4rem] sm:h-16 sm:w-16 items-center justify-center rounded-full',
+          'relative flex items-center justify-center rounded-full',
           'border-[3px] border-white/90 font-bold text-lg',
           'shadow-[0_6px_0_rgba(0,0,0,0.15),0_8px_16px_rgba(0,0,0,0.2)]',
+          minimalOverlay ? 'h-12 w-12 sm:h-14 sm:w-14' : 'h-[3.4rem] w-[3.4rem] sm:h-16 sm:w-16',
           selected && `ring-4 ${WORLD_RING[worldId]}`,
           status === 'available' && !reduceMotion && 'shadow-[0_6px_0_rgba(0,0,0,0.15),0_0_24px_rgba(251,191,36,0.55)]'
         )}

@@ -17,6 +17,7 @@ type Badge = {
   unlocked: boolean;
   emoji?: string;
   Icon?: LucideIcon;
+  progressLabel?: string;
 };
 
 export default function Logros() {
@@ -38,9 +39,34 @@ export default function Logros() {
     const misionesCompletas = conTemas.filter((m) => m.pasosCompletados >= m.totalPasos).length;
     const hasAnyProgress = misiones.some((m) => m.pasosCompletados > 0);
     return [
-      { id: 'nature', title: 'Defensor de la naturaleza', description: 'Actividades de convivencia.', unlocked: hasAnyProgress, Icon: TreePine },
-      { id: 'explorer', title: 'Explorador del Abya Yala', description: 'Una misión completa.', unlocked: misionesCompletas >= 1, Icon: Compass },
-      { id: 'historian', title: 'Historiador', description: 'Todas las misiones.', unlocked: conTemas.length > 0 && misionesCompletas === conTemas.length, Icon: ScrollText },
+      {
+        id: 'nature',
+        title: 'Defensor de la naturaleza',
+        description: 'Actividades de convivencia.',
+        unlocked: hasAnyProgress,
+        Icon: TreePine,
+        progressLabel: hasAnyProgress ? undefined : 'Completa tu primera actividad',
+      },
+      {
+        id: 'explorer',
+        title: 'Explorador del Abya Yala',
+        description: 'Una misión completa.',
+        unlocked: misionesCompletas >= 1,
+        Icon: Compass,
+        progressLabel:
+          misionesCompletas >= 1 ? undefined : `${Math.min(misionesCompletas, 1)}/1 misión`,
+      },
+      {
+        id: 'historian',
+        title: 'Historiador',
+        description: 'Todas las misiones.',
+        unlocked: conTemas.length > 0 && misionesCompletas === conTemas.length,
+        Icon: ScrollText,
+        progressLabel:
+          conTemas.length > 0
+            ? `${misionesCompletas}/${conTemas.length} misiones`
+            : 'Sin misiones publicadas',
+      },
     ];
   }, [logros, misiones]);
 
@@ -110,6 +136,9 @@ export default function Logros() {
                 ) : null}
               </div>
               <h2 className="text-[11px] font-bold text-atenas-ink leading-tight line-clamp-2">{badge.title}</h2>
+              {!badge.unlocked && badge.progressLabel && (
+                <p className="text-[9px] text-atenas-muted mt-1 leading-tight">{badge.progressLabel}</p>
+              )}
               {!badge.unlocked && <Lock className="w-4 h-4 text-atenas-muted mt-1" aria-hidden />}
               {badge.unlocked && <Check className="w-4 h-4 text-atenas-success mt-1" aria-hidden />}
             </article>

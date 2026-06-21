@@ -48,8 +48,8 @@ describe('adventureMapState', () => {
   it('stars reflect progress', () => {
     expect(starsFromProgress(0, 0)).toBe(0);
     expect(starsFromProgress(30, 0)).toBe(1);
-    expect(starsFromProgress(60, 0)).toBe(2);
-    expect(starsFromProgress(100, 85)).toBe(3);
+    expect(starsFromProgress(60, 0)).toBe(1);
+    expect(starsFromProgress(100, 85)).toBe(2);
     expect(starsFromProgress(100, 95)).toBe(3);
   });
 

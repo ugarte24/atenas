@@ -21,8 +21,8 @@ export function markChestOpened(chestId: string): void {
 export function starsFromProgress(progressPct: number, avgScore: number): 0 | 1 | 2 | 3 {
   if (progressPct <= 0) return 0;
   if (progressPct >= 100 && avgScore >= 90) return 3;
-  if (progressPct >= 100) return 3;
-  if (progressPct >= 50) return 2;
+  if (progressPct >= 100) return 2;
+  if (progressPct >= 50) return 1;
   return 1;
 }
 

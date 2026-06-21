@@ -18,7 +18,7 @@ export default function Misiones() {
   const { misiones, loading, error } = useMisionesAlumno();
   const { misiones: diarias, loading: loadingDiarias } = useMisionesDiarias();
   const { racha } = useGamificacionEstudiante();
-  const [tab, setTab] = useState<TabMision>('semanales');
+  const [tab, setTab] = useState<TabMision>('diarias');
 
   const misionesConTemas = useMemo(() => misiones.filter((m) => m.totalPasos > 0), [misiones]);
 
@@ -75,8 +75,14 @@ export default function Misiones() {
               const pct = m.totalPasos ? Math.round((m.pasosCompletados / m.totalPasos) * 100) : 0;
               return (
                 <Card key={m.id} padding="md" className="flex flex-col gap-3">
-                  <div className="flex justify-between gap-3">
+                  <div className="flex justify-between gap-3 items-start">
                     <h2 className="font-bold text-atenas-ink">{m.titulo}</h2>
+                    <Link
+                      to={`/unidades/${m.id}`}
+                      className="shrink-0 text-xs font-bold text-atenas-ink underline underline-offset-2 min-h-touch inline-flex items-center"
+                    >
+                      Ir
+                    </Link>
                   </div>
                   <p className="text-sm text-atenas-muted">{m.descripcion}</p>
                   <ProgressBar value={pct} showPercent size="md" tone="success" />
@@ -110,12 +116,18 @@ export default function Misiones() {
           ) : (
             diarias.map((d) => (
               <Card key={d.id} padding="md">
-                <div className="flex justify-between mb-2">
+                <div className="flex justify-between mb-2 gap-2 items-start">
                   <h2 className="font-bold text-atenas-ink text-sm">{d.titulo}</h2>
-                  <span className="text-xs font-semibold text-atenas-muted uppercase tracking-wide">
-                    Objetivo diario
-                  </span>
+                  <Link
+                    to="/unidades"
+                    className="text-xs font-bold text-atenas-ink underline underline-offset-2 shrink-0"
+                  >
+                    Ir
+                  </Link>
                 </div>
+                <span className="text-xs font-semibold text-atenas-muted uppercase tracking-wide">
+                  Objetivo diario
+                </span>
                 <ProgressBar value={d.total ? (d.progreso / d.total) * 100 : 0} size="sm" tone="success" />
                 <p className="text-xs text-atenas-muted mt-1">
                   {d.progreso} / {d.total}

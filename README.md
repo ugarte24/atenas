@@ -100,6 +100,8 @@ El primer usuario debe ser administrador y se crea desde el panel de Supabase (n
 | `npm run preview` | Vista previa del build |
 | `npm run lint` | Ejecutar ESLint |
 | `npm test` | Tests unitarios (Vitest) |
+| `npm run adventure:assets` | Regenera WebP del mapa (`public/adventure/world-*-island.webp`) desde PNG en `scripts/adventure/` |
+| `npm run adventure:calibrate` | Genera overlays de debug (`scripts/adventure/debug-*-nodes.png`) para alinear nodos sobre el sendero |
 
 ---
 
@@ -121,7 +123,7 @@ Los estudiantes **no** se registran solos; solo el docente o el administrador lo
 - `/login` — Inicio de sesión (redirige a `/` si ya hay sesión; soporta `?redirect=...`).
 
 ### Con sesión (cualquier rol)
-- `/` — Inicio estudiante con mapa vertical gamificado (niveles del Abya Yala y progreso).
+- `/` — Inicio estudiante: continuar donde lo dejaste, racha, misiones diarias y acceso al mapa del Abya Yala.
 - `/perfil` — Ver y editar nombre (y en el futuro avatar).
 - `/progreso` — Vista de progreso global del estudiante por unidad/misión.
 - `/misiones` — Misiones diarias y semanales por unidad.
@@ -130,7 +132,7 @@ Los estudiantes **no** se registran solos; solo el docente o el administrador lo
 - `/logros` — Galería de insignias y logros desbloqueados.
 
 ### Estudiante / todos los autenticados
-- `/unidades` — Listado de unidades.
+- `/unidades` — **Mapa de aventura** del Abya Yala: tres mundos (Convivencia, Territorio, Historia) con sendero, nodos de unidad, checkpoints y cofres con XP.
 - `/unidades/:unidadId` — Temas de la unidad.
 - `/temas/:temaId` — Contenido del tema, recursos, actividades y evaluaciones publicadas.
 - `/actividades/:actividadId` — Realizar una actividad (se guarda el intento).

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import type { AdventureMapNode, AdventureMapWorldZone } from '../../lib/adventureMapTypes';
 import { ADVENTURE_SCENE } from '../../lib/adventureMapTypes';
-import { nodePositionInScene } from '../../lib/adventureMapLayout';
+import { nodeLocalPosition } from '../../lib/adventureMapLayout';
 import { useSceneParallax, useSceneRef } from '../../hooks/useSceneParallax';
 import { AdventureMapSceneSky } from './AdventureMapSceneSky';
 import {
@@ -11,6 +11,7 @@ import { AdventureMapPath } from './AdventureMapPath';
 import { AdventureMapNodeLayer } from './AdventureMapNodeLayer';
 import { MascotLottie } from '../MascotLottie';
 import { getPaintedIslandConfig, isPaintedWorld } from '../../lib/paintedWorldLayout';
+import { nodeStyleInScene } from '../../lib/adventureMapCoords';
 import { cn } from '../ui/cn';
 
 type Props = {
@@ -37,7 +38,6 @@ export function AdventureMapWorldScene({
   const sectionRef = useSceneRef();
   const { skyY, farY, midY, fgY, reduceMotion } = useSceneParallax(sectionRef);
   const aspectRatio = `${ADVENTURE_SCENE.width} / ${ADVENTURE_SCENE.height}`;
-  const mascotPos = mascotNode ? nodePositionInScene(mascotNode, zone) : null;
 
   const layerClass = 'absolute inset-0 h-[108%] w-full -top-[4%] pointer-events-none';
 
@@ -47,7 +47,7 @@ export function AdventureMapWorldScene({
   return (
     <section
       ref={sectionRef}
-      className="relative w-full shrink-0 overflow-hidden"
+      className="relative w-full shrink-0 overflow-hidden max-sm:snap-start max-sm:snap-always"
       style={{ aspectRatio }}
       aria-label={`Mundo ${zone.title}`}
     >
@@ -110,10 +110,14 @@ export function AdventureMapWorldScene({
         onSelectNode={onSelectNode}
       />
 
-      {mascotPos && (
+      {mascotNode && (
         <div
-          className="absolute z-40 pointer-events-none -translate-x-1/2"
-          style={{ left: mascotPos.left, top: mascotPos.top, marginTop: '-3.5rem' }}
+          className="absolute z-[25] pointer-events-none"
+          style={nodeStyleInScene(
+            nodeLocalPosition(mascotNode, zone).x,
+            nodeLocalPosition(mascotNode, zone).y - 48,
+            'unit'
+          )}
           aria-hidden
         >
           <MascotLottie variant="idle" loop className="w-14 h-14 drop-shadow-lg" />

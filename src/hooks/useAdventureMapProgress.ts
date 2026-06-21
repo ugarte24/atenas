@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Unidad } from '../types';
 import type { UnitAdventureProgress } from '../lib/adventureMapTypes';
 import {
   EMPTY_PROGRESS,
   fetchAdventureProgressForUnits,
 } from '../lib/adventureMapProgress';
+import { resolveAdventureMapNavigation } from '../lib/adventureMapNavigation';
 
 export function useAdventureMapProgress(
   unidades: Unidad[],
@@ -41,5 +42,10 @@ export function useAdventureMapProgress(
     };
   }, [enabled, userId, unidades]);
 
-  return { progressByUnit, loading };
+  const navigation = useMemo(
+    () => resolveAdventureMapNavigation(unidades, progressByUnit, !enabled),
+    [unidades, progressByUnit, enabled]
+  );
+
+  return { progressByUnit, loading, ...navigation };
 }

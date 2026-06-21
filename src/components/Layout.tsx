@@ -7,6 +7,7 @@ import { StudentSidebar } from './StudentSidebar';
 import { DocenteSidebar } from './DocenteSidebar';
 import { AppDrawer, type DrawerLink } from './AppDrawer';
 import { STUDENT_DRAWER_ITEMS } from '../constants/studentNav';
+import { StudentMobileGamificationChip } from './gamification/StudentMobileGamificationChip';
 import { MascotVisitorProvider } from '../contexts/MascotVisitorContext';
 import { MascotVisitor } from './gamification/MascotVisitor';
 import { cn } from './ui/cn';
@@ -124,12 +125,24 @@ function LayoutMain({
         {/* Barra superior móvil / admin sin sidebar */}
         <header
           className={cn(
-            'sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-atenas-mist-border shadow-soft pt-safe',
+            'sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-atenas-mist-border shadow-soft pt-safe',
             (showStudentSidebar || showDocenteSidebar) && 'lg:hidden'
           )}
         >
-          <div className="page-container py-3 flex items-center justify-between gap-3 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+          <div
+            className={cn(
+              'page-container py-3 min-w-0',
+              esEstudiante
+                ? 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3'
+                : 'flex items-center justify-between gap-3'
+            )}
+          >
+            <div
+              className={cn(
+                'flex items-center gap-2 min-w-0',
+                esEstudiante && 'w-full sm:w-auto justify-between sm:justify-start'
+              )}
+            >
               {profile && (showStudentSidebar || showDocenteSidebar) && (
                 <button
                   type="button"
@@ -149,6 +162,9 @@ function LayoutMain({
                   ATENAS
                 </span>
               </Link>
+              {profile && esEstudiante && (
+                <StudentMobileGamificationChip className="ml-auto sm:ml-0" />
+              )}
             </div>
 
             {profile && !showStudentSidebar && !showDocenteSidebar && (
@@ -187,7 +203,22 @@ function LayoutMain({
                 </button>
               </nav>
             )}
-            {profile && (
+            {profile && esEstudiante && (
+              <div className="flex items-center justify-between gap-2 min-w-0 sm:justify-end sm:shrink">
+                <p className="text-sm font-semibold text-atenas-ink truncate leading-tight min-w-0 flex-1 sm:flex-none">
+                  {profile.full_name ?? 'Explorador'}
+                </p>
+                <p className="text-xs text-atenas-muted capitalize leading-tight shrink-0 tabular-nums">
+                  {new Date().toLocaleDateString('es', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+            )}
+            {profile && !esEstudiante && (
               <div className="text-right min-w-0 shrink">
                 <p className="text-[11px] text-atenas-muted capitalize leading-tight truncate">
                   {new Date().toLocaleDateString('es', {
@@ -196,11 +227,6 @@ function LayoutMain({
                     month: 'long',
                   })}
                 </p>
-                {esEstudiante && (
-                  <p className="text-sm font-semibold text-atenas-ink truncate leading-tight mt-0.5">
-                    {profile.full_name ?? 'Explorador'}
-                  </p>
-                )}
               </div>
             )}
           </div>

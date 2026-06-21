@@ -153,7 +153,7 @@ export function AdventureMapNodeSheet({ node, showProgress, onClose, onOpenChest
                     : 'btn-success'
                 )}
               >
-                {completed ? 'Repasar aventura' : '¡Explorar!'}
+                {completed ? 'Repasar unidad' : 'Entrar a la unidad'}
                 <ChevronRight className="w-5 h-5" aria-hidden />
               </Link>
             )}

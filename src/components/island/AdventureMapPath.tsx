@@ -3,6 +3,7 @@ import type { AdventureMapNode, AdventureMapWorldZone } from '../../lib/adventur
 import { ADVENTURE_SCENE } from '../../lib/adventureMapTypes';
 import { buildWorldPath } from '../../lib/adventureMapLayout';
 import { isPaintedWorld } from '../../lib/paintedWorldLayout';
+import { SCENE_PRESERVE_ASPECT } from '../../lib/adventureMapCoords';
 import { useMotionSafe } from '../../hooks/useMotionSafe';
 
 type Props = {
@@ -22,18 +23,16 @@ export function AdventureMapPath({ nodes, zone }: Props) {
     (n) => n.status === 'completed' || n.status === 'perfect'
   ).length;
   const progressRatio = completedCount / Math.max(worldNodes.length - 1, 1);
+  const hasActiveNode = activeIndex >= 0;
 
   return (
     <svg
       viewBox={`0 0 ${ADVENTURE_SCENE.width} ${sceneHeight}`}
       className="absolute inset-0 h-full w-full pointer-events-none z-10"
       aria-hidden
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio={SCENE_PRESERVE_ASPECT}
     >
       <defs>
-        <filter id={`path-shadow-${zone.worldId}`}>
-          <feDropShadow dx="0" dy="3" stdDeviation="2" floodColor="#451a03" floodOpacity="0.35" />
-        </filter>
         <filter id={`path-glow-${zone.worldId}`}>
           <feGaussianBlur stdDeviation="3" result="b" />
           <feMerge>
@@ -63,7 +62,6 @@ export function AdventureMapPath({ nodes, zone }: Props) {
             strokeLinecap="round"
             strokeLinejoin="round"
             opacity={0.45}
-            filter={`url(#path-shadow-${zone.worldId})`}
           />
           <motion.path
             d={pathD}
@@ -79,33 +77,48 @@ export function AdventureMapPath({ nodes, zone }: Props) {
         </>
       )}
 
-      {/* Progreso — sutil sobre sendero integrado (Convivencia) o encima del camino (otros) */}
-      <motion.path
-        d={pathD}
-        stroke={integrated ? '#4ade80' : '#86efac'}
-        strokeWidth={integrated ? 6 : 8}
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={integrated ? 0.55 : 1}
-        filter={integrated ? `url(#path-glow-${zone.worldId})` : undefined}
-        initial={reduceMotion ? false : { pathLength: 0 }}
-        animate={{ pathLength: progressRatio }}
-        transition={reduceMotion ? { duration: 0 } : { duration: 0.8, ease: 'easeOut' }}
-      />
+      {integrated && progressRatio > 0 && (
+        <motion.path
+          d={pathD}
+          stroke="#4ade80"
+          strokeWidth={5}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={0.45}
+          filter={`url(#path-glow-${zone.worldId})`}
+          initial={reduceMotion ? false : { pathLength: 0 }}
+          animate={{ pathLength: progressRatio }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.8, ease: 'easeOut' }}
+        />
+      )}
 
-      {!reduceMotion && activeIndex >= 0 && (
+      {!integrated && (
+        <motion.path
+          d={pathD}
+          stroke="#86efac"
+          strokeWidth={8}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={reduceMotion ? false : { pathLength: 0 }}
+          animate={{ pathLength: progressRatio }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.8, ease: 'easeOut' }}
+        />
+      )}
+
+      {!reduceMotion && hasActiveNode && progressRatio < 1 && (
         <motion.path
           d={pathD}
           stroke="#fbbf24"
-          strokeWidth={integrated ? 4 : 5}
+          strokeWidth={integrated ? 3 : 5}
           fill="none"
           strokeDasharray="10 14"
           strokeLinecap="round"
-          opacity={integrated ? 0.75 : 1}
+          opacity={integrated ? 0.65 : 1}
           animate={{ strokeDashoffset: [0, -24] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
-          style={{ pathLength: Math.min(progressRatio + 0.15, 1) }}
+          style={{ pathLength: Math.min(progressRatio + 0.12, 1) }}
         />
       )}
     </svg>
