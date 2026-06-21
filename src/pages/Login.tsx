@@ -47,8 +47,8 @@ export default function Login() {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${LOGIN_BACKGROUND_URL})` }}
         />
-        <div className="absolute inset-0 bg-atenas-sidebar/35" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-atenas-sidebar/55" />
+        <div className="absolute inset-0 bg-atenas-sidebar/10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10" />
       </div>
 
       {/* Formulario */}
@@ -67,7 +67,7 @@ export default function Login() {
                 alt=""
                 className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md shrink-0 rounded-2xl"
               />
-              <h2 className="atenas-logo h-16 sm:h-20 flex items-center shrink-0 text-[2.25rem] sm:text-[2.75rem] leading-none">
+              <h2 className="atenas-logo atenas-logo--login h-16 sm:h-20 flex items-center shrink-0 text-[2.25rem] sm:text-[2.75rem] leading-none">
                 ATENAS
               </h2>
             </div>

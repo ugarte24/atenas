@@ -85,6 +85,14 @@
     outline: none;
     box-shadow: 0 0 0 2px white, 0 0 0 4px #1f2d2a;
   }
+  /** Login: mismo verde oscuro que el fondo del logo (#1F2D2A) */
+  .atenas-logo--login {
+    color: #1f2d2a;
+    background-image: none;
+    background-clip: unset;
+    -webkit-background-clip: unset;
+    filter: none;
+  }
   .atenas-subtitle {
     @apply text-sm;
     color: var(--atenas-text-muted);
