@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { BookOpen, LayoutGrid, Map } from 'lucide-react';
 import { useUnidades } from '../hooks/useUnidades';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -10,13 +10,28 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SkeletonCard } from '../components/ui/Skeleton';
 import { cn } from '../components/ui/cn';
-
-type ViewMode = 'map' | 'list';
+import {
+  getUnidadesViewPreference,
+  parseMapSearchParams,
+  setUnidadesViewPreference,
+  type UnidadesViewMode,
+} from '../lib/adventureMapDeepLinks';
 
 export default function Unidades() {
   const { user, profile } = useAuthContext();
   const { unidades, loading, error } = useUnidades();
-  const [viewMode, setViewMode] = useState<ViewMode>('map');
+  const [searchParams] = useSearchParams();
+  const parsed = useMemo(
+    () => parseMapSearchParams(searchParams.toString()),
+    [searchParams]
+  );
+  const [viewMode, setViewMode] = useState<UnidadesViewMode>(
+    () => parsed.view ?? getUnidadesViewPreference()
+  );
+
+  useEffect(() => {
+    if (parsed.view) setViewMode(parsed.view);
+  }, [parsed.view]);
 
   const esEstudiante = profile?.role === 'estudiante';
   const esDocenteOAdmin = profile?.role === 'docente' || profile?.role === 'admin';
@@ -34,6 +49,11 @@ export default function Unidades() {
       ),
     [progressByUnit]
   );
+
+  function selectView(mode: UnidadesViewMode) {
+    setViewMode(mode);
+    setUnidadesViewPreference(mode);
+  }
 
   if (loading) {
     return (
@@ -79,7 +99,7 @@ export default function Unidades() {
           >
             <button
               type="button"
-              onClick={() => setViewMode('map')}
+              onClick={() => selectView('map')}
               aria-pressed={viewMode === 'map'}
               className={cn(
                 'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold min-h-touch transition-colors',
@@ -93,7 +113,7 @@ export default function Unidades() {
             </button>
             <button
               type="button"
-              onClick={() => setViewMode('list')}
+              onClick={() => selectView('list')}
               aria-pressed={viewMode === 'list'}
               className={cn(
                 'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold min-h-touch transition-colors',
@@ -138,6 +158,8 @@ export default function Unidades() {
             unidades={unidades}
             progressByUnit={progressByUnit}
             showProgress={esEstudiante}
+            scrollWorldId={parsed.world}
+            scrollNodeId={parsed.nodeId}
           />
         )
       ) : (

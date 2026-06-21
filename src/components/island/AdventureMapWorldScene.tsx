@@ -47,7 +47,8 @@ export function AdventureMapWorldScene({
   return (
     <section
       ref={sectionRef}
-      className="relative w-full shrink-0 overflow-hidden max-sm:snap-start max-sm:snap-always"
+      data-world-id={zone.worldId}
+      className="relative w-full shrink-0 overflow-hidden"
       style={{ aspectRatio }}
       aria-label={`Mundo ${zone.title}`}
     >

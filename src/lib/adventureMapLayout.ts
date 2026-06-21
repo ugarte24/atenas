@@ -201,6 +201,40 @@ export function buildAdventureMapGraph(
     };
   });
 
+  // Unidades extra (>7): nodos adicionales en Historia con posiciones interpoladas
+  if (sorted.length > 7) {
+    const extraStartY = HISTORIA_NODE_LOCAL.unit1.y + 48;
+    for (let slot = 7; slot < sorted.length; slot++) {
+      const item = sorted[slot]!;
+      const listIndex = unidades.findIndex((u) => u.id === item.id);
+      const isla = islaDesdeOrdenUnidadSafe(item.orden, listIndex);
+      const unitNumber =
+        typeof item.orden === 'number' && item.orden > 0 ? item.orden : listIndex + 1;
+      const prog = progressByUnit[item.id] ?? { progressPct: 0, avgScore: 0 };
+      const localY = Math.min(extraStartY + (slot - 7) * 56, ADVENTURE_SCENE.height - 80);
+      const position = localToGlobalPosition(3, {
+        x: HISTORIA_NODE_LOCAL.unit1.x,
+        y: localY,
+      });
+      rawNodes.push({
+        id: `unit-${item.id}`,
+        kind: 'unit',
+        worldId: 3,
+        unitId: item.id,
+        unidad: item,
+        listIndex,
+        isla,
+        unitNumber,
+        unitLabel: unidadNombreCorto(item.orden, item.title, listIndex),
+        orderIndex: rawNodes.length,
+        position,
+        status: 'locked',
+        stars: 0,
+        progressPct: prog.progressPct,
+      });
+    }
+  }
+
   return applyAdventureMapState(rawNodes, progressByUnit, openedChestIds, previewAllOpen);
 }
 

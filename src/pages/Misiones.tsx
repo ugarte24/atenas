@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMisionesAlumno } from '../hooks/useMisiones';
 import { useMisionesDiarias } from '../hooks/useMisionesDiarias';
+import { useMisionesEspeciales } from '../hooks/useMisionesEspeciales';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -8,6 +9,7 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
 import { cn } from '../components/ui/cn';
 import { Gift, Target, Star } from 'lucide-react';
@@ -17,8 +19,16 @@ type TabMision = 'diarias' | 'semanales' | 'especiales';
 export default function Misiones() {
   const { misiones, loading, error } = useMisionesAlumno();
   const { misiones: diarias, loading: loadingDiarias } = useMisionesDiarias();
+  const {
+    misionesEspeciales,
+    weeklyChestReady,
+    weeklyChestClaimed,
+    weeklyChestXp,
+    claimWeeklyChest,
+  } = useMisionesEspeciales();
   const { racha } = useGamificacionEstudiante();
   const [tab, setTab] = useState<TabMision>('diarias');
+  const [claimingWeekly, setClaimingWeekly] = useState(false);
 
   const misionesConTemas = useMemo(() => misiones.filter((m) => m.totalPasos > 0), [misiones]);
 
@@ -27,6 +37,15 @@ export default function Misiones() {
     { id: 'semanales', label: 'Semanales' },
     { id: 'especiales', label: 'Especiales' },
   ];
+
+  async function handleClaimWeekly() {
+    setClaimingWeekly(true);
+    try {
+      await claimWeeklyChest();
+    } finally {
+      setClaimingWeekly(false);
+    }
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -93,12 +112,25 @@ export default function Misiones() {
               );
             })
           )}
-          <Card padding="md" className="bg-gradient-to-r from-amber-100 to-amber-50 border-amber-200 flex items-center gap-4">
+          <Card padding="md" className="bg-gradient-to-r from-amber-100 to-amber-50 border-amber-200 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Gift className="w-10 h-10 text-amber-600 shrink-0" aria-hidden />
-            <div>
+            <div className="flex-1">
               <p className="font-bold text-amber-950">Cofre semanal</p>
-              <p className="text-sm text-amber-900">Próximamente: bonificación al completar todas las misiones semanales.</p>
+              {weeklyChestClaimed ? (
+                <p className="text-sm text-amber-900">¡Cofre reclamado esta semana! (+{weeklyChestXp} XP)</p>
+              ) : weeklyChestReady ? (
+                <p className="text-sm text-amber-900">¡Misiones semanales completas! Reclama +{weeklyChestXp} XP.</p>
+              ) : (
+                <p className="text-sm text-amber-900">
+                  Completa todas las misiones semanales para desbloquear +{weeklyChestXp} XP.
+                </p>
+              )}
             </div>
+            {weeklyChestReady && !weeklyChestClaimed && (
+              <Button type="button" size="sm" onClick={() => void handleClaimWeekly()} disabled={claimingWeekly}>
+                {claimingWeekly ? 'Abriendo…' : 'Abrir cofre'}
+              </Button>
+            )}
           </Card>
         </div>
       )}
@@ -119,14 +151,15 @@ export default function Misiones() {
                 <div className="flex justify-between mb-2 gap-2 items-start">
                   <h2 className="font-bold text-atenas-ink text-sm">{d.titulo}</h2>
                   <Link
-                    to="/unidades"
+                    to={d.targetUrl}
                     className="text-xs font-bold text-atenas-ink underline underline-offset-2 shrink-0"
                   >
                     Ir
                   </Link>
                 </div>
                 <span className="text-xs font-semibold text-atenas-muted uppercase tracking-wide">
-                  Objetivo diario
+                  Objetivo diario · +{d.xp} XP
+                  {d.xpOtorgada && d.completada ? ' · otorgado' : ''}
                 </span>
                 <ProgressBar value={d.total ? (d.progreso / d.total) * 100 : 0} size="sm" tone="success" />
                 <p className="text-xs text-atenas-muted mt-1">
@@ -141,12 +174,36 @@ export default function Misiones() {
         </div>
       )}
 
-      {!loading && tab === 'especiales' && (
-        <EmptyState
-          icon={<Star className="w-8 h-8" />}
-          title="Misiones especiales"
-          description="Próximamente: retos extra al completar las tres islas del Abya Yala."
-        />
+      {tab === 'especiales' && (
+        <div className="space-y-4">
+          {misionesEspeciales.length === 0 ? (
+            <EmptyState
+              icon={<Star className="w-8 h-8" />}
+              title="Misiones especiales"
+              description="Publica unidades para desbloquear retos del Abya Yala."
+            />
+          ) : (
+            misionesEspeciales.map((m) => (
+              <Card key={m.id} padding="md" className="flex flex-col gap-3">
+                <div className="flex justify-between gap-3 items-start">
+                  <h2 className="font-bold text-atenas-ink">{m.titulo}</h2>
+                  <Link
+                    to={m.targetUrl}
+                    className="shrink-0 text-xs font-bold text-atenas-ink underline underline-offset-2"
+                  >
+                    Ir
+                  </Link>
+                </div>
+                <p className="text-sm text-atenas-muted">{m.descripcion}</p>
+                <ProgressBar value={m.progreso} showPercent size="md" tone={m.completada ? 'success' : 'gold'} />
+                <p className="text-xs text-atenas-muted">
+                  Recompensa: +{m.xp} XP
+                  {m.recompensaClaimed ? ' · reclamada' : m.completada ? ' · pendiente de reclamar' : ''}
+                </p>
+              </Card>
+            ))
+          )}
+        </div>
       )}
     </div>
   );

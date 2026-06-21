@@ -6,6 +6,7 @@ import {
   fetchAdventureProgressForUnits,
 } from '../lib/adventureMapProgress';
 import { resolveAdventureMapNavigation } from '../lib/adventureMapNavigation';
+import { useMapRewards } from './useMapRewards';
 
 export function useAdventureMapProgress(
   unidades: Unidad[],
@@ -42,9 +43,11 @@ export function useAdventureMapProgress(
     };
   }, [enabled, userId, unidades]);
 
+  const { openedChestIds } = useMapRewards(enabled);
+
   const navigation = useMemo(
-    () => resolveAdventureMapNavigation(unidades, progressByUnit, !enabled),
-    [unidades, progressByUnit, enabled]
+    () => resolveAdventureMapNavigation(unidades, progressByUnit, !enabled, openedChestIds),
+    [unidades, progressByUnit, enabled, openedChestIds]
   );
 
   return { progressByUnit, loading, ...navigation };

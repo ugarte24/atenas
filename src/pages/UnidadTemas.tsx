@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Lock, Play, BookOpen } from 'lucide-react';
 import { useUnidad } from '../hooks/useUnidad';
 import { useTemas } from '../hooks/useTemas';
@@ -14,9 +14,10 @@ import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { EmptyState } from '../components/ui/EmptyState';
-import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { useUnidadContenidoAgregado } from '../hooks/useUnidadContenidoAgregado';
 import { SkeletonLines } from '../components/ui/Skeleton';
+import { Badge } from '../components/ui/Badge';
 import { cn } from '../components/ui/cn';
 import { openCertificadoEnVentana } from '../lib/certificadoVentana';
 
@@ -33,6 +34,17 @@ export default function UnidadTemas() {
   const [bloqueoTema, setBloqueoTema] = useState<Record<string, boolean>>({});
   const [pctUnidad, setPctUnidad] = useState<number | null>(null);
   const [certPdfLoading, setCertPdfLoading] = useState(false);
+
+  const temaIds = useMemo(() => temas.map((t) => t.id), [temas]);
+  const esEstudiante = profile?.role === 'estudiante';
+  const { recursos, actividades, evaluaciones, loading: loadingAgregado } = useUnidadContenidoAgregado(
+    unidadId ?? null,
+    temaIds,
+    temas.map((t) => ({ id: t.id, title: t.title, prerequisito_tema_id: t.prerequisito_tema_id ?? null })),
+    bloqueoTema,
+    user?.id,
+    esEstudiante
+  );
 
   useEffect(() => {
     if (!user || profile?.role !== 'estudiante' || !temas.length) {
@@ -151,17 +163,103 @@ export default function UnidadTemas() {
         ))}
       </div>
 
-      {tab !== 'temas' && (
-        <Card padding="md" className="mb-6 text-center">
-          <p className="text-atenas-muted">
-            Abre cada tema para ver {tab === 'recursos' ? 'recursos' : tab} disponibles.
-          </p>
-          {temas[0] && !bloqueoTema[temas[0].id] && (
-            <Button size="sm" className="mt-4" onClick={() => navigate(`/temas/${temas[0]!.id}`)}>
-              Ir al primer tema
-            </Button>
-          )}
-        </Card>
+      {tab === 'recursos' && (
+        loadingAgregado ? (
+          <SkeletonLines lines={4} />
+        ) : recursos.length === 0 ? (
+          <EmptyState icon={<BookOpen className="w-8 h-8" />} title="Sin recursos" description="Aún no hay recursos en los temas de esta unidad." />
+        ) : (
+          <ul className="space-y-3 list-none m-0 p-0 mb-6">
+            {recursos.map((r) => (
+              <li key={r.id}>
+                <Link
+                  to={`/temas/${r.temaId}`}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card hover:shadow-card-hover min-h-touch"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-atenas-muted uppercase">{r.temaTitulo}</p>
+                    <p className="font-bold text-atenas-ink truncate">{r.title ?? r.tipo}</p>
+                  </div>
+                  <Badge tone="default">{r.tipo}</Badge>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+
+      {tab === 'actividades' && (
+        loadingAgregado ? (
+          <SkeletonLines lines={4} />
+        ) : actividades.length === 0 ? (
+          <EmptyState icon={<BookOpen className="w-8 h-8" />} title="Sin actividades" description="Tu docente publicará actividades en los temas." />
+        ) : (
+          <ul className="space-y-3 list-none m-0 p-0 mb-6">
+            {actividades.map((a) => (
+              <li key={a.id}>
+                {a.bloqueada ? (
+                  <div className="flex items-center gap-3 rounded-2xl border border-atenas-mist-border bg-atenas-mist/80 p-4 opacity-95">
+                    <Lock className="w-5 h-5 text-atenas-muted shrink-0" />
+                    <div>
+                      <p className="text-xs text-atenas-muted">{a.temaTitulo}</p>
+                      <p className="font-bold text-atenas-muted-strong">{a.title}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    to={`/actividades/${a.id}`}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card hover:shadow-card-hover min-h-touch"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-atenas-muted uppercase">{a.temaTitulo}</p>
+                      <p className="font-bold text-atenas-ink truncate">{a.title}</p>
+                    </div>
+                    <Badge tone={a.completada ? 'success' : 'gold'}>
+                      {a.completada ? 'Hecha' : 'Pendiente'}
+                    </Badge>
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+
+      {tab === 'evaluaciones' && (
+        loadingAgregado ? (
+          <SkeletonLines lines={4} />
+        ) : evaluaciones.length === 0 ? (
+          <EmptyState icon={<BookOpen className="w-8 h-8" />} title="Sin evaluaciones" description="Tu docente publicará evaluaciones en los temas." />
+        ) : (
+          <ul className="space-y-3 list-none m-0 p-0 mb-6">
+            {evaluaciones.map((e) => (
+              <li key={e.id}>
+                {e.bloqueada ? (
+                  <div className="flex items-center gap-3 rounded-2xl border border-atenas-mist-border bg-atenas-mist/80 p-4 opacity-95">
+                    <Lock className="w-5 h-5 text-atenas-muted shrink-0" />
+                    <div>
+                      <p className="text-xs text-atenas-muted">{e.temaTitulo}</p>
+                      <p className="font-bold text-atenas-muted-strong">{e.title}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    to={`/evaluaciones/${e.id}`}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-atenas-mist-border bg-white p-4 shadow-card hover:shadow-card-hover min-h-touch"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-atenas-muted uppercase">{e.temaTitulo}</p>
+                      <p className="font-bold text-atenas-ink truncate">{e.title}</p>
+                    </div>
+                    <Badge tone={e.completada ? 'success' : 'gold'}>
+                      {e.completada ? 'Hecha' : 'Pendiente'}
+                    </Badge>
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        )
       )}
 
       {tab === 'temas' && mostrarCert && (

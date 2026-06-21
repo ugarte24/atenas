@@ -13,8 +13,7 @@ export function AdventureMapCanvas({ children, className, canvasRef }: Props) {
       className={cn(
         'relative w-full max-w-2xl mx-auto rounded-3xl overflow-y-auto overflow-x-hidden',
         'border-2 border-sky-300/70 ring-4 ring-sky-100/90 shadow-elevated',
-        'min-h-[70vh] max-h-[85vh] scrollbar-nav-hide',
-        'max-sm:snap-y max-sm:snap-proximity',
+        'min-h-[70vh] max-h-[85vh] scrollbar-nav-hide overscroll-y-contain touch-pan-y',
         className
       )}
     >

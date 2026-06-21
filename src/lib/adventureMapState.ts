@@ -1,21 +1,12 @@
 import type { AdventureMapNode, MapNodeStatus, UnitAdventureProgress } from './adventureMapTypes';
-
-const CHEST_STORAGE_PREFIX = 'atenas-chest-';
+import { getLocalOpenedChestIds, markChestOpenedLocal } from './adventureMapRewards';
 
 export function getOpenedChestIds(): Set<string> {
-  if (typeof window === 'undefined') return new Set();
-  const ids = new Set<string>();
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key?.startsWith(CHEST_STORAGE_PREFIX) && localStorage.getItem(key) === '1') {
-      ids.add(key.slice(CHEST_STORAGE_PREFIX.length));
-    }
-  }
-  return ids;
+  return getLocalOpenedChestIds();
 }
 
 export function markChestOpened(chestId: string): void {
-  localStorage.setItem(`${CHEST_STORAGE_PREFIX}${chestId}`, '1');
+  markChestOpenedLocal(chestId);
 }
 
 export function starsFromProgress(progressPct: number, avgScore: number): 0 | 1 | 2 | 3 {

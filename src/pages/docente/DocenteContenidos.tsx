@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { PageHeader } from '../../components/ui/PageHeader';
+import { Link } from 'react-router-dom';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { SkeletonLines } from '../../components/ui/Skeleton';
-import { Link } from 'react-router-dom';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { useUnidades } from '../../hooks/useUnidades';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { isOptionalHexColor, isOptionalHttpUrl } from '../../lib/unidadVisual';
@@ -250,9 +250,14 @@ export default function DocenteContenidos() {
         description="Crea y organiza las unidades del curso. Publica cuando estén listas para los estudiantes."
         actions={
           !creating && !editingId ? (
-            <Button type="button" onClick={() => setCreating(true)}>
-              + Nueva unidad
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/unidades?view=map" className="btn-secondary inline-flex text-sm min-h-touch items-center">
+                Vista mapa alumno
+              </Link>
+              <Button type="button" onClick={() => setCreating(true)}>
+                + Nueva unidad
+              </Button>
+            </div>
           ) : undefined
         }
       />

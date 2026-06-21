@@ -14,12 +14,13 @@ export type AdventureMapNavigation = {
 export function resolveAdventureMapNavigation(
   unidades: Unidad[],
   progressByUnit: Record<string, UnitAdventureProgress>,
-  previewAllOpen = false
+  previewAllOpen = false,
+  openedChestIds?: Set<string>
 ): AdventureMapNavigation {
   const nodes = buildAdventureMapGraph(
     unidades,
     progressByUnit,
-    getOpenedChestIds(),
+    openedChestIds ?? getOpenedChestIds(),
     previewAllOpen
   );
   const activeId = firstAvailableNodeId(nodes);

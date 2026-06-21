@@ -79,7 +79,7 @@ Documento de correspondencia entre requisitos del PRD y la implementación en c�
 | M8-F3 | Logros | Implementado | `Logros.tsx`, `achievements` | Insignias desbloqueables |
 | M8-F4 | Niveles | Implementado | `gamificacion.ts`, XP unificado vía `xpDesdePuntuacionIntentos` | Niveles por XP |
 
-> **Notas (jun 2026):** Foro por tema habilitado para estudiantes. XP unificado entre Home, Progreso y Perfil. Misiones especiales/cofre marcadas como próximamente hasta persistir bonificaciones.
+> **Notas (jun 2026):** Foro por tema habilitado para estudiantes. XP unificado (intentos + bonus mapa/misiones en Supabase). Misiones diarias/especiales y cofre semanal activos. Deep links del mapa: `/unidades?view=map&world=N`.
 
 ## Módulo 9 — Progreso académico
 

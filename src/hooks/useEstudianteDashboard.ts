@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useMapRewards } from './useMapRewards';
 import {
   xpDesdePuntuacionIntentos,
   nivelDesdeXp,
@@ -47,6 +48,7 @@ export type EstudianteDashboard = {
 
 export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
   const { user } = useAuthContext();
+  const { bonusXp } = useMapRewards(enabled);
   const [state, setState] = useState<
     Omit<EstudianteDashboard, 'nivel' | 'rachaEnRiesgo'> & {
       nivel: ReturnType<typeof nivelDesdeXp> | null;
@@ -233,7 +235,7 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
 
         const sumaAct = actRows.reduce((s, r) => s + r.puntuacion, 0);
         const sumaEval = evalRows.reduce((s, r) => s + r.puntuacion, 0);
-        const xp = xpDesdePuntuacionIntentos(sumaAct, sumaEval);
+        const xp = xpDesdePuntuacionIntentos(sumaAct, sumaEval) + bonusXp;
         const nivel = nivelDesdeXp(xp);
 
         const fechas = [
@@ -277,7 +279,7 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
     return () => {
       cancelled = true;
     };
-  }, [enabled, user?.id]);
+  }, [enabled, user?.id, bonusXp]);
 
   return {
     unidades: state.unidades,

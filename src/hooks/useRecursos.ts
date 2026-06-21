@@ -113,6 +113,21 @@ export function useRecursos(temaId: string | null) {
     setRecursos((prev) => prev.filter((r) => r.id !== id));
   }
 
+  async function updateRecurso(
+    id: string,
+    patch: Partial<Pick<Recurso, 'title' | 'contenido' | 'url' | 'tipo'>>
+  ) {
+    const { data, error: e } = await supabase
+      .from('recursos')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .single();
+    if (e) throw e;
+    setRecursos((prev) => prev.map((r) => (r.id === id ? (data as Recurso) : r)));
+    return data as Recurso;
+  }
+
   return {
     recursos,
     loading,
@@ -122,5 +137,6 @@ export function useRecursos(temaId: string | null) {
     addFromTexto,
     addFromFile,
     remove,
+    updateRecurso,
   };
 }

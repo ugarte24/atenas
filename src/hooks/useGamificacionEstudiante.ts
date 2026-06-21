@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno } from './useMisiones';
-import { getAdventureBonusXp } from '../lib/adventureMapRewards';
+import { useMapRewards } from './useMapRewards';
+import {
+  xpDesdePuntuacionIntentos,
+  diasConActividad,
+  calcularRachaActual,
+} from '../lib/gamificacion';
 
 export type GamificacionEstudiante = {
   puntos: number;
@@ -16,52 +21,21 @@ export type GamificacionEstudiante = {
   error: string | null;
 };
 
-function startOfDayUtc(d: Date): number {
-  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-}
-
-/** Calcula racha actual a partir de fechas UTC (día calendario) */
-export function calcularRachaDias(fechasCompletado: Date[]): number {
-  if (fechasCompletado.length === 0) return 0;
-  const days = new Set(
-    fechasCompletado.map((d) => startOfDayUtc(d))
-  );
-  const today = startOfDayUtc(new Date());
-  const oneDay = 86400000;
-  let streak = 0;
-  let cursor = today;
-  // Si hoy no hay actividad, empezar desde ayer (racha “viva” hasta ayer)
-  if (!days.has(today)) {
-    cursor = today - oneDay;
-  }
-  while (days.has(cursor)) {
-    streak += 1;
-    cursor -= oneDay;
-  }
-  return streak;
-}
-
 export function useGamificacionEstudiante(): GamificacionEstudiante {
   const { user, profile } = useAuthContext();
   const { misiones, loading: loadingMisiones } = useMisionesAlumno();
-  const [puntos, setPuntos] = useState(0);
-  const [bonusXp, setBonusXp] = useState(0);
+  const isStudent = profile?.role === 'estudiante';
+  const { bonusXp, loading: loadingRewards } = useMapRewards(isStudent);
+  const [puntosBase, setPuntosBase] = useState(0);
   const [racha, setRacha] = useState(0);
   const [loadingExtra, setLoadingExtra] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setBonusXp(getAdventureBonusXp());
-    const onBonus = () => setBonusXp(getAdventureBonusXp());
-    window.addEventListener('atenas:bonus-xp-changed', onBonus);
-    return () => window.removeEventListener('atenas:bonus-xp-changed', onBonus);
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
     async function fetchPuntosYRacha() {
       if (!user || profile?.role !== 'estudiante') {
-        setPuntos(0);
+        setPuntosBase(0);
         setRacha(0);
         setLoadingExtra(false);
         return;
@@ -85,20 +59,20 @@ export function useGamificacionEstudiante(): GamificacionEstudiante {
 
         const rowsAct = (actRes.data ?? []) as { puntuacion: number; completado_at: string | null }[];
         const rowsEval = (evalRes.data ?? []) as { puntuacion: number; completado_at: string | null }[];
-        const sumPts =
-          rowsAct.reduce((s, r) => s + (r.puntuacion ?? 0), 0) +
-          rowsEval.reduce((s, r) => s + (r.puntuacion ?? 0), 0);
+        const sumPts = xpDesdePuntuacionIntentos(
+          rowsAct.reduce((s, r) => s + (r.puntuacion ?? 0), 0),
+          rowsEval.reduce((s, r) => s + (r.puntuacion ?? 0), 0)
+        );
 
-        const fechas: Date[] = [];
-        [...rowsAct, ...rowsEval].forEach((r) => {
-          if (r.completado_at) fechas.push(new Date(r.completado_at));
-        });
-        setPuntos(sumPts);
-        setRacha(calcularRachaDias(fechas));
+        const fechas = [...rowsAct, ...rowsEval]
+          .map((r) => r.completado_at)
+          .filter(Boolean) as string[];
+        setPuntosBase(sumPts);
+        setRacha(calcularRachaActual(diasConActividad(fechas)));
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : 'Error de gamificación');
-          setPuntos(0);
+          setPuntosBase(0);
           setRacha(0);
         }
       } finally {
@@ -121,13 +95,11 @@ export function useGamificacionEstudiante(): GamificacionEstudiante {
     return Math.round(sum / conTemas.length);
   }, [misiones]);
 
-  /** Con racha 0 mostramos batería “llena” (5/5); con racha > 0 refleja impulso diario (tope 5). */
   const energia = racha === 0 ? 5 : Math.min(5, racha);
-
-  const loading = loadingMisiones || loadingExtra;
+  const loading = loadingMisiones || loadingExtra || loadingRewards;
 
   return {
-    puntos: puntos + bonusXp,
+    puntos: puntosBase + bonusXp,
     racha,
     porcentajeGlobal,
     energia,

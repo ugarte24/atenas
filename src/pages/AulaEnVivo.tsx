@@ -7,12 +7,14 @@ import { Textarea } from '../components/ui/Input';
 import { Alert } from '../components/ui/Alert';
 import { EmptyState } from '../components/ui/EmptyState';
 import { useAulaEnVivo } from '../hooks/useAulaEnVivo';
+import { useAulaMeetUrl } from '../hooks/useAulaMeetUrl';
 import { useAuthContext } from '../contexts/AuthContext';
 import { MessageCircle, Radio, Users } from 'lucide-react';
 
 export default function AulaEnVivo() {
   const { profile } = useAuthContext();
   const { mensajes, loading, error, enviando, enviar } = useAulaEnVivo();
+  const { meetUrl, loading: loadingMeet } = useAulaMeetUrl();
   const [texto, setTexto] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -105,7 +107,22 @@ export default function AulaEnVivo() {
           </Card>
           <Card padding="md" className="bg-atenas-sidebar text-white border-0">
             <p className="text-xs font-bold uppercase tracking-wide text-blue-200 mb-2">Videollamada</p>
-            <p className="text-sm text-blue-100/90">Próximamente: enlace Meet/Jitsi desde el panel docente.</p>
+            {loadingMeet ? (
+              <p className="text-sm text-blue-100/90">Cargando enlace…</p>
+            ) : meetUrl ? (
+              <a
+                href={meetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex mt-2 rounded-xl bg-white text-atenas-ink px-4 py-2 text-sm font-bold min-h-touch"
+              >
+                Unirse a la clase
+              </a>
+            ) : (
+              <p className="text-sm text-blue-100/90">
+                El docente configurará el enlace Meet/Jitsi desde el panel.
+              </p>
+            )}
           </Card>
         </aside>
       </div>

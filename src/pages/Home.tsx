@@ -21,6 +21,7 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { cn } from '../components/ui/cn';
 import { STUDENT_HOME_QUICK_LINKS } from '../constants/studentNav';
 import { Alert } from '../components/ui/Alert';
+import { buildUnidadesMapHref } from '../lib/adventureMapDeepLinks';
 
 function findNextTema(
   unidades: ReturnType<typeof useEstudianteDashboard>['unidades']
@@ -64,7 +65,7 @@ export default function Home() {
     ? `/temas/${nextTema.temaId}`
     : mapNav.nextUnitId
       ? `/unidades/${mapNav.nextUnitId}`
-      : '/unidades';
+      : buildUnidadesMapHref(mapNav.activeWorldId);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -118,7 +119,7 @@ export default function Home() {
             <ChevronRight className="w-5 h-5" aria-hidden />
           </Link>
           <Link
-            to="/unidades"
+            to={buildUnidadesMapHref(mapNav.activeWorldId)}
             className="inline-flex items-center justify-center gap-2 rounded-2xl border border-atenas-mist-border px-4 py-3 text-sm font-semibold text-atenas-ink hover:bg-atenas-mist min-h-touch"
           >
             <MapPin className="w-4 h-4" aria-hidden />
@@ -214,7 +215,7 @@ export default function Home() {
           {Math.min(3, misiones.length)} mundos completados
         </p>
         <Link
-          to="/unidades"
+          to={buildUnidadesMapHref(mapNav.activeWorldId)}
           className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white text-atenas-ink px-5 py-3 text-sm font-bold min-h-touch shadow-md hover:bg-white/95"
         >
           Abrir mapa de aventura

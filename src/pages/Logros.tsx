@@ -27,12 +27,13 @@ export default function Logros() {
 
   const badges = useMemo((): Badge[] => {
     if (logros.length > 0) {
-      return logros.map((b) => ({
+        return logros.map((b) => ({
         id: b.id,
         title: b.title,
         description: b.description ?? '',
         unlocked: b.unlocked,
         emoji: b.icon,
+        progressLabel: b.progressLabel,
       }));
     }
     const conTemas = misiones.filter((m) => m.totalPasos > 0);

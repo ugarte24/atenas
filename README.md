@@ -54,7 +54,7 @@ Copia `.env.example` a `.env` y rellena las variables (ver siguiente sección). 
    | 3 | `supabase/migrations/003_actividades_intentos.sql` | Tablas: `actividades`, `actividad_intentos` |
    | 4 | `supabase/migrations/004_evaluaciones.sql` | Tablas: `evaluaciones`, `evaluacion_intentos` |
    | 5 | `supabase/migrations/005_profiles_activo_admin.sql` | Columna `activo` en `profiles` y política para que admin actualice perfiles |
-   | 6+ | Ver `supabase/README_MIGRACIONES.md` y migraciones `20250318_*` … `20260620_*` | Features, gamificación, RLS, notas, aula en vivo |
+   | 6+ | Ver `supabase/README_MIGRACIONES.md` y migraciones `20250318_*` … `20260621_*` | Features, gamificación, RLS, notas, aula en vivo, cofres/XP persistentes |
 
    **Migraciones PRD (jun 2026)** — ejecutar después de las anteriores:
    - `20260615_unidades_publicada.sql`
@@ -62,6 +62,7 @@ Copia `.env.example` a `.env` y rellena las variables (ver siguiente sección). 
    - `20260615_evaluacion_intentos_tiempo.sql`
    - `20260615_progreso_tema_tiempo_estudio.sql`
    - `20260615_rls_profiles_admin_activo.sql`
+   - `20260621_gamificacion_mapa_misiones.sql` — cofres del mapa, misiones diarias y URL Meet en Supabase
 
    Trazabilidad requisito ↔ código: [`docs/PRD_TRAZABILIDAD.md`](docs/PRD_TRAZABILIDAD.md).
 

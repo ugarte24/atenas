@@ -20,6 +20,8 @@ Trazabilidad completa: [`docs/PRD_TRAZABILIDAD.md`](../docs/PRD_TRAZABILIDAD.md)
 4. `migrations/20260620_tema_notas.sql` — notas de lección sincronizadas.
 5. `migrations/20260620_aula_mensajes.sql` — chat del aula en vivo.
 6. `migrations/20260620_achievements_activo.sql` — columna `activo` en logros.
+7. `migrations/20260621_gamificacion_mapa_misiones.sql` — `user_map_rewards`, `user_daily_missions`, `aula_config` (cofres/XP/misiones persistentes, URL Meet).
+8. `migrations/20260621_evaluacion_intentos_multi_fix.sql` — solo si persiste UNIQUE en intentos de evaluación (ver abajo).
 
 En Supabase: **SQL Editor** → ejecutar en orden (o `supabase db push`).
 

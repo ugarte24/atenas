@@ -9,12 +9,11 @@ import {
   buildAdventureMapGraph,
 } from '../../lib/adventureMapLayout';
 import {
-  getOpenedChestIds,
-  markChestOpened,
   totalStars,
   firstAvailableNodeId,
 } from '../../lib/adventureMapState';
-import { addAdventureBonusXp, CHEST_XP_REWARD } from '../../lib/adventureMapRewards';
+import { CHEST_XP_REWARD } from '../../lib/adventureMapRewards';
+import { useMapRewards } from '../../hooks/useMapRewards';
 import { useMotionSafe } from '../../hooks/useMotionSafe';
 import { MascotLottie } from '../MascotLottie';
 import { AdventureMapCanvas } from './AdventureMapCanvas';
@@ -31,14 +30,25 @@ type Props = {
   unidades: Unidad[];
   progressByUnit: Record<string, UnitAdventureProgress>;
   showProgress: boolean;
+  scrollWorldId?: 1 | 2 | 3 | null;
+  scrollNodeId?: string | null;
 };
 
-export function IslandMapView({ unidades, progressByUnit, showProgress }: Props) {
+export function IslandMapView({
+  unidades,
+  progressByUnit,
+  showProgress,
+  scrollWorldId = null,
+  scrollNodeId = null,
+}: Props) {
   const { reduceMotion } = useMotionSafe();
   const canvasRef = useRef<HTMLDivElement>(null);
   const prevProgressRef = useRef<Record<string, UnitAdventureProgress>>({});
 
-  const [openedChestIds, setOpenedChestIds] = useState<Set<string>>(() => getOpenedChestIds());
+  const pendingChestRef = useRef<string | null>(null);
+  const previewAllOpen = !showProgress;
+  const { openedChestIds, openChest } = useMapRewards(showProgress);
+
   const [selectedNode, setSelectedNode] = useState<AdventureMapNode | null>(null);
   const [chestModalOpen, setChestModalOpen] = useState(false);
   const [chestRewardXp, setChestRewardXp] = useState(CHEST_XP_REWARD);
@@ -46,9 +56,6 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
   const [celebrateBurst, setCelebrateBurst] = useState(false);
   const [openingChestId, setOpeningChestId] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
-  const pendingChestRef = useRef<string | null>(null);
-
-  const previewAllOpen = !showProgress;
 
   const nodes = useMemo(
     () => buildAdventureMapGraph(unidades, progressByUnit, openedChestIds, previewAllOpen),
@@ -89,13 +96,24 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
 
   useEffect(() => {
     if (reduceMotion || !canvasRef.current || !showProgress) return;
+    const targetId = scrollNodeId ?? (scrollWorldId ? null : firstAvailableNodeId(nodes));
+    if (scrollWorldId && !scrollNodeId) {
+      const worldEl = canvasRef.current.querySelector(`[data-world-id="${scrollWorldId}"]`);
+      worldEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (scrollNodeId || targetId) {
+      const id = scrollNodeId ?? targetId;
+      const el = canvasRef.current.querySelector(`[data-node-id="${id}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     if (sessionStorage.getItem(MAP_SCROLL_KEY) === '1') return;
-    const id = firstAvailableNodeId(nodes);
-    if (!id) return;
-    const el = canvasRef.current.querySelector(`[data-node-id="${id}"]`);
+    if (!targetId) return;
+    const el = canvasRef.current.querySelector(`[data-node-id="${targetId}"]`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     sessionStorage.setItem(MAP_SCROLL_KEY, '1');
-  }, [nodes, reduceMotion, showProgress]);
+  }, [nodes, reduceMotion, showProgress, scrollWorldId, scrollNodeId]);
 
   const handleSelectNode = useCallback((node: AdventureMapNode) => {
     setSelectedNode(node);
@@ -112,14 +130,13 @@ export function IslandMapView({ unidades, progressByUnit, showProgress }: Props)
   const handleChestAnimationComplete = useCallback(() => {
     const chestId = pendingChestRef.current;
     if (!chestId) return;
-    markChestOpened(chestId);
-    addAdventureBonusXp(CHEST_XP_REWARD);
-    setChestRewardXp(CHEST_XP_REWARD);
-    setOpenedChestIds((prev) => new Set([...prev, chestId]));
-    pendingChestRef.current = null;
-    setOpeningChestId(null);
-    setChestModalOpen(true);
-  }, []);
+    void openChest(chestId, CHEST_XP_REWARD).then(() => {
+      setChestRewardXp(CHEST_XP_REWARD);
+      pendingChestRef.current = null;
+      setOpeningChestId(null);
+      setChestModalOpen(true);
+    });
+  }, [openChest]);
 
   return (
     <div className="relative">
