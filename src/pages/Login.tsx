@@ -106,7 +106,8 @@ export default function Login() {
             </form>
 
             <p className="mt-6 text-center text-xs text-atenas-muted leading-relaxed">
-              Si olvidó su contraseña, contáctese con el administrador.
+              Si olvidó su contraseña, contáctese con el administrador. Si recuerda la actual, puede
+              cambiarla en <strong className="text-atenas-ink">Mi perfil</strong>.
             </p>
           </Card>
         </div>

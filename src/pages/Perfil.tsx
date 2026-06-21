@@ -10,6 +10,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
 import { Link } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import type { UserRole } from '../types';
 
 type Tab = 'datos' | 'progreso';
@@ -20,6 +21,11 @@ export default function Perfil() {
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<'ok' | 'error' | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<'ok' | 'error' | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const esEstudiante = profile?.role === 'estudiante';
   const dash = useEstudianteDashboard(esEstudiante);
   const { logros: logrosUsuario, loading: loadingLogros } = useLogrosUsuario();
@@ -38,6 +44,35 @@ export default function Perfil() {
       .eq('id', profile.id);
     setSaving(false);
     setMessage(error ? 'error' : 'ok');
+  }
+
+  async function handlePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordMessage(null);
+    setPasswordError(null);
+
+    if (newPassword.length < 6) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setSavingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSavingPassword(false);
+
+    if (error) {
+      setPasswordMessage('error');
+      setPasswordError(error.message);
+      return;
+    }
+
+    setPasswordMessage('ok');
+    setNewPassword('');
+    setConfirmPassword('');
   }
 
   return (
@@ -152,6 +187,48 @@ export default function Perfil() {
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </Button>
           </form>
+          </Card>
+
+          <Card padding="lg" className="mt-4">
+            <h2 className="text-lg font-bold text-atenas-ink mb-1 flex items-center gap-2">
+              <Lock className="w-5 h-5 shrink-0" aria-hidden />
+              Cambiar contraseña
+            </h2>
+            <p className="text-sm text-atenas-muted mb-4">
+              Elige una contraseña nueva de al menos 6 caracteres.
+            </p>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <Input
+                label="Nueva contraseña"
+                id="newPassword"
+                type="password"
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+              <Input
+                label="Confirmar contraseña"
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+              {passwordError && <Alert tone="error">{passwordError}</Alert>}
+              {passwordMessage === 'ok' && (
+                <Alert tone="success">Contraseña actualizada correctamente.</Alert>
+              )}
+              {passwordMessage === 'error' && !passwordError && (
+                <Alert tone="error">No se pudo cambiar la contraseña. Vuelve a intentarlo.</Alert>
+              )}
+              <Button type="submit" disabled={savingPassword}>
+                {savingPassword ? 'Guardando...' : 'Actualizar contraseña'}
+              </Button>
+            </form>
           </Card>
         </div>
       )}

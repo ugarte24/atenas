@@ -141,7 +141,10 @@ function LayoutMain({
   handleSignOut,
   homeTo,
 }: LayoutMainProps) {
-  const mobileSidebarHeader = showStudentSidebar || showDocenteSidebar;
+  const isStaff = profile && !esEstudiante;
+  const showMobileStaffMenu =
+    profile &&
+    (showStudentSidebar || showDocenteSidebar || profile.role === 'admin');
   const staffRoleLabel =
     profile?.role === 'docente'
       ? 'Docente'
@@ -149,10 +152,10 @@ function LayoutMain({
         ? 'Administrador'
         : profile?.role;
   const staffDisplayName = profile?.full_name?.trim() || profile?.email || 'Usuario';
-  const todayLabel = new Date().toLocaleDateString('es', {
-    weekday: 'long',
+  const todayShortLabel = new Date().toLocaleDateString('es', {
+    weekday: 'short',
     day: 'numeric',
-    month: 'long',
+    month: 'short',
   });
 
   return (
@@ -167,19 +170,18 @@ function LayoutMain({
           <div
             className={cn(
               'page-container py-3 min-w-0',
-              esEstudiante || (!esEstudiante && mobileSidebarHeader)
-                ? 'flex flex-col gap-2'
-                : 'flex items-center justify-between gap-3'
+              esEstudiante && 'flex flex-col gap-2',
+              isStaff && 'flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-3'
             )}
           >
             <div
               className={cn(
                 'flex items-center gap-2 min-w-0 w-full',
                 esEstudiante && 'justify-between sm:justify-start sm:w-auto',
-                !esEstudiante && mobileSidebarHeader && 'justify-between'
+                isStaff && 'justify-between lg:w-auto lg:shrink-0'
               )}
             >
-              {profile && (showStudentSidebar || showDocenteSidebar) && (
+              {showMobileStaffMenu && (
                 <button
                   type="button"
                   className="flex lg:hidden items-center justify-center min-h-touch min-w-touch rounded-xl text-atenas-ink hover:bg-atenas-mist shrink-0"
@@ -201,26 +203,15 @@ function LayoutMain({
               {profile && esEstudiante && (
                 <StudentMobileGamificationChip className="ml-auto sm:ml-0" />
               )}
-              {profile && !esEstudiante && mobileSidebarHeader && (
-                <p className="text-xs text-atenas-muted capitalize leading-tight shrink-0 text-right ml-auto pl-2 max-w-[48%]">
-                  {todayLabel}
+              {isStaff && (
+                <p className="text-xs text-atenas-muted capitalize leading-tight shrink-0 text-right ml-auto pl-2 lg:hidden">
+                  {todayShortLabel}
                 </p>
               )}
             </div>
 
             {profile && !showStudentSidebar && !showDocenteSidebar && (
-              <button
-                type="button"
-                className="flex md:hidden items-center justify-center min-h-touch min-w-touch rounded-xl text-atenas-ink hover:bg-atenas-mist shrink-0"
-                aria-label="Abrir menú"
-                onClick={() => setDrawerOpen(true)}
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-            )}
-
-            {profile && !showStudentSidebar && !showDocenteSidebar && (
-              <nav className="hidden md:flex items-center gap-2" aria-label="Principal">
+              <nav className="hidden md:flex items-center gap-2 shrink-0" aria-label="Principal">
                 {profile.role === 'docente' && (
                   <Link
                     to="/docente"
@@ -267,26 +258,13 @@ function LayoutMain({
                 </p>
               </div>
             )}
-            {profile && !esEstudiante && mobileSidebarHeader && (
-              <div className="flex flex-col gap-0.5 min-w-0 w-full">
+            {isStaff && (
+              <div className="flex flex-col gap-0.5 min-w-0 w-full lg:hidden">
                 <p className="text-sm font-semibold text-atenas-ink truncate leading-tight">
                   {staffDisplayName}
                 </p>
                 <p className="text-xs text-atenas-muted capitalize leading-tight">
                   {staffRoleLabel}
-                </p>
-              </div>
-            )}
-            {profile && !esEstudiante && !mobileSidebarHeader && (
-              <div className="text-right min-w-0 shrink max-w-[50%]">
-                <p className="text-sm font-semibold text-atenas-ink truncate leading-tight">
-                  {staffDisplayName}
-                </p>
-                <p className="text-xs text-atenas-muted capitalize leading-tight">
-                  {staffRoleLabel}
-                </p>
-                <p className="text-[11px] text-atenas-muted capitalize leading-tight mt-0.5 truncate">
-                  {todayLabel}
                 </p>
               </div>
             )}

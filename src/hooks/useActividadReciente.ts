@@ -49,10 +49,11 @@ export function useActividadReciente(limit = 8) {
         };
         if (!r.completado_at) continue;
         const act = Array.isArray(r.actividades) ? r.actividades[0] : r.actividades;
+        if (!act?.title) continue;
         merged.push({
           id: r.actividad_id,
           tipo: 'actividad',
-          titulo: act?.title ?? 'Actividad',
+          titulo: act.title,
           puntuacion: r.puntuacion,
           fecha: r.completado_at,
         });
@@ -66,16 +67,25 @@ export function useActividadReciente(limit = 8) {
         };
         if (!r.completado_at) continue;
         const ev = Array.isArray(r.evaluaciones) ? r.evaluaciones[0] : r.evaluaciones;
+        if (!ev?.title) continue;
         merged.push({
           id: r.evaluacion_id,
           tipo: 'evaluacion',
-          titulo: ev?.title ?? 'Evaluación',
+          titulo: ev.title,
           puntuacion: r.puntuacion,
           fecha: r.completado_at,
         });
       }
       merged.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-      setItems(merged.slice(0, limit));
+      // Un solo registro por actividad/evaluación (el intento más reciente)
+      const seen = new Set<string>();
+      const deduped = merged.filter((item) => {
+        const key = `${item.tipo}:${item.id}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      setItems(deduped.slice(0, limit));
       setLoading(false);
     })();
     return () => {
