@@ -26,6 +26,20 @@ import { cn } from '../ui/cn';
 
 const MAP_SCROLL_KEY = 'atenas-map-initial-scroll-done';
 
+function scrollMapToElement(
+  container: HTMLElement,
+  el: Element,
+  align: 'start' | 'center',
+  smooth: boolean
+) {
+  const cRect = container.getBoundingClientRect();
+  const eRect = el.getBoundingClientRect();
+  const top = eRect.top - cRect.top + container.scrollTop;
+  const target =
+    align === 'start' ? top - 12 : top - container.clientHeight / 2 + eRect.height / 2;
+  container.scrollTo({ top: Math.max(0, target), behavior: smooth ? 'smooth' : 'auto' });
+}
+
 type Props = {
   unidades: Unidad[];
   progressByUnit: Record<string, UnitAdventureProgress>;
@@ -42,7 +56,10 @@ export function IslandMapView({
   scrollNodeId = null,
 }: Props) {
   const { reduceMotion } = useMotionSafe();
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const mapContentRef = useRef<HTMLDivElement>(null);
+  const initialScrollDoneRef = useRef(false);
+  const lastDeepLinkRef = useRef('');
   const prevProgressRef = useRef<Record<string, UnitAdventureProgress>>({});
 
   const pendingChestRef = useRef<string | null>(null);
@@ -95,23 +112,42 @@ export function IslandMapView({
   }, [progressByUnit, unidades, nodes, showProgress]);
 
   useEffect(() => {
-    if (reduceMotion || !canvasRef.current || !showProgress) return;
-    const targetId = scrollNodeId ?? (scrollWorldId ? null : firstAvailableNodeId(nodes));
-    if (scrollWorldId && !scrollNodeId) {
-      const worldEl = canvasRef.current.querySelector(`[data-world-id="${scrollWorldId}"]`);
-      worldEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const container = scrollContainerRef.current;
+    const content = mapContentRef.current;
+    if (!container || !content || !showProgress || nodes.length === 0) return;
+
+    const smooth = !reduceMotion;
+    const deepLink = `${scrollWorldId ?? ''}:${scrollNodeId ?? ''}`;
+    const hasDeepLink = scrollWorldId != null || scrollNodeId != null;
+
+    if (hasDeepLink) {
+      if (lastDeepLinkRef.current === deepLink) return;
+      lastDeepLinkRef.current = deepLink;
+      if (scrollWorldId && !scrollNodeId) {
+        const worldEl = content.querySelector(`[data-world-id="${scrollWorldId}"]`);
+        if (worldEl) scrollMapToElement(container, worldEl, 'start', smooth);
+      } else {
+        const id = scrollNodeId ?? firstAvailableNodeId(nodes);
+        if (id) {
+          const el = content.querySelector(`[data-node-id="${id}"]`);
+          if (el) scrollMapToElement(container, el, 'center', smooth);
+        }
+      }
       return;
     }
-    if (scrollNodeId || targetId) {
-      const id = scrollNodeId ?? targetId;
-      const el = canvasRef.current.querySelector(`[data-node-id="${id}"]`);
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    if (initialScrollDoneRef.current) return;
+    if (sessionStorage.getItem(MAP_SCROLL_KEY) === '1') {
+      initialScrollDoneRef.current = true;
       return;
     }
-    if (sessionStorage.getItem(MAP_SCROLL_KEY) === '1') return;
+
+    const targetId = firstAvailableNodeId(nodes);
+    initialScrollDoneRef.current = true;
     if (!targetId) return;
-    const el = canvasRef.current.querySelector(`[data-node-id="${targetId}"]`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const el = content.querySelector(`[data-node-id="${targetId}"]`);
+    if (el) scrollMapToElement(container, el, 'center', smooth);
     sessionStorage.setItem(MAP_SCROLL_KEY, '1');
   }, [nodes, reduceMotion, showProgress, scrollWorldId, scrollNodeId]);
 
@@ -195,7 +231,7 @@ export function IslandMapView({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <AdventureMapCanvas canvasRef={canvasRef}>
+        <AdventureMapCanvas scrollRef={scrollContainerRef} contentRef={mapContentRef}>
           {ADVENTURE_WORLD_ZONES.map((zone, index) => (
             <div key={zone.worldId} className="contents">
               {index > 0 && <AdventureMapWorldBridge fromWorldId={index as 1 | 2} />}

@@ -2,16 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useMisionesAlumno } from './useMisiones';
+import { fetchAchievementCatalog, type AchievementCatalogRow } from '../lib/achievementsCatalog';
 
-export type AchievementRow = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  icon: string;
-  orden: number;
-  activo?: boolean;
-};
+export type AchievementRow = AchievementCatalogRow;
 
 export type LogroVista = AchievementRow & { unlocked: boolean; progressLabel?: string };
 
@@ -44,12 +37,9 @@ export function useLogrosUsuario() {
       setLoadingDb(true);
       setError(null);
       try {
-        const { data, error: e } = await supabase
-          .from('achievements')
-          .select('id, slug, title, description, icon, orden, activo')
-          .order('orden', { ascending: true });
-        if (e) throw e;
-        if (!cancelled) setRows((data as AchievementRow[]) ?? []);
+        const { data, error: e } = await fetchAchievementCatalog();
+        if (e) throw new Error(e);
+        if (!cancelled) setRows(data);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'No se pudieron cargar los logros');

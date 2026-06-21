@@ -61,7 +61,7 @@ export function AdventureMapNodeLayer({
         return (
           <div
             key={node.id}
-            className="absolute pointer-events-auto"
+            className="absolute pointer-events-auto touch-pan-y"
             style={style}
           >
             {node.kind === 'unit' && (

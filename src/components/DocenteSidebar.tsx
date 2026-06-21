@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FolderOpen, Users, LogOut } from 'lucide-react';
 import { cn } from './ui/cn';
 import { AppVersionFootnote } from './AppVersionFootnote';
@@ -39,7 +39,10 @@ export function DocenteSidebar({ onSignOut, className }: Props) {
       aria-label="Panel docente"
     >
       <div className="px-4 pt-6 pb-5 border-b border-white/15">
-        <div className="flex items-center gap-3">
+        <Link
+          to="/docente"
+          className="flex items-center gap-3 rounded-xl hover:bg-white/10 transition-colors -mx-1 px-1 py-0.5"
+        >
           <div className="w-11 h-11 rounded-xl bg-atenas-gold/25 border border-atenas-gold/50 flex items-center justify-center overflow-hidden shrink-0">
             <img src="/logo-athena.png" alt="" className="w-9 h-9 object-contain" />
           </div>
@@ -49,7 +52,7 @@ export function DocenteSidebar({ onSignOut, className }: Props) {
             </p>
             <p className="text-[10px] sidebar-muted mt-0.5 uppercase tracking-wider font-medium">Docente</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">

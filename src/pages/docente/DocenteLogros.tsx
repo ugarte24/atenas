@@ -4,9 +4,10 @@ import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { SkeletonLines } from '../../components/ui/Skeleton';
 import { useAchievementsAdmin } from '../../hooks/useAchievementsAdmin';
+import { ACHIEVEMENTS_ACTIVO_MIGRATION } from '../../lib/achievementsCatalog';
 
 export default function DocenteLogros() {
-  const { items, loading, error, setActivo } = useAchievementsAdmin();
+  const { items, loading, error, setActivo, hasActivoColumn } = useAchievementsAdmin();
 
   return (
     <div>
@@ -21,10 +22,20 @@ export default function DocenteLogros() {
         </Alert>
       )}
 
+      {!hasActivoColumn && !error && (
+        <Alert tone="warning" className="mb-4">
+          Para activar o desactivar logros, ejecuta en Supabase SQL Editor:{' '}
+          <code className="text-xs">{ACHIEVEMENTS_ACTIVO_MIGRATION}</code>
+        </Alert>
+      )}
+
       {loading ? (
         <SkeletonLines lines={4} />
       ) : items.length === 0 ? (
-        <Card className="p-6 text-sm text-atenas-muted">No hay logros en la base de datos. Ejecuta las migraciones de gamificación.</Card>
+        <Card className="p-6 text-sm text-atenas-muted">
+          No hay logros en la base de datos. Ejecuta{' '}
+          <code className="text-xs">supabase/migrations/20260322_gamificacion_achievements_progreso_tema.sql</code>
+        </Card>
       ) : (
         <ul className="space-y-3">
           {items.map((a) => (
@@ -47,6 +58,12 @@ export default function DocenteLogros() {
                   variant={a.activo ? 'secondary' : 'primary'}
                   size="sm"
                   className="shrink-0"
+                  disabled={!hasActivoColumn}
+                  title={
+                    hasActivoColumn
+                      ? undefined
+                      : 'Requiere migración achievements.activo en Supabase'
+                  }
                   onClick={() => void setActivo(a.id, !a.activo)}
                 >
                   {a.activo ? 'Desactivar' : 'Activar'}

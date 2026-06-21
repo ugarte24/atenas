@@ -31,18 +31,35 @@ export function Layout({ children }: Props) {
     location.pathname.startsWith('/temas/') ||
     location.pathname.startsWith('/actividades/') ||
     location.pathname.startsWith('/evaluaciones/');
+  const esDocente = profile?.role === 'docente';
   const esDocenteOAdmin =
     profile?.role === 'docente' || profile?.role === 'admin';
-  const showDocenteSidebar = esDocenteOAdmin && enDocente;
+  /** Docente: sidebar siempre; admin: solo dentro de /docente */
+  const showDocenteSidebar = esDocente || (profile?.role === 'admin' && enDocente);
   const showStudentSidebar = esEstudiante;
+
+  const homeTo =
+    profile?.role === 'docente'
+      ? '/docente'
+      : profile?.role === 'admin'
+        ? '/admin'
+        : '/';
 
   const drawerLinks: DrawerLink[] = profile
     ? [
         ...(esEstudiante
           ? STUDENT_DRAWER_ITEMS.map(({ to, label, end }) => ({ to, label, end }))
           : []),
+        ...(esDocenteOAdmin
+          ? [
+              {
+                to: '/docente',
+                label: profile.role === 'docente' ? 'Inicio' : 'Panel docente',
+                end: true,
+              },
+            ]
+          : []),
         ...(!esEstudiante ? [{ to: '/perfil', label: 'Mi perfil' }] : []),
-        ...(esDocenteOAdmin ? [{ to: '/docente', label: 'Panel docente' }] : []),
         ...(profile.role === 'admin' ? [{ to: '/admin', label: 'Administración' }] : []),
       ]
     : [];
@@ -69,6 +86,7 @@ export function Layout({ children }: Props) {
               setDrawerOpen={setDrawerOpen}
               drawerLinks={drawerLinks}
               handleSignOut={handleSignOut}
+              homeTo={homeTo}
             >
               {children}
             </LayoutMain>
@@ -86,6 +104,7 @@ export function Layout({ children }: Props) {
             setDrawerOpen={setDrawerOpen}
             drawerLinks={drawerLinks}
             handleSignOut={handleSignOut}
+            homeTo={homeTo}
           >
             {children}
           </LayoutMain>
@@ -106,6 +125,7 @@ type LayoutMainProps = {
   setDrawerOpen: (open: boolean) => void;
   drawerLinks: DrawerLink[];
   handleSignOut: () => Promise<void>;
+  homeTo: string;
 };
 
 function LayoutMain({
@@ -119,7 +139,22 @@ function LayoutMain({
   setDrawerOpen,
   drawerLinks,
   handleSignOut,
+  homeTo,
 }: LayoutMainProps) {
+  const mobileSidebarHeader = showStudentSidebar || showDocenteSidebar;
+  const staffRoleLabel =
+    profile?.role === 'docente'
+      ? 'Docente'
+      : profile?.role === 'admin'
+        ? 'Administrador'
+        : profile?.role;
+  const staffDisplayName = profile?.full_name?.trim() || profile?.email || 'Usuario';
+  const todayLabel = new Date().toLocaleDateString('es', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+
   return (
     <>
         {/* Barra superior móvil / admin sin sidebar */}
@@ -132,15 +167,16 @@ function LayoutMain({
           <div
             className={cn(
               'page-container py-3 min-w-0',
-              esEstudiante
-                ? 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3'
+              esEstudiante || (!esEstudiante && mobileSidebarHeader)
+                ? 'flex flex-col gap-2'
                 : 'flex items-center justify-between gap-3'
             )}
           >
             <div
               className={cn(
-                'flex items-center gap-2 min-w-0',
-                esEstudiante && 'w-full sm:w-auto justify-between sm:justify-start'
+                'flex items-center gap-2 min-w-0 w-full',
+                esEstudiante && 'justify-between sm:justify-start sm:w-auto',
+                !esEstudiante && mobileSidebarHeader && 'justify-between'
               )}
             >
               {profile && (showStudentSidebar || showDocenteSidebar) && (
@@ -154,16 +190,21 @@ function LayoutMain({
                 </button>
               )}
               <Link
-                to="/"
-                className="flex items-center gap-2 min-h-touch shrink-0 rounded-lg hover:opacity-90 transition-opacity min-w-0"
+                to={homeTo}
+                className="flex items-center gap-2 min-h-touch shrink-0 rounded-lg hover:opacity-90 transition-opacity"
               >
                 <img src="/logo-athena.png" alt="" className="w-9 h-9 object-contain shrink-0 rounded-2xl" />
-                <span className="font-atenas font-bold text-atenas-ink text-lg tracking-wide truncate">
+                <span className="font-atenas font-bold text-atenas-ink text-lg tracking-wide">
                   ATENAS
                 </span>
               </Link>
               {profile && esEstudiante && (
                 <StudentMobileGamificationChip className="ml-auto sm:ml-0" />
+              )}
+              {profile && !esEstudiante && mobileSidebarHeader && (
+                <p className="text-xs text-atenas-muted capitalize leading-tight shrink-0 text-right ml-auto pl-2 max-w-[48%]">
+                  {todayLabel}
+                </p>
               )}
             </div>
 
@@ -180,6 +221,14 @@ function LayoutMain({
 
             {profile && !showStudentSidebar && !showDocenteSidebar && (
               <nav className="hidden md:flex items-center gap-2" aria-label="Principal">
+                {profile.role === 'docente' && (
+                  <Link
+                    to="/docente"
+                    className="text-sm font-medium text-atenas-muted hover:text-atenas-ink px-3 py-2 rounded-xl"
+                  >
+                    Inicio
+                  </Link>
+                )}
                 <Link
                   to="/perfil"
                   className="text-sm font-medium text-atenas-muted hover:text-atenas-ink px-3 py-2 rounded-xl"
@@ -218,14 +267,26 @@ function LayoutMain({
                 </p>
               </div>
             )}
-            {profile && !esEstudiante && (
-              <div className="text-right min-w-0 shrink">
-                <p className="text-[11px] text-atenas-muted capitalize leading-tight truncate">
-                  {new Date().toLocaleDateString('es', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                  })}
+            {profile && !esEstudiante && mobileSidebarHeader && (
+              <div className="flex flex-col gap-0.5 min-w-0 w-full">
+                <p className="text-sm font-semibold text-atenas-ink truncate leading-tight">
+                  {staffDisplayName}
+                </p>
+                <p className="text-xs text-atenas-muted capitalize leading-tight">
+                  {staffRoleLabel}
+                </p>
+              </div>
+            )}
+            {profile && !esEstudiante && !mobileSidebarHeader && (
+              <div className="text-right min-w-0 shrink max-w-[50%]">
+                <p className="text-sm font-semibold text-atenas-ink truncate leading-tight">
+                  {staffDisplayName}
+                </p>
+                <p className="text-xs text-atenas-muted capitalize leading-tight">
+                  {staffRoleLabel}
+                </p>
+                <p className="text-[11px] text-atenas-muted capitalize leading-tight mt-0.5 truncate">
+                  {todayLabel}
                 </p>
               </div>
             )}
