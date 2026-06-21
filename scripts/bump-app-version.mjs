@@ -34,7 +34,7 @@ if (parts.length !== 3 || parts.some(Number.isNaN)) {
   process.exit(1);
 }
 
-if (process.env.CI === 'true') {
+if (process.env.CI === 'true' && process.env.CI_SKIP_VERSION_BUMP === 'true') {
   writeVersionArtifacts(pkg.version);
   console.log(`Versión ATENAS (CI, sin bump): v${pkg.version}`);
   process.exit(0);

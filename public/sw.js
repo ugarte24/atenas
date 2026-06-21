@@ -1,5 +1,5 @@
 /* ATENAS — service worker (caché shell + red primero, respeta subpath GitHub Pages) */
-const CACHE = 'atenas-shell-v2';
+const CACHE = 'atenas-shell-v3';
 
 function basePath() {
   const path = new URL(self.location.href).pathname;
@@ -8,7 +8,7 @@ function basePath() {
 
 function shellUrls() {
   const base = basePath();
-  return [base || '/', `${base}index.html`, `${base}manifest.webmanifest`, `${base}offline.html`, `${base}version.json`];
+  return [base || '/', `${base}index.html`, `${base}manifest.webmanifest`, `${base}offline.html`];
 }
 
 self.addEventListener('install', (event) => {
@@ -33,6 +33,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.endsWith('/version.json')) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
+    return;
+  }
 
   const base = basePath();
   const indexUrl = `${base}index.html`;

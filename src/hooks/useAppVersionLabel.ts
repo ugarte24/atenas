@@ -1,19 +1,47 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAppVersionLabel } from '../constants/version';
 
+const SYNC_INTERVAL_MS = 60_000;
+
 function resolveVersionJsonUrl(): string {
   const base = import.meta.env.BASE_URL || '/';
   const prefix = base.endsWith('/') ? base : `${base}/`;
   return `${prefix}version.json`;
 }
 
+function formatVersionLabel(version: string): string {
+  const trimmed = version.trim();
+  if (!trimmed) return getAppVersionLabel();
+  return trimmed.startsWith('v') ? trimmed : `v${trimmed}`;
+}
+
+/** Versión inyectada en index.html al cargar la página (build / dev). */
+function readInlineVersionLabel(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const inline = (window as Window & { __ATENAS_VERSION__?: string }).__ATENAS_VERSION__;
+  if (inline?.trim()) return formatVersionLabel(inline);
+
+  const meta = document.querySelector('meta[name="atenas-version"]')?.getAttribute('content');
+  if (meta?.trim()) return formatVersionLabel(meta);
+
+  return null;
+}
+
+function getInitialVersionLabel(): string {
+  return readInlineVersionLabel() ?? getAppVersionLabel();
+}
+
 async function fetchVersionLabel(): Promise<string | null> {
   try {
-    const res = await fetch(`${resolveVersionJsonUrl()}?t=${Date.now()}`, { cache: 'no-store' });
+    const res = await fetch(`${resolveVersionJsonUrl()}?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
     if (!res.ok) return null;
     const data = (await res.json()) as { version?: string };
     if (!data.version?.trim()) return null;
-    return `v${data.version.trim()}`;
+    return formatVersionLabel(data.version);
   } catch {
     return null;
   }
@@ -21,15 +49,20 @@ async function fetchVersionLabel(): Promise<string | null> {
 
 /**
  * Versión visible en la UI.
- * Fuente de verdad en runtime: `public/version.json` (en dev, Vite la sirve desde package.json).
- * Fallback inicial: módulo generado `src/generated/appVersion.ts`.
+ * Prioridad: version.json en runtime → meta / window.__ATENAS_VERSION__ → appVersion.ts empaquetado.
+ * Se re-sincroniza al montar, al volver a la pestaña y periódicamente.
  */
 export function useAppVersionLabel(): string {
-  const [label, setLabel] = useState(getAppVersionLabel);
+  const [label, setLabel] = useState(getInitialVersionLabel);
 
   const syncFromServer = useCallback(async () => {
     const fromJson = await fetchVersionLabel();
-    if (fromJson) setLabel(fromJson);
+    if (fromJson) {
+      setLabel((prev) => (prev === fromJson ? prev : fromJson));
+      return;
+    }
+    const inline = readInlineVersionLabel();
+    if (inline) setLabel((prev) => (prev === inline ? prev : inline));
   }, []);
 
   useEffect(() => {
@@ -37,13 +70,22 @@ export function useAppVersionLabel(): string {
   }, [syncFromServer]);
 
   useEffect(() => {
-    if (!import.meta.env.DEV) return;
-
-    const onFocus = () => {
-      void syncFromServer();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void syncFromServer();
     };
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
+
+    window.addEventListener('focus', onVisible);
+    document.addEventListener('visibilitychange', onVisible);
+
+    const intervalId = window.setInterval(() => {
+      void syncFromServer();
+    }, SYNC_INTERVAL_MS);
+
+    return () => {
+      window.removeEventListener('focus', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(intervalId);
+    };
   }, [syncFromServer]);
 
   return label;

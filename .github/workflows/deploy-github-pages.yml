@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -38,6 +38,15 @@ jobs:
         run: |
           npm run build
           echo "{\"viteBase\":\"$VITE_BASE_PATH\",\"repo\":\"${{ github.event.repository.name }}\"}" > dist/build-info.json
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json public/version.json src/generated/appVersion.ts
+          git diff --staged --quiet && exit 0
+          git commit -m "chore: bump version [skip ci]"
+          git push
 
       - name: Comprobar rutas en index.html (debe ser /${{ github.event.repository.name }}/assets/…)
         run: |
