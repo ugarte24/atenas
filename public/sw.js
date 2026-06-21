@@ -1,5 +1,5 @@
 /* ATENAS — service worker (caché shell + red primero, respeta subpath GitHub Pages) */
-const CACHE = 'atenas-shell-v3';
+const CACHE = 'atenas-shell-v4';
 
 function basePath() {
   const path = new URL(self.location.href).pathname;
@@ -22,9 +22,20 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k.startsWith('atenas-shell-') && k !== CACHE).map((k) => caches.delete(k))
+        )
+      )
+      .then(() => {
+        const base = basePath();
+        return caches.open(CACHE).then((cache) =>
+          cache.delete(`${base}version.json`).catch(() => undefined)
+        );
+      })
+      .then(() => self.clients.claim())
   );
 });
 
@@ -35,7 +46,11 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.endsWith('/version.json')) {
-    event.respondWith(fetch(request, { cache: 'no-store' }));
+    event.respondWith(
+      fetch(new Request(request, { cache: 'no-store' })).catch(() =>
+        fetch(`${url.origin}${url.pathname}?t=${Date.now()}`, { cache: 'no-store' })
+      )
+    );
     return;
   }
 

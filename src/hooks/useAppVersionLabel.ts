@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAppVersionLabel } from '../constants/version';
 
-const SYNC_INTERVAL_MS = 60_000;
+const SYNC_INTERVAL_MS = 30_000;
+const RETRY_DELAYS_MS = [0, 2_000, 5_000, 15_000] as const;
 
 function resolveVersionJsonUrl(): string {
   const base = import.meta.env.BASE_URL || '/';
   const prefix = base.endsWith('/') ? base : `${base}/`;
-  return `${prefix}version.json`;
+  const relative = `${prefix}version.json`;
+  if (typeof window !== 'undefined') {
+    return new URL(relative, window.location.origin).href;
+  }
+  return relative;
 }
 
 function formatVersionLabel(version: string): string {
@@ -32,19 +37,37 @@ function getInitialVersionLabel(): string {
   return readInlineVersionLabel() ?? getAppVersionLabel();
 }
 
+function nudgeServiceWorkerUpdate(): void {
+  if (!('serviceWorker' in navigator)) return;
+  void navigator.serviceWorker.getRegistrations().then((regs) => {
+    regs.forEach((reg) => void reg.update());
+  });
+}
+
 async function fetchVersionLabel(): Promise<string | null> {
-  try {
-    const res = await fetch(`${resolveVersionJsonUrl()}?t=${Date.now()}`, {
-      cache: 'no-store',
-      headers: { Accept: 'application/json' },
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { version?: string };
-    if (!data.version?.trim()) return null;
-    return formatVersionLabel(data.version);
-  } catch {
-    return null;
+  const baseUrl = resolveVersionJsonUrl();
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const res = await fetch(`${baseUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+        },
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as { version?: string };
+      if (!data.version?.trim()) continue;
+      return formatVersionLabel(data.version);
+    } catch {
+      // reintento
+    }
   }
+
+  return null;
 }
 
 /**
@@ -58,7 +81,10 @@ export function useAppVersionLabel(): string {
   const syncFromServer = useCallback(async () => {
     const fromJson = await fetchVersionLabel();
     if (fromJson) {
-      setLabel((prev) => (prev === fromJson ? prev : fromJson));
+      setLabel((prev) => {
+        if (prev !== fromJson) nudgeServiceWorkerUpdate();
+        return prev === fromJson ? prev : fromJson;
+      });
       return;
     }
     const inline = readInlineVersionLabel();
@@ -66,7 +92,15 @@ export function useAppVersionLabel(): string {
   }, []);
 
   useEffect(() => {
-    void syncFromServer();
+    const timeoutIds = RETRY_DELAYS_MS.map((delay) =>
+      window.setTimeout(() => {
+        void syncFromServer();
+      }, delay)
+    );
+
+    return () => {
+      timeoutIds.forEach((id) => window.clearTimeout(id));
+    };
   }, [syncFromServer]);
 
   useEffect(() => {
