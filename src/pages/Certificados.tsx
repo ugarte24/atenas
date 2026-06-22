@@ -14,10 +14,8 @@ import { useMisionesAlumno } from '../hooks/useMisiones';
 import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
-import { downloadCertificadoPdf } from '../lib/certificadoPdf';
+import { downloadCertificadoPdf, openCertificadoEnVentana } from '../lib/certificadoPdf';
 import { buildCertificadoParams } from '../lib/certificadoStats';
-import type { CertificadoParams } from '../lib/certificadoPrintHtml';
-import { CertificadoPreviewModal } from '../components/certificado/CertificadoPreviewModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -37,7 +35,7 @@ export default function Certificados() {
   const [certs, setCerts] = useState<CertState>({});
   const [loadingPct, setLoadingPct] = useState(true);
   const [filtro, setFiltro] = useState<Filtro>('todos');
-  const [previewParams, setPreviewParams] = useState<CertificadoParams | null>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
   const [pdfId, setPdfId] = useState<string | null>(null);
 
   const publicadas = useMemo(() => unidades.filter((u) => u.publicada !== false), [unidades]);
@@ -91,13 +89,23 @@ export default function Certificados() {
 
   async function abrirCertificado(unidadId: string, titulo: string, pct: number, umbral: number) {
     if (!user) return;
-    const params = await buildCertificadoParams(user.id, unidadId, {
-      nombreEstudiante: profile?.full_name ?? 'Estudiante',
-      tituloUnidad: titulo,
-      porcentajeUnidad: pct,
-      umbralCertificado: umbral,
-    });
-    setPreviewParams(params);
+    setOpeningId(unidadId);
+    try {
+      const params = await buildCertificadoParams(user.id, unidadId, {
+        nombreEstudiante: profile?.full_name ?? 'Estudiante',
+        tituloUnidad: titulo,
+        porcentajeUnidad: pct,
+        umbralCertificado: umbral,
+      });
+      await openCertificadoEnVentana(params);
+    } catch (e) {
+      console.error(e);
+      window.alert(
+        e instanceof Error ? e.message : 'No se pudo abrir el certificado. Permite ventanas emergentes e intenta de nuevo.'
+      );
+    } finally {
+      setOpeningId(null);
+    }
   }
 
   async function descargarPdf(unidadId: string, titulo: string, pct: number, umbral: number) {
@@ -127,11 +135,6 @@ export default function Certificados() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <CertificadoPreviewModal
-        open={previewParams != null}
-        onClose={() => setPreviewParams(null)}
-        params={previewParams}
-      />
       <PageHeader
         title="Certificados"
         description="Completa cada unidad al umbral indicado para obtener tu diploma."
@@ -340,9 +343,14 @@ export default function Certificados() {
                             type="button"
                             size="sm"
                             variant="primary"
+                            disabled={openingId === u.id}
                             onClick={() => void abrirCertificado(u.id, titulo, pct, umbral)}
                             className="inline-flex flex-1 items-center justify-center gap-2 shadow-sm"
+                            aria-busy={openingId === u.id}
                           >
+                            {openingId === u.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
+                            ) : null}
                             Ver certificado
                           </Button>
                           <Button

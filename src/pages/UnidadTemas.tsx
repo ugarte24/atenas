@@ -19,9 +19,8 @@ import { useUnidadContenidoAgregado } from '../hooks/useUnidadContenidoAgregado'
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { Badge } from '../components/ui/Badge';
 import { cn } from '../components/ui/cn';
-import { CertificadoPreviewModal } from '../components/certificado/CertificadoPreviewModal';
-import type { CertificadoParams } from '../lib/certificadoPrintHtml';
 import { buildCertificadoParams } from '../lib/certificadoStats';
+import { openCertificadoEnVentana } from '../lib/certificadoPdf';
 
 type UnidadTab = 'temas' | 'recursos' | 'actividades' | 'evaluaciones';
 
@@ -35,7 +34,7 @@ export default function UnidadTemas() {
   const { temas, loading } = useTemas(unidadId ?? null);
   const [bloqueoTema, setBloqueoTema] = useState<Record<string, boolean>>({});
   const [pctUnidad, setPctUnidad] = useState<number | null>(null);
-  const [previewParams, setPreviewParams] = useState<CertificadoParams | null>(null);
+  const [abriendoCert, setAbriendoCert] = useState(false);
 
   const temaIds = useMemo(() => temas.map((t) => t.id), [temas]);
   const esEstudiante = profile?.role === 'estudiante';
@@ -104,11 +103,6 @@ export default function UnidadTemas() {
 
   return (
     <div>
-      <CertificadoPreviewModal
-        open={previewParams != null}
-        onClose={() => setPreviewParams(null)}
-        params={previewParams}
-      />
       <Breadcrumbs
         className="mb-4"
         items={[
@@ -272,17 +266,30 @@ export default function UnidadTemas() {
       {tab === 'temas' && mostrarCert && (
         <div className="mb-6">
           <Button
+            disabled={abriendoCert}
+            aria-busy={abriendoCert}
             onClick={() => {
               if (!user || !unidadId) return;
+              setAbriendoCert(true);
               void buildCertificadoParams(user.id, unidadId, {
                 nombreEstudiante,
                 tituloUnidad: unidad.title,
                 porcentajeUnidad: pctUnidad ?? 0,
                 umbralCertificado: umbralCert ?? 0,
-              }).then(setPreviewParams);
+              })
+                .then((params) => openCertificadoEnVentana(params))
+                .catch((e) => {
+                  console.error(e);
+                  window.alert(
+                    e instanceof Error
+                      ? e.message
+                      : 'No se pudo abrir el certificado. Permite ventanas emergentes e intenta de nuevo.'
+                  );
+                })
+                .finally(() => setAbriendoCert(false));
             }}
           >
-            Ver certificado
+            {abriendoCert ? 'Abriendo…' : 'Ver certificado'}
           </Button>
         </div>
       )}

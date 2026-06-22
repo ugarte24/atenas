@@ -238,6 +238,7 @@ export function buildCertificadoPrintDocument(
       background: var(--cert-paper);
       border: 3px solid var(--cert-gold);
       box-shadow: inset 0 0 0 1px rgba(20,28,44,0.3), 0 8px 28px rgba(20,28,44,0.1);
+      min-height: 0;
     }
     .cert::before {
       content: ''; position: absolute; inset: 9px;
@@ -256,19 +257,20 @@ export function buildCertificadoPrintDocument(
       position: relative; z-index: 1; flex: 0 0 23%; min-width: 0;
       background: linear-gradient(170deg, #1a2230 0%, #252f42 50%, #1c2433 100%);
       color: #f8f6f0; display: flex; flex-direction: column; align-items: center;
-      padding: 1.35rem 0.9rem 1.1rem; text-align: center;
+      padding: 1.65rem 0.85rem 0.95rem; text-align: center;
       border-right: 2px solid var(--cert-gold);
     }
     .cert-aside__athena-wrap {
-      width: 88px; height: 88px; border-radius: 50%;
+      width: 68px; height: 68px; border-radius: 50%;
       border: 2px solid var(--cert-gold);
-      overflow: hidden; margin-bottom: 0.6rem;
+      overflow: hidden; margin-bottom: 0.5rem;
       background: transparent;
-      box-shadow: 0 0 0 3px rgba(201,166,106,0.18);
+      box-shadow: 0 0 0 2px rgba(201,166,106,0.15);
+      flex-shrink: 0;
     }
     .cert-aside__athena {
-      width: 100%; height: 100%; object-fit: contain; object-position: center 8%;
-      display: block; transform: scale(1.18);
+      width: 100%; height: 100%; object-fit: contain; object-position: center 22%;
+      display: block; transform: scale(0.92);
       background: transparent;
     }
     .cert-aside__athena--hidden { display: none !important; }
@@ -281,7 +283,7 @@ export function buildCertificadoPrintDocument(
       color: rgba(248,246,240,0.72); margin-top: 0.35rem; line-height: 1.4;
     }
     .cert-aside__quote-icon {
-      margin: 1rem 0 0.35rem; color: var(--cert-gold); opacity: 0.9;
+      margin: 0.65rem 0 0.3rem; color: var(--cert-gold); opacity: 0.9;
     }
     .cert-aside__quote-icon svg { width: 22px; height: 22px; }
     .cert-aside__quote {
@@ -289,8 +291,8 @@ export function buildCertificadoPrintDocument(
       line-height: 1.45; padding: 0 0.25rem;
     }
     .cert-aside__values {
-      list-style: none; margin: 1rem 0 0; padding: 0; width: 100%;
-      display: flex; flex-direction: column; gap: 0.55rem;
+      list-style: none; margin: 0.65rem 0 0; padding: 0; width: 100%;
+      display: flex; flex-direction: column; gap: 0.4rem;
     }
     .cert-aside__value {
       display: flex; align-items: center; gap: 0.5rem; text-align: left;
@@ -317,15 +319,15 @@ export function buildCertificadoPrintDocument(
     }
 
     .cert-main {
-      position: relative; z-index: 1; flex: 1; min-width: 0;
+      position: relative; z-index: 1; flex: 1; min-width: 0; min-height: 0;
       display: flex; flex-direction: column;
-      padding: 1.35rem 1.75rem 1.1rem 1.5rem;
+      padding: 1rem 1.35rem 0.75rem 1.25rem;
       background-image: radial-gradient(ellipse 55% 70% at 88% 45%, rgba(201,166,106,0.06), transparent 70%);
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: 0.55rem; right: 0.75rem;
-      width: 2.15in; height: 2.15in; z-index: 10; pointer-events: none;
+      position: absolute; top: 0.45rem; right: 0.55rem;
+      width: 1.38in; height: 1.38in; z-index: 10; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -333,26 +335,26 @@ export function buildCertificadoPrintDocument(
     }
     .cert-emblema-wrap.cert-emblema--hidden { display: none !important; }
 
-    .cert-content { flex: 1; display: flex; flex-direction: column; padding-right: 2.35in; }
+    .cert-content { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-right: 1.5in; }
 
     .cert-platform-header {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.22rem; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--cert-ink); margin-bottom: 0.35rem; line-height: 1.2;
+      font-size: 1.05rem; letter-spacing: 0.13em; text-transform: uppercase;
+      color: var(--cert-ink); margin-bottom: 0.25rem; line-height: 1.2;
     }
 
     .cert-stars { color: var(--cert-gold); font-size: 0.72rem; letter-spacing: 0.35em; margin-bottom: 0.2rem; }
 
     .cert-title {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.42rem; letter-spacing: 0.05em; text-transform: uppercase;
-      color: var(--cert-ink); line-height: 1.2; margin-bottom: 0.2rem;
+      font-size: 1.28rem; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--cert-ink); line-height: 1.2; margin-bottom: 0.15rem;
     }
     .cert-subtitle {
-      font-size: 0.78rem; font-style: italic; color: var(--cert-muted); margin-bottom: 0.65rem;
+      font-size: 0.72rem; font-style: italic; color: var(--cert-muted); margin-bottom: 0.45rem;
     }
 
-    .cert-name-block { margin: 0.45rem 0 0.55rem; max-width: 92%; }
+    .cert-name-block { margin: 0.3rem 0 0.4rem; max-width: 95%; }
     .cert-name-rule {
       height: 2px; background: linear-gradient(90deg, transparent, var(--cert-gold) 20%, var(--cert-gold) 80%, transparent);
       position: relative;
@@ -363,19 +365,19 @@ export function buildCertificadoPrintDocument(
     }
     .cert-name {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.48rem; letter-spacing: 0.02em; color: var(--cert-ink);
-      padding: 0.45rem 0.25rem; line-height: 1.25; text-align: center;
+      font-size: 1.32rem; letter-spacing: 0.02em; color: var(--cert-ink);
+      padding: 0.35rem 0.25rem; line-height: 1.25; text-align: center;
     }
 
-    .cert-unit { font-size: 0.82rem; color: #2d3748; margin-bottom: 0.65rem; }
+    .cert-unit { font-size: 0.76rem; color: #2d3748; margin-bottom: 0.45rem; }
     .cert-unit strong { font-weight: 600; color: var(--cert-ink); }
     .cert-unit em { font-style: italic; }
 
     .cert-grade-row {
-      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.55rem;
+      display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; margin-bottom: 0.4rem;
     }
     .cert-grade-badge {
-      flex-shrink: 0; width: 92px; height: 92px; border-radius: 50%;
+      flex-shrink: 0; width: 80px; height: 80px; border-radius: 50%;
       border: 3px solid var(--cert-gold);
       background: linear-gradient(145deg, #fffef9 0%, #f5efe0 100%);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -384,7 +386,7 @@ export function buildCertificadoPrintDocument(
     .cert-grade-stars { font-size: 0.42rem; color: var(--cert-gold); letter-spacing: 0.08em; margin-bottom: 0.1rem; }
     .cert-grade-value {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.35rem; line-height: 1; color: #1f2d2a;
+      font-size: 1.2rem; line-height: 1; color: #1f2d2a;
     }
     .cert-grade-label {
       font-size: 0.42rem; text-transform: uppercase; letter-spacing: 0.06em;
@@ -395,7 +397,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-summary {
       border: 1px solid rgba(201,166,106,0.55); border-radius: 4px;
-      background: var(--cert-tan); padding: 0.5rem 0.65rem 0.55rem; margin-top: 0.15rem;
+      background: var(--cert-tan); padding: 0.4rem 0.55rem 0.45rem; margin-top: 0.1rem;
     }
     .cert-summary__title {
       font-family: 'Cinzel', Georgia, serif; font-size: 0.58rem; font-weight: 600;
@@ -420,23 +422,42 @@ export function buildCertificadoPrintDocument(
       font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; font-weight: 600; color: var(--cert-ink);
     }
 
+    .cert-signatures {
+      display: flex; justify-content: center; gap: 2.5rem;
+      margin-top: 0.45rem; padding: 0 0.5rem;
+      flex-shrink: 0;
+    }
+    .cert-signatures__col {
+      flex: 0 1 9rem; text-align: center; min-width: 0;
+    }
+    .cert-signatures__line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #2c2c2c 12%, #2c2c2c 88%, transparent);
+      margin-bottom: 0.3rem;
+    }
+    .cert-signatures__label {
+      font-size: 0.62rem; color: var(--cert-muted); letter-spacing: 0.05em;
+      text-transform: uppercase; font-weight: 600;
+    }
+
     .cert-footer {
-      margin-top: auto; padding-top: 0.55rem;
+      margin-top: 0.35rem; padding-top: 0.4rem;
       border-top: 1px solid rgba(201,166,106,0.35);
-      display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem;
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem;
+      flex-shrink: 0;
     }
     .cert-date {
-      font-size: 0.72rem; color: var(--cert-muted); display: flex; align-items: center; gap: 0.35rem;
+      font-size: 0.66rem; color: var(--cert-muted); display: flex; align-items: center; gap: 0.3rem;
     }
-    .cert-date svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.7; }
+    .cert-date svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.7; }
 
-    .cert-qr { display: flex; align-items: center; gap: 0.5rem; }
+    .cert-qr { display: flex; align-items: center; gap: 0.4rem; }
     .cert-qr__img {
-      width: 56px; height: 56px; border: 1px solid rgba(201,166,106,0.4);
+      width: 48px; height: 48px; border: 1px solid rgba(201,166,106,0.4);
       border-radius: 3px; background: #fff;
     }
-    .cert-qr__id { font-size: 0.62rem; font-weight: 600; color: var(--cert-ink); letter-spacing: 0.04em; }
-    .cert-qr__hint { font-size: 0.52rem; color: var(--cert-muted); margin-top: 0.1rem; max-width: 9rem; line-height: 1.3; }
+    .cert-qr__id { font-size: 0.58rem; font-weight: 600; color: var(--cert-ink); letter-spacing: 0.04em; }
+    .cert-qr__hint { font-size: 0.48rem; color: var(--cert-muted); margin-top: 0.08rem; max-width: 8rem; line-height: 1.25; }
     .cert-qr--id-only { justify-content: flex-end; }
 
     html.certificado-root--pdf .cert-aside__brand,
@@ -482,8 +503,8 @@ export function buildCertificadoPrintDocument(
             class="cert-aside__athena"
             src="${athenaUrl}"
             alt=""
-            width="88"
-            height="88"
+            width="68"
+            height="68"
             onerror="this.classList.add('cert-aside__athena--hidden')"
           />
         </div>
@@ -506,8 +527,8 @@ export function buildCertificadoPrintDocument(
             class="cert-emblema"
             src="${emblemaUrl}"
             alt=""
-            width="206"
-            height="206"
+            width="132"
+            height="132"
             onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
           />
         </div>
@@ -545,6 +566,17 @@ export function buildCertificadoPrintDocument(
               ${statCell(VALUE_ICONS.chart, 'Tiempo dedicado', escapeHtml(tiempo))}
               ${statCell(VALUE_ICONS.star, 'Calificación final', `${pct}%`)}
             </div>
+          </div>
+        </div>
+
+        <div class="cert-signatures" role="group" aria-label="Espacios para firmas">
+          <div class="cert-signatures__col">
+            <div class="cert-signatures__line" aria-hidden="true"></div>
+            <p class="cert-signatures__label">Docente de aula</p>
+          </div>
+          <div class="cert-signatures__col">
+            <div class="cert-signatures__line" aria-hidden="true"></div>
+            <p class="cert-signatures__label">Director(a)</p>
           </div>
         </div>
 
