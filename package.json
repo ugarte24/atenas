@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "prepare-athena-icon": "node scripts/clean-athena-logo-png.mjs && node scripts/embed-favicon-png-in-svg.mjs",
+    "prepare-athena-face": "node scripts/make-athena-face-png.mjs",
     "prepare-emblema-colegio": "node scripts/make-emblema-colegio-transparent.mjs",
     "fix-emblema-black": "node scripts/fix-emblema-black-edge.mjs",
     "splash-lottie": "node scripts/generate-splash-lottie.mjs",
@@ -27,6 +28,7 @@
     "jspdf": "^4.2.1",
     "lottie-react": "^2.4.1",
     "lucide-react": "^1.18.0",
+    "qrcode": "^1.5.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1"
@@ -37,6 +39,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^24.12.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.0",

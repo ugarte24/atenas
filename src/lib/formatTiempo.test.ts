@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatTiempoEstudio } from './formatTiempo';
+import { formatTiempoEstudio, formatTiempoCertificado } from './formatTiempo';
 
 describe('formatTiempoEstudio', () => {
   it('formatea cero segundos', () => {
@@ -20,5 +20,13 @@ describe('formatTiempoEstudio', () => {
 
   it('formatea menos de un minuto', () => {
     expect(formatTiempoEstudio(45)).toBe('< 1 min');
+  });
+});
+
+describe('formatTiempoCertificado', () => {
+  it('formatea horas para certificado', () => {
+    expect(formatTiempoCertificado(0)).toBe('0 horas');
+    expect(formatTiempoCertificado(7200)).toBe('2 horas');
+    expect(formatTiempoCertificado(3600)).toBe('1 hora');
   });
 });

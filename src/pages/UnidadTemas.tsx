@@ -21,6 +21,7 @@ import { Badge } from '../components/ui/Badge';
 import { cn } from '../components/ui/cn';
 import { CertificadoPreviewModal } from '../components/certificado/CertificadoPreviewModal';
 import type { CertificadoParams } from '../lib/certificadoPrintHtml';
+import { buildCertificadoParams } from '../lib/certificadoStats';
 
 type UnidadTab = 'temas' | 'recursos' | 'actividades' | 'evaluaciones';
 
@@ -272,12 +273,13 @@ export default function UnidadTemas() {
         <div className="mb-6">
           <Button
             onClick={() => {
-              setPreviewParams({
+              if (!user || !unidadId) return;
+              void buildCertificadoParams(user.id, unidadId, {
                 nombreEstudiante,
                 tituloUnidad: unidad.title,
                 porcentajeUnidad: pctUnidad ?? 0,
                 umbralCertificado: umbralCert ?? 0,
-              });
+              }).then(setPreviewParams);
             }}
           >
             Ver certificado

@@ -1,11 +1,12 @@
 import {
   buildCertificadoPrintDocument,
+  resolveCertificadoAthenaFaceUrl,
   resolveCertificadoEmblemaUrl,
   type CertificadoParams,
 } from './certificadoPrintHtml';
+import { generarCertificadoQrDataUrl } from './certificadoQr';
 
-async function fetchEmblemaAsDataUrl(): Promise<string | undefined> {
-  const url = resolveCertificadoEmblemaUrl();
+async function fetchImageAsDataUrl(url: string): Promise<string | undefined> {
   if (!url) return undefined;
   try {
     const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
@@ -25,10 +26,17 @@ async function fetchEmblemaAsDataUrl(): Promise<string | undefined> {
 export async function prepareCertificadoParams(
   params: CertificadoParams
 ): Promise<CertificadoParams> {
-  const emblemaData = await fetchEmblemaAsDataUrl();
+  const [emblemaData, athenaData, qrDataUrl] = await Promise.all([
+    fetchImageAsDataUrl(params.emblemaUrl ?? resolveCertificadoEmblemaUrl()),
+    fetchImageAsDataUrl(params.athenaFaceUrl ?? resolveCertificadoAthenaFaceUrl()),
+    params.certificadoId ? generarCertificadoQrDataUrl(params.certificadoId) : Promise.resolve(undefined),
+  ]);
+
   return {
     ...params,
     emblemaUrl: emblemaData ?? params.emblemaUrl ?? resolveCertificadoEmblemaUrl(),
+    athenaFaceUrl: athenaData ?? params.athenaFaceUrl ?? resolveCertificadoAthenaFaceUrl(),
+    qrDataUrl: qrDataUrl ?? params.qrDataUrl,
   };
 }
 

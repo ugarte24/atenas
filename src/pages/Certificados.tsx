@@ -15,6 +15,7 @@ import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
 import { downloadCertificadoPdf } from '../lib/certificadoPdf';
+import { buildCertificadoParams } from '../lib/certificadoStats';
 import type { CertificadoParams } from '../lib/certificadoPrintHtml';
 import { CertificadoPreviewModal } from '../components/certificado/CertificadoPreviewModal';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -88,24 +89,28 @@ export default function Certificados() {
     });
   }, [publicadas, certs, filtro]);
 
-  function abrirCertificado(titulo: string, pct: number, umbral: number) {
-    setPreviewParams({
+  async function abrirCertificado(unidadId: string, titulo: string, pct: number, umbral: number) {
+    if (!user) return;
+    const params = await buildCertificadoParams(user.id, unidadId, {
       nombreEstudiante: profile?.full_name ?? 'Estudiante',
       tituloUnidad: titulo,
       porcentajeUnidad: pct,
       umbralCertificado: umbral,
     });
+    setPreviewParams(params);
   }
 
   async function descargarPdf(unidadId: string, titulo: string, pct: number, umbral: number) {
+    if (!user) return;
     setPdfId(unidadId);
     try {
-      await downloadCertificadoPdf({
+      const params = await buildCertificadoParams(user.id, unidadId, {
         nombreEstudiante: profile?.full_name ?? 'Estudiante',
         tituloUnidad: titulo,
         porcentajeUnidad: pct,
         umbralCertificado: umbral,
       });
+      await downloadCertificadoPdf(params);
     } catch (e) {
       console.error(e);
       window.alert('No se pudo generar el PDF. Intenta de nuevo.');
@@ -335,7 +340,7 @@ export default function Certificados() {
                             type="button"
                             size="sm"
                             variant="primary"
-                            onClick={() => abrirCertificado(titulo, pct, umbral)}
+                            onClick={() => void abrirCertificado(u.id, titulo, pct, umbral)}
                             className="inline-flex flex-1 items-center justify-center gap-2 shadow-sm"
                           >
                             Ver certificado
