@@ -96,6 +96,53 @@ function formatEvaluacionesStat(done: number, total: number): string {
   return `${done} / ${total}`;
 }
 
+function formatGradeCopy(pct: number, actTotal: number, evalTotal: number): string {
+  if (actTotal > 0 && evalTotal > 0) {
+    return `${pct}% de logro en actividades y evaluaciones de la unidad.`;
+  }
+  if (evalTotal > 0) {
+    return `${pct}% de logro en evaluaciones de la unidad.`;
+  }
+  if (actTotal > 0) {
+    return `${pct}% de logro en actividades de la unidad.`;
+  }
+  return `${pct}% de logro en la unidad.`;
+}
+
+function buildSummaryGridHtml(
+  actDone: number,
+  actTotal: number,
+  evalDone: number,
+  evalTotal: number,
+  tiempoSeg: number,
+  pct: number
+): { html: string; cols: number } {
+  const cells: string[] = [];
+  if (actTotal > 0) {
+    cells.push(
+      statCell(
+        VALUE_ICONS.book,
+        'Actividades completadas',
+        escapeHtml(formatActividadesStat(actDone, actTotal))
+      )
+    );
+  }
+  if (evalTotal > 0) {
+    cells.push(
+      statCell(
+        VALUE_ICONS.cap,
+        'Evaluaciones aprobadas',
+        escapeHtml(formatEvaluacionesStat(evalDone, evalTotal))
+      )
+    );
+  }
+  cells.push(
+    statCell(VALUE_ICONS.chart, 'Tiempo dedicado', escapeHtml(formatTiempoCertificado(tiempoSeg)))
+  );
+  cells.push(statCell(VALUE_ICONS.star, 'Calificación final', `${pct}%`));
+  return { html: cells.join(''), cols: cells.length };
+}
+
 export function buildCertificadoPrintDocument(
   params: CertificadoParams,
   options: CertificadoDocumentOptions = {}
@@ -119,9 +166,15 @@ export function buildCertificadoPrintDocument(
   const actTotal = params.actividadesTotal ?? 0;
   const evalDone = params.evaluacionesAprobadas ?? 0;
   const evalTotal = params.evaluacionesTotal ?? 0;
-  const actStat = escapeHtml(formatActividadesStat(actDone, actTotal));
-  const evalStat = escapeHtml(formatEvaluacionesStat(evalDone, evalTotal));
-  const tiempo = formatTiempoCertificado(params.tiempoEstudioSegundos ?? 0);
+  const tiempoSeg = params.tiempoEstudioSegundos ?? 0;
+  const summaryGrid = buildSummaryGridHtml(actDone, actTotal, evalDone, evalTotal, tiempoSeg, pct);
+  const summaryGridClass =
+    summaryGrid.cols <= 2
+      ? 'cert-summary__grid cert-summary__grid--2'
+      : summaryGrid.cols === 3
+        ? 'cert-summary__grid cert-summary__grid--3'
+        : 'cert-summary__grid';
+  const gradeCopy = escapeHtml(formatGradeCopy(pct, actTotal, evalTotal));
 
   const emblemaRaw = params.emblemaUrl ?? resolveCertificadoEmblemaUrl();
   const emblemaUrl = emblemaRaw.startsWith('data:') ? emblemaRaw : escapeHtml(emblemaRaw);
@@ -335,29 +388,31 @@ export function buildCertificadoPrintDocument(
     .cert-main {
       position: relative; z-index: 1; flex: 1; min-width: 0; min-height: 0;
       display: grid;
-      grid-template-rows: minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      align-content: start;
       padding: 0.85rem 1.15rem 0.6rem 1.05rem;
       background-image: radial-gradient(ellipse 55% 70% at 88% 45%, rgba(201,166,106,0.06), transparent 70%);
     }
     .cert-main--watermark::before {
       content: '';
       position: absolute;
-      right: 12%;
-      top: 38%;
-      width: 42%;
-      height: 55%;
+      right: 18%;
+      top: 42%;
+      width: 35%;
+      height: 45%;
       background-image: var(--cert-watermark);
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
-      opacity: 0.045;
+      opacity: 0.028;
       pointer-events: none;
       z-index: 0;
     }
 
     .cert-emblema-wrap {
       position: absolute; top: 0.5rem; right: 0.5rem;
-      width: 1.2in; height: 1.2in; z-index: 1; pointer-events: none;
+      width: 1.05in; height: 1.05in; z-index: 1; pointer-events: none;
+      opacity: 0.88;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -377,6 +432,12 @@ export function buildCertificadoPrintDocument(
       flex-shrink: 0;
       display: flex; flex-direction: column;
       gap: 0.2rem;
+      margin-top: 0.35rem;
+    }
+
+    .cert-header {
+      position: relative; z-index: 2;
+      padding-right: 1.15in;
     }
 
     .cert-platform-header {
@@ -384,7 +445,6 @@ export function buildCertificadoPrintDocument(
       font-size: 1.05rem; letter-spacing: 0.13em; text-transform: uppercase;
       color: var(--cert-ink); margin-bottom: 0.25rem; line-height: 1.2;
       text-align: left;
-      position: relative; z-index: 2;
     }
 
     .cert-stars { color: var(--cert-gold); font-size: 0.72rem; letter-spacing: 0.35em; margin-bottom: 0.2rem; }
@@ -393,7 +453,6 @@ export function buildCertificadoPrintDocument(
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
       font-size: 1.28rem; letter-spacing: 0.05em; text-transform: uppercase;
       color: var(--cert-ink); line-height: 1.2; margin-bottom: 0.15rem;
-      position: relative; z-index: 2;
     }
     .cert-subtitle {
       font-size: 0.72rem; font-style: italic; color: var(--cert-muted); margin-bottom: 0.35rem;
@@ -439,12 +498,12 @@ export function buildCertificadoPrintDocument(
       font-size: 0.42rem; text-transform: uppercase; letter-spacing: 0.06em;
       color: var(--cert-muted); font-weight: 600; margin-top: 0.1rem; text-align: center; line-height: 1.2;
     }
-    .cert-grade-text { font-size: 0.78rem; color: var(--cert-muted); line-height: 1.45; max-width: 16rem; }
+    .cert-grade-text { font-size: 0.78rem; color: var(--cert-muted); line-height: 1.45; max-width: 18rem; }
     .cert-grade-text strong { color: var(--cert-ink); }
 
     .cert-summary {
       border: 1px solid rgba(201,166,106,0.55); border-radius: 4px;
-      background: rgba(245, 230, 200, 0.92); padding: 0.4rem 0.55rem 0.45rem; margin-top: 0.1rem;
+      background: var(--cert-tan); padding: 0.4rem 0.55rem 0.45rem; margin-top: 0.1rem;
       position: relative; z-index: 2;
     }
     .cert-summary__title {
@@ -455,6 +514,8 @@ export function buildCertificadoPrintDocument(
     .cert-summary__grid {
       display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem;
     }
+    .cert-summary__grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .cert-summary__grid--2 { grid-template-columns: repeat(2, 1fr); }
     .cert-stat { text-align: center; }
     .cert-stat__icon {
       width: 26px; height: 26px; margin: 0 auto 0.2rem; border-radius: 50%;
@@ -472,6 +533,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-signatures {
       display: flex; justify-content: center; gap: 3rem;
+      margin-top: 0.25rem;
       padding: 0.15rem 0.5rem 0;
       flex-shrink: 0;
     }
@@ -572,17 +634,19 @@ export function buildCertificadoPrintDocument(
             class="cert-emblema"
             src="${emblemaUrl}"
             alt=""
-            width="115"
-            height="115"
+            width="100"
+            height="100"
             onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
           />
         </div>
 
         <div class="cert-content">
-          <p class="cert-platform-header">Plataforma educativa ATENAS</p>
-          <p class="cert-stars" aria-hidden="true">★ ★ ★</p>
-          <h1 class="cert-title">Certificado de logro académico</h1>
-          <p class="cert-subtitle">Otorgado por completar satisfactoriamente la unidad de aprendizaje.</p>
+          <div class="cert-header">
+            <p class="cert-platform-header">Plataforma educativa ATENAS</p>
+            <p class="cert-stars" aria-hidden="true">★ ★ ★</p>
+            <h1 class="cert-title">Certificado de logro académico</h1>
+            <p class="cert-subtitle">Otorgado por completar satisfactoriamente la unidad de aprendizaje.</p>
+          </div>
 
           <div class="cert-name-block">
             <div class="cert-name-rule" aria-hidden="true"></div>
@@ -599,17 +663,14 @@ export function buildCertificadoPrintDocument(
               <span class="cert-grade-label">Excelencia académica</span>
             </div>
             <p class="cert-grade-text">
-              <strong>Calificación obtenida:</strong> ${pct}% de logro en actividades y evaluaciones de la unidad.
+              <strong>Calificación obtenida:</strong> ${gradeCopy}
             </p>
           </div>
 
           <div class="cert-summary">
             <p class="cert-summary__title">Resumen de progreso</p>
-            <div class="cert-summary__grid">
-              ${statCell(VALUE_ICONS.book, 'Actividades completadas', actStat)}
-              ${statCell(VALUE_ICONS.cap, 'Evaluaciones aprobadas', evalStat)}
-              ${statCell(VALUE_ICONS.chart, 'Tiempo dedicado', escapeHtml(tiempo))}
-              ${statCell(VALUE_ICONS.star, 'Calificación final', `${pct}%`)}
+            <div class="${summaryGridClass}">
+              ${summaryGrid.html}
             </div>
           </div>
         </div>
