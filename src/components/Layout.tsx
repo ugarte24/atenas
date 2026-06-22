@@ -5,13 +5,14 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { StudentBottomNav } from './StudentBottomNav';
 import { StudentSidebar } from './StudentSidebar';
 import { DocenteSidebar } from './DocenteSidebar';
+import { AdminSidebar } from './AdminSidebar';
 import { AppDrawer, type DrawerLink } from './AppDrawer';
 import { STUDENT_DRAWER_ITEMS } from '../constants/studentNav';
 import {
   DOCENTE_ACCOUNT_NAV_ITEMS,
   DOCENTE_MAIN_NAV_ITEMS,
 } from '../constants/docenteNav';
-import { LayoutDashboard } from 'lucide-react';
+import { getAdminAccountNavItems, getAdminMainNavItems } from '../constants/adminNav';
 import { Badge } from './ui/Badge';
 import { MascotVisitorProvider } from '../contexts/MascotVisitorContext';
 import { MascotVisitor } from './gamification/MascotVisitor';
@@ -63,16 +64,14 @@ export function Layout({ children }: Props) {
   }
 
   const esEstudiante = profile?.role === 'estudiante';
-  const enDocente = location.pathname.startsWith('/docente');
   const enLeccion =
     location.pathname.startsWith('/temas/') ||
     location.pathname.startsWith('/actividades/') ||
     location.pathname.startsWith('/evaluaciones/');
   const esDocente = profile?.role === 'docente';
-  const esDocenteOAdmin =
-    profile?.role === 'docente' || profile?.role === 'admin';
-  /** Docente: sidebar siempre; admin: solo dentro de /docente */
-  const showDocenteSidebar = esDocente || (profile?.role === 'admin' && enDocente);
+  /** Docente: sidebar docente; admin: sidebar unificado (mismo menú que drawer móvil) */
+  const showDocenteSidebar = esDocente;
+  const showAdminSidebar = profile?.role === 'admin';
   const showStudentSidebar = esEstudiante;
 
   const homeTo =
@@ -87,7 +86,25 @@ export function Layout({ children }: Props) {
         ...(esEstudiante
           ? STUDENT_DRAWER_ITEMS.map(({ to, label, end, icon }) => ({ to, label, end, icon }))
           : []),
-        ...(profile.role === 'docente'
+        ...(profile.role === 'admin'
+          ? [
+              ...getAdminMainNavItems().map(({ to, label, end, icon, match }) => ({
+                to,
+                label,
+                end,
+                icon,
+                match,
+                section: 'main' as const,
+              })),
+              ...getAdminAccountNavItems().map(({ to, label, end, icon }) => ({
+                to,
+                label,
+                end,
+                icon,
+                section: 'account' as const,
+              })),
+            ]
+          : profile.role === 'docente'
           ? DOCENTE_MAIN_NAV_ITEMS.map(({ to, label, end, icon, match }) => ({
               to,
               label,
@@ -96,30 +113,9 @@ export function Layout({ children }: Props) {
               match,
               section: 'main' as const,
             }))
-          : esDocenteOAdmin && enDocente
-            ? DOCENTE_MAIN_NAV_ITEMS.map(({ to, label, end, icon, match }) => ({
-                to,
-                label: to === '/docente' ? 'Panel docente' : label,
-                end,
-                icon,
-                match,
-                section: 'main' as const,
-              }))
-            : esDocenteOAdmin
-              ? [
-                  {
-                    to: '/docente',
-                    label: 'Panel docente',
-                    end: true,
-                    icon: LayoutDashboard,
-                    section: 'main' as const,
-                  },
-                ]
-              : []),
-        ...(!esEstudiante
-          ? DOCENTE_ACCOUNT_NAV_ITEMS.filter(
-              (item) => item.id !== 'admin' || profile.role === 'admin'
-            ).map(({ to, label, end, icon }) => ({
+          : []),
+        ...(profile.role === 'docente'
+          ? DOCENTE_ACCOUNT_NAV_ITEMS.map(({ to, label, end, icon }) => ({
               to,
               label,
               end,
@@ -130,7 +126,7 @@ export function Layout({ children }: Props) {
       ]
     : [];
 
-  const hasDesktopSidebar = showStudentSidebar || showDocenteSidebar;
+  const hasDesktopSidebar = showStudentSidebar || showDocenteSidebar || showAdminSidebar;
 
   return (
     <div
@@ -145,6 +141,9 @@ export function Layout({ children }: Props) {
       {showDocenteSidebar && (
         <DocenteSidebar onSignOut={handleSignOut} className="hidden lg:flex" />
       )}
+      {showAdminSidebar && (
+        <AdminSidebar onSignOut={handleSignOut} className="hidden lg:flex" />
+      )}
 
       <div className="flex-1 flex flex-col min-w-0 min-h-screen lg:min-h-0 lg:h-full lg:overflow-hidden">
         {esEstudiante ? (
@@ -154,6 +153,7 @@ export function Layout({ children }: Props) {
               esEstudiante={esEstudiante}
               enLeccion={enLeccion}
               showDocenteSidebar={showDocenteSidebar}
+              showAdminSidebar={showAdminSidebar}
               showStudentSidebar={showStudentSidebar}
               drawerOpen={drawerOpen}
               setDrawerOpen={setDrawerOpen}
@@ -172,6 +172,7 @@ export function Layout({ children }: Props) {
             esEstudiante={esEstudiante}
             enLeccion={enLeccion}
             showDocenteSidebar={showDocenteSidebar}
+            showAdminSidebar={showAdminSidebar}
             showStudentSidebar={showStudentSidebar}
             drawerOpen={drawerOpen}
             setDrawerOpen={setDrawerOpen}
@@ -193,6 +194,7 @@ type LayoutMainProps = {
   esEstudiante: boolean;
   enLeccion: boolean;
   showDocenteSidebar: boolean;
+  showAdminSidebar: boolean;
   showStudentSidebar: boolean;
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
@@ -207,6 +209,7 @@ function LayoutMain({
   esEstudiante,
   enLeccion,
   showDocenteSidebar,
+  showAdminSidebar,
   showStudentSidebar,
   drawerOpen,
   setDrawerOpen,
@@ -214,7 +217,7 @@ function LayoutMain({
   handleSignOut,
   homeTo,
 }: LayoutMainProps) {
-  const hasDesktopSidebar = showStudentSidebar || showDocenteSidebar;
+  const hasDesktopSidebar = showStudentSidebar || showDocenteSidebar || showAdminSidebar;
   const showMobileMenu =
     profile &&
     (hasDesktopSidebar || profile.role === 'admin' || profile.role === 'docente');
@@ -227,6 +230,7 @@ function LayoutMain({
     weekday: 'short',
     day: 'numeric',
     month: 'short',
+    year: 'numeric',
   });
 
   return (

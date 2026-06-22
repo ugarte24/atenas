@@ -1,7 +1,6 @@
 import {
   FolderOpen,
   LayoutDashboard,
-  Shield,
   Trophy,
   User,
   Users,
@@ -27,7 +26,6 @@ export const DOCENTE_MAIN_NAV_ITEMS: DocenteNavItem[] = [
 
 export const DOCENTE_ACCOUNT_NAV_ITEMS: DocenteNavItem[] = [
   { id: 'perfil', to: '/perfil', label: 'Mi perfil', icon: User, end: true },
-  { id: 'admin', to: '/admin', label: 'Administración', icon: Shield, end: true },
 ];
 
 export function isDocenteNavActive(item: DocenteNavItem, pathname: string): boolean {

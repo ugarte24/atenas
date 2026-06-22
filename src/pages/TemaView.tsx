@@ -31,23 +31,9 @@ import { RecursoItem, ResourcesSplitView } from '../components/lesson';
 import { MascotTip } from '../components/gamification/MascotTip';
 import { cn } from '../components/ui/cn';
 import { normalizeHtmlExternalImages } from '../lib/externalImageUrl';
+import { normalizeTemaContent, temaContentEsHtml } from '../lib/temaContent';
 
 type ProgresoTema = { total: number; completadas: number };
-
-function normalizeTemaContent(raw: string | null | undefined): string {
-  if (!raw) return '';
-  if (!raw.toLowerCase().includes('<p')) return raw;
-
-  return raw
-    .replace(/<p>\s*<\/p>/gi, '')
-    .replace(/<\/p>\s*<p>/gi, '\n')
-    .replace(/<\/?p>/gi, '')
-    .trimEnd();
-}
-
-function temaContentEsHtml(raw: string): boolean {
-  return /<h[1-6]|<ul|<ol|<blockquote|<strong/i.test(raw);
-}
 
 export default function TemaView() {
   const { temaId } = useParams<{ temaId: string }>();
