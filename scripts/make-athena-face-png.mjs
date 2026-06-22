@@ -12,7 +12,7 @@ const src = path.join(root, 'public', 'logo-athena.png');
 const out = path.join(root, 'public', 'logo-athena-face.png');
 
 const INK = { r: 31, g: 45, b: 42 };
-const TOLERANCE = 42;
+const TOLERANCE = 55;
 
 async function main() {
   if (!fs.existsSync(src)) {
@@ -24,10 +24,10 @@ async function main() {
   const w = meta.width ?? 512;
   const h = meta.height ?? 512;
 
-  const cropW = Math.round(w * 0.72);
-  const cropH = Math.round(h * 0.58);
+  const cropW = Math.round(w * 0.62);
+  const cropH = Math.round(h * 0.52);
   const left = Math.round((w - cropW) / 2);
-  const top = Math.round(h * 0.06);
+  const top = Math.round(h * 0.04);
 
   let { data, info } = await sharp(src)
     .extract({ left, top, width: cropW, height: cropH })
@@ -48,13 +48,18 @@ async function main() {
     if (dr <= TOLERANCE && dg <= TOLERANCE && db <= TOLERANCE) {
       buf[j + 3] = 0;
     }
-    // Verde de fondo de exportación antigua
-    if (g > r + 20 && g > b + 20 && g > 80) {
+    // Verde u oliva de fondo
+    if (g > r + 12 && g > b + 12 && g > 60) {
+      buf[j + 3] = 0;
+    }
+    // Gris oscuro uniforme del lienzo
+    if (r < 70 && g < 90 && b < 90 && Math.max(r, g, b) - Math.min(r, g, b) < 25) {
       buf[j + 3] = 0;
     }
   }
 
   const png = await sharp(buf, { raw: { width: info.width, height: info.height, channels: ch } })
+    .trim({ threshold: 12 })
     .png()
     .toBuffer();
 

@@ -5,6 +5,7 @@ import {
   type CertificadoParams,
 } from './certificadoPrintHtml';
 import { prepareCertificadoParams } from './certificadoVentana';
+import { CERT_LETTER_H_PX, CERT_LETTER_W_PX } from './certificadoDimensions';
 
 export { openCertificadoEnVentana, prepareCertificadoParams, buildCertificadoHtmlBlobUrl } from './certificadoVentana';
 
@@ -34,7 +35,7 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
   iframe.setAttribute('aria-hidden', 'true');
   /* Sin opacity:0: html2canvas suele pintar imágenes con fondo negro si el iframe es invisible */
   iframe.style.cssText =
-    'position:fixed;left:-10000px;top:0;width:1056px;height:816px;border:0;pointer-events:none';
+    `position:fixed;left:-10000px;top:0;width:${CERT_LETTER_W_PX}px;height:${CERT_LETTER_H_PX}px;border:0;pointer-events:none`;
 
   document.body.appendChild(iframe);
 
@@ -88,8 +89,10 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
     allowTaint: false,
     logging: false,
     backgroundColor: '#fdfbf4',
-    windowWidth: 1056,
-    windowHeight: 816,
+    width: CERT_LETTER_W_PX,
+    height: CERT_LETTER_H_PX,
+    windowWidth: CERT_LETTER_W_PX,
+    windowHeight: CERT_LETTER_H_PX,
     imageTimeout: 20000,
     foreignObjectRendering: false,
   });
@@ -104,19 +107,9 @@ export async function downloadCertificadoPdf(params: CertificadoParams): Promise
 
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
-  const margin = 14;
-  const maxW = pageW - margin * 2;
-  const maxH = pageH - margin * 2;
-  const imgW = canvas.width;
-  const imgH = canvas.height;
-  const ratio = Math.min(maxW / imgW, maxH / imgH);
-  const dw = imgW * ratio;
-  const dh = imgH * ratio;
-  const x = (pageW - dw) / 2;
-  const y = (pageH - dh) / 2;
 
   const imgData = canvas.toDataURL('image/png', 1.0);
-  pdf.addImage(imgData, 'PNG', x, y, dw, dh);
+  pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
 
   const name = safeFileNameSegment(params.nombreEstudiante.trim() || 'Estudiante', 32);
   const unidad = safeFileNameSegment(params.tituloUnidad.trim() || 'Unidad', 28);

@@ -3,6 +3,7 @@ import { Download, Loader2, Printer, X } from 'lucide-react';
 import { downloadCertificadoPdf } from '../../lib/certificadoPdf';
 import { buildCertificadoHtmlBlobUrl } from '../../lib/certificadoVentana';
 import type { CertificadoParams } from '../../lib/certificadoPrintHtml';
+import { CERT_LETTER_H_IN, CERT_LETTER_W_IN } from '../../lib/certificadoDimensions';
 import { cn } from '../ui/cn';
 
 type Props = {
@@ -139,7 +140,13 @@ export function CertificadoPreviewModal({ open, onClose, params }: Props) {
             ref={iframeRef}
             src={blobUrl}
             title="Certificado de progreso"
-            className="w-full max-w-[1056px] aspect-[11/8.5] bg-white shadow-2xl border-0 rounded-sm"
+            className="bg-white shadow-2xl border-0 rounded-sm"
+            style={{
+              width: CERT_LETTER_W_IN,
+              height: CERT_LETTER_H_IN,
+              maxWidth: '100%',
+              aspectRatio: '11 / 8.5',
+            }}
           />
         )}
       </div>
