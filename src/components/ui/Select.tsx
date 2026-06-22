@@ -1,7 +1,9 @@
-import { ChevronDown } from 'lucide-react';
+import { useMemo, type ChangeEvent } from 'react';
 import { cn } from './cn';
+import { FieldPicker } from './FieldPicker';
+import { parseSelectOptions } from './fieldPickerOptions';
 
-type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
+type Props = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> & {
   label?: string;
   hint?: string;
   error?: string;
@@ -10,6 +12,7 @@ type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
   compact?: boolean;
   /** Ancho del bloque (contenedor + flecha). Por defecto ocupa el ancho disponible. */
   className?: string;
+  onChange?: (e: ChangeEvent<HTMLSelectElement>) => void;
 };
 
 export function Select({
@@ -22,10 +25,21 @@ export function Select({
   required,
   compact,
   inline,
+  value,
+  onChange,
+  disabled,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
   ...props
 }: Props & { inline?: boolean }) {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
   const isCompact = compact ?? inline;
+  const options = useMemo(() => parseSelectOptions(children), [children]);
+  const stringValue = value == null ? '' : String(value);
+
+  function handleChange(next: string) {
+    onChange?.({ target: { value: next, name: props.name } } as ChangeEvent<HTMLSelectElement>);
+  }
 
   return (
     <div className={cn('w-full min-w-0', className)}>
@@ -34,21 +48,18 @@ export function Select({
           {label}
         </label>
       )}
-      <div className="select-wrap w-full min-w-0">
-        <select
-          id={inputId}
-          required={required}
-          className={cn(
-            'input-field w-full min-w-0',
-            isCompact && 'input-field--inline',
-            error && 'border-red-400'
-          )}
-          {...props}
-        >
-          {children}
-        </select>
-        <ChevronDown className="select-wrap__chevron" aria-hidden />
-      </div>
+      <FieldPicker
+        id={inputId}
+        value={stringValue}
+        onChange={handleChange}
+        options={options}
+        disabled={disabled}
+        compact={isCompact}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        menuAriaLabel={ariaLabel ?? label}
+        className={cn(error && 'field-picker--error')}
+      />
       {hint && !error && <p className="field-hint">{hint}</p>}
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>

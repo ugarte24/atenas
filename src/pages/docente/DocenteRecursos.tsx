@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { useTema } from '../../hooks/useTema';
 import { useRecursos, type RecursoTipo } from '../../hooks/useRecursos';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
+import { Form, FormBody, FormFooter } from '../../components/ui/Form';
+import { FormModal } from '../../components/ui/FormModal';
 import { ExternalImage } from '../../components/ui/ExternalImage';
 import { VideoEmbed } from '../../components/ui/VideoEmbed';
 
@@ -52,13 +56,17 @@ export default function DocenteRecursos() {
     setFile(null);
   }
 
+  function closeModal() {
+    setAdding(false);
+    resetForm();
+  }
+
   async function handleAddTexto(e: React.FormEvent) {
     e.preventDefault();
     if (!temaId || !contenidoTexto.trim()) return;
     try {
       await addFromTexto(temaId, contenidoTexto.trim(), title.trim() || undefined);
-      resetForm();
-      setAdding(false);
+      closeModal();
     } catch (err) {
       console.error(err);
       alert('Error al agregar texto');
@@ -70,8 +78,7 @@ export default function DocenteRecursos() {
     if (!temaId || !url.trim()) return;
     try {
       await addFromUrl(temaId, tipo, url.trim(), title.trim() || undefined);
-      resetForm();
-      setAdding(false);
+      closeModal();
     } catch (err) {
       console.error(err);
       alert('Error al agregar recurso');
@@ -83,8 +90,7 @@ export default function DocenteRecursos() {
     if (!temaId || !file) return;
     try {
       await addFromFile(temaId, tipo, file, title.trim() || undefined);
-      resetForm();
-      setAdding(false);
+      closeModal();
     } catch (err) {
       console.error(err);
       alert('Error al subir archivo');
@@ -115,7 +121,6 @@ export default function DocenteRecursos() {
         type="button"
         onClick={() => navigate(`/docente/unidades/${tema.unidad_id}`)}
         className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-atenas-mist"
-        
       >
         ← Temas
       </button>
@@ -124,92 +129,112 @@ export default function DocenteRecursos() {
         Recursos educativos: texto, PDF, imagen, vídeo y audio
       </p>
 
-      {adding ? (
-        <div className="mb-6 card p-5 space-y-4 max-w-md">
-          <select
-            value={tipo}
-            onChange={(e) => {
-              setTipo(e.target.value as RecursoTipo);
-              setFile(null);
-              setUrl('');
-            }}
-            className="input-field"
-          >
-            {(Object.keys(TIPO_LABELS) as RecursoTipo[]).map((t) => (
-              <option key={t} value={t}>
-                {TIPO_LABELS[t]}
-              </option>
-            ))}
-          </select>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título del recurso (opcional)"
-            className="input-field"
-          />
-          {esTexto ? (
-            <form onSubmit={handleAddTexto} className="space-y-3">
-              <textarea
-                value={contenidoTexto}
-                onChange={(e) => setContenidoTexto(e.target.value)}
-                placeholder="Escribe el contenido de texto…"
-                className="input-field min-h-[120px]"
-                rows={6}
-                required
+      <Button
+        type="button"
+        className="mb-6 inline-flex items-center gap-1.5"
+        onClick={() => setAdding(true)}
+      >
+        <Plus className="w-4 h-4" aria-hidden />
+        Nuevo recurso
+      </Button>
+
+      <FormModal
+        open={adding}
+        onClose={closeModal}
+        title="Nuevo recurso"
+        description="Elige el tipo y añade el contenido educativo para este tema."
+        icon={<Plus className="w-5 h-5" />}
+      >
+        <Form
+          onSubmit={(e) => {
+            if (esTexto) void handleAddTexto(e);
+            else if (file) void handleAddFile(e);
+            else void handleAddUrl(e);
+          }}
+        >
+          <FormBody className="space-y-4">
+            <Select
+              value={tipo}
+              onChange={(e) => {
+                setTipo(e.target.value as RecursoTipo);
+                setFile(null);
+                setUrl('');
+              }}
+              label="Tipo de recurso"
+            >
+              {(Object.keys(TIPO_LABELS) as RecursoTipo[]).map((t) => (
+                <option key={t} value={t}>
+                  {TIPO_LABELS[t]}
+                </option>
+              ))}
+            </Select>
+            <div>
+              <label htmlFor="recurso-title" className="label">
+                Título (opcional)
+              </label>
+              <input
+                id="recurso-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Título del recurso"
+                className="input-field"
               />
-              <Button type="submit">
-                Guardar texto
-              </Button>
-            </form>
-          ) : (
-            <>
-              {permiteUrl && (
-                <form onSubmit={handleAddUrl} className="space-y-3">
-                  <input
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="URL del recurso"
-                    className="input-field"
-                  />
-                  <Button type="submit">
-                    Agregar por URL
-                  </Button>
-                </form>
-              )}
-              {permiteArchivo && (
-                <>
-                  <p className="text-sm text-atenas-muted">O sube un archivo:</p>
-                  <form onSubmit={handleAddFile} className="space-y-3">
+            </div>
+            {esTexto ? (
+              <div>
+                <label htmlFor="recurso-texto" className="label">
+                  Contenido
+                </label>
+                <textarea
+                  id="recurso-texto"
+                  value={contenidoTexto}
+                  onChange={(e) => setContenidoTexto(e.target.value)}
+                  placeholder="Escribe el contenido de texto…"
+                  className="input-field min-h-[120px] font-sans"
+                  rows={6}
+                  required
+                />
+              </div>
+            ) : (
+              <>
+                {permiteUrl && (
+                  <div>
+                    <label htmlFor="recurso-url" className="label">
+                      URL del recurso
+                    </label>
+                    <input
+                      id="recurso-url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://…"
+                      className="input-field"
+                    />
+                  </div>
+                )}
+                {permiteArchivo && (
+                  <div>
+                    <p className="label mb-2">O sube un archivo</p>
                     <input
                       type="file"
                       accept={acceptForTipo(tipo)}
                       onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                       className="input-field py-2 file:mr-2 file:rounded file:border-0 file:bg-atenas-mist file:px-3 file:py-1 file:text-atenas-ink"
                     />
-                    <Button type="submit" disabled={!file}>
-                      Subir archivo
-                    </Button>
-                  </form>
-                </>
-              )}
-            </>
-          )}
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              setAdding(false);
-              resetForm();
-            }}
-          >
-            Cancelar
-          </Button>
-        </div>
-      ) : (
-        <Button type="button" className="mb-6" onClick={() => setAdding(true)}>
-          + Nuevo recurso
-        </Button>
-      )}
+                  </div>
+                )}
+              </>
+            )}
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={closeModal}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={!esTexto && !file && !url.trim()}>
+              {esTexto ? 'Guardar texto' : file ? 'Subir archivo' : 'Agregar por URL'}
+            </Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
 
       {loading ? (
         <p className="text-atenas-muted">Cargando recursos...</p>
@@ -233,7 +258,6 @@ export default function DocenteRecursos() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm truncate block mt-1 hover:underline"
-                      
                     >
                       {r.url}
                     </a>

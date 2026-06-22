@@ -281,6 +281,62 @@
   .select-wrap__chevron {
     @apply absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-atenas-muted-strong;
   }
+  /** Selector personalizado (reemplaza el desplegable nativo) */
+  .field-picker {
+    @apply relative w-full min-w-0;
+  }
+  .field-picker__trigger {
+    @apply input-field w-full min-w-0 flex items-center gap-2.5 pr-11 text-left text-sm;
+  }
+  .field-picker--compact .field-picker__trigger {
+    @apply rounded-xl px-4 py-2.5 min-h-[2.5rem];
+  }
+  .field-picker--error .field-picker__trigger {
+    @apply border-red-400;
+  }
+  .field-picker__placeholder {
+    @apply text-atenas-muted flex-1 min-w-0;
+  }
+  .field-picker__trigger-text {
+    @apply text-atenas-ink flex-1 min-w-0 font-medium;
+  }
+  .field-picker__chevron {
+    @apply absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-atenas-muted-strong transition-transform;
+  }
+  .field-picker__menu {
+    @apply absolute z-50 left-0 right-0 mt-1.5 py-1.5 rounded-2xl border bg-white shadow-card list-none m-0 max-h-72 overflow-y-auto scrollbar-nav-hide;
+    border-color: var(--atenas-mist-border);
+  }
+  .field-picker__option {
+    @apply w-full flex items-start gap-2.5 px-3 py-2.5 text-left text-sm text-atenas-ink transition-colors;
+  }
+  .field-picker__option:hover:not(:disabled) {
+    background-color: var(--atenas-mist);
+  }
+  .field-picker__option--selected {
+    background-color: color-mix(in srgb, var(--atenas-blue) 8%, white);
+  }
+  .field-picker__option--selected:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--atenas-blue) 12%, white);
+  }
+  .field-picker__badge {
+    @apply shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold tabular-nums;
+    background-color: color-mix(in srgb, var(--atenas-sidebar) 10%, white);
+    color: var(--atenas-ink);
+  }
+  .field-picker__option--selected .field-picker__badge {
+    background-color: var(--atenas-sidebar);
+    color: #fff;
+  }
+  .field-picker__option-text {
+    @apply flex-1 min-w-0 leading-snug pt-0.5;
+  }
+  .field-picker__option-all {
+    @apply flex-1 min-w-0 font-medium text-atenas-ink;
+  }
+  .field-picker__check {
+    @apply w-4 h-4 shrink-0 mt-1 text-atenas-blue;
+  }
   .input-field--inline {
     @apply rounded-xl px-4 py-2.5 text-sm min-h-[2.5rem];
   }

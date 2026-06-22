@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { ArrowRightLeft, Pencil, Plus } from 'lucide-react';
 import { useTema } from '../../hooks/useTema';
 import { useTemas } from '../../hooks/useTemas';
 import { useActividades } from '../../hooks/useActividades';
@@ -10,6 +11,9 @@ import { EJEMPLO_CONFIG_ACTIVIDAD } from '../../constants/ejemploConfigActividad
 import { DocenteDetalleIntentosModal } from '../../components/docente/DocenteDetalleIntentosModal';
 import { DocentePreviewModal } from '../../components/docente/DocentePreviewModal';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
+import { Form, FormBody, FormFooter } from '../../components/ui/Form';
+import { FormModal } from '../../components/ui/FormModal';
 import { ActividadPreviewBody } from '../../components/docente/ActividadPreviewBody';
 import {
   ActividadConfigEditor,
@@ -44,6 +48,7 @@ export default function DocenteActividades() {
   const [moverActividadId, setMoverActividadId] = useState('');
   const [moverTemaDestinoId, setMoverTemaDestinoId] = useState('');
   const [moviendo, setMoviendo] = useState(false);
+  const [moverOpen, setMoverOpen] = useState(false);
   const [previewActividad, setPreviewActividad] = useState<Actividad | null>(null);
   const [detalleActividad, setDetalleActividad] = useState<Actividad | null>(null);
   const [filtroPub, setFiltroPub] = useState<'todas' | 'publicada' | 'borrador'>('todas');
@@ -150,6 +155,7 @@ export default function DocenteActividades() {
       if (editing?.id === moverActividadId) setEditing(null);
       setMoverActividadId('');
       setMoverTemaDestinoId('');
+      setMoverOpen(false);
     } catch (err) {
       console.error(err);
       alert('Error al mover la actividad');
@@ -236,6 +242,13 @@ export default function DocenteActividades() {
     }
   }
 
+  const formModalOpen = adding || editing !== null;
+
+  function closeActividadForm() {
+    setAdding(false);
+    setEditing(null);
+  }
+
   if (loadingTema || !tema) {
     return <p className="text-atenas-muted">Cargando...</p>;
   }
@@ -279,165 +292,195 @@ export default function DocenteActividades() {
           className="input-field flex-1 max-w-md"
           aria-label="Buscar actividades"
         />
-        <select
+        <Select
           value={filtroPub}
           onChange={(e) => setFiltroPub(e.target.value as typeof filtroPub)}
-          className="input-field max-w-[200px]"
+          className="max-w-[200px]"
           aria-label="Filtrar por publicación"
         >
           <option value="todas">Todas</option>
           <option value="publicada">Solo publicadas</option>
           <option value="borrador">Solo no publicadas</option>
-        </select>
+        </Select>
       </div>
 
-      {editing ? (
-        <form onSubmit={handleSaveEdit} className="mb-6 card p-5 space-y-4 max-w-2xl border-2 border-atenas-ink/20">
-          <p className="text-sm font-semibold text-atenas-ink">Editar actividad</p>
-          <input
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            placeholder="Título de la actividad"
-            className="input-field"
-            required
-          />
-          <label className="label">Sobrescribir con plantilla (opcional)</label>
-          <select
-            value={editPlantillaId}
-            onChange={(e) => {
-              const id = e.target.value;
-              setEditPlantillaId(id);
-              if (!id) return;
-              const p = PLANTILLAS_ACTIVIDADES.find((x) => x.id === id);
-              if (p) {
-                setEditTipo(p.tipo);
-                try {
-                  setConfigEdit(JSON.parse(p.configJson) as ActividadConfig);
-                } catch {
-                  setConfigEdit(cfgPorTipo(p.tipo));
+      <Button
+        type="button"
+        className="mb-6 inline-flex items-center gap-1.5"
+        onClick={() => {
+          setEditing(null);
+          setAdding(true);
+          setPlantillaActividadId('');
+          setConfigCreate(cfgPorTipo(tipo));
+        }}
+      >
+        <Plus className="w-4 h-4" aria-hidden />
+        Nueva actividad
+      </Button>
+
+      <FormModal
+        open={formModalOpen}
+        onClose={closeActividadForm}
+        title={editing ? 'Editar actividad' : 'Nueva actividad'}
+        description={
+          editing
+            ? 'Modifica el título, tipo o configuración de la actividad.'
+            : 'Define el tipo de actividad y su contenido para los estudiantes.'
+        }
+        icon={editing ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+      >
+        <Form onSubmit={editing ? handleSaveEdit : handleCreate}>
+          <FormBody className="space-y-4">
+            <div>
+              <label htmlFor="act-title" className="label">
+                Título
+              </label>
+              <input
+                id="act-title"
+                value={editing ? editTitle : title}
+                onChange={(e) => (editing ? setEditTitle(e.target.value) : setTitle(e.target.value))}
+                placeholder="Título de la actividad"
+                className="input-field"
+                required
+              />
+            </div>
+            <Select
+              label="Sobrescribir con plantilla (opcional)"
+              value={editing ? editPlantillaId : plantillaActividadId}
+              onChange={(e) => {
+                const id = e.target.value;
+                if (editing) {
+                  setEditPlantillaId(id);
+                  if (!id) return;
+                  const p = PLANTILLAS_ACTIVIDADES.find((x) => x.id === id);
+                  if (p) {
+                    setEditTipo(p.tipo);
+                    try {
+                      setConfigEdit(JSON.parse(p.configJson) as ActividadConfig);
+                    } catch {
+                      setConfigEdit(cfgPorTipo(p.tipo));
+                    }
+                    setEditTitle((t) => (t.trim() ? t : p.tituloSugerido));
+                  }
+                } else {
+                  setPlantillaActividadId(id);
+                  if (!id) return;
+                  const p = PLANTILLAS_ACTIVIDADES.find((x) => x.id === id);
+                  if (p) {
+                    setTipo(p.tipo);
+                    try {
+                      setConfigCreate(JSON.parse(p.configJson) as ActividadConfig);
+                    } catch {
+                      setConfigCreate(cfgPorTipo(p.tipo));
+                    }
+                    setTitle((t) => (t.trim() ? t : p.tituloSugerido));
+                  }
                 }
-                setEditTitle((t) => (t.trim() ? t : p.tituloSugerido));
-              }
-            }}
-            className="input-field"
-          >
-            <option value="">— Mantener contenido actual —</option>
-            {PLANTILLAS_ACTIVIDADES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
+              }}
+            >
+              <option value="">
+                {editing ? '— Mantener contenido actual —' : '— Elegir plantilla o editar abajo —'}
               </option>
-            ))}
-          </select>
-          <select
-            value={editTipo}
-            onChange={(e) => {
-              const t = e.target.value as ActividadTipo;
-              setEditTipo(t);
-              setEditPlantillaId('');
-              setConfigEdit(cfgPorTipo(t));
-            }}
-            className="input-field"
-          >
-            <option value="seleccion_multiple">Selección múltiple</option>
-            <option value="relacion_conceptos">Relacionar columnas</option>
-            <option value="memoria">Juego de memoria</option>
-            <option value="ordenar_secuencia">Arrastrar y soltar (ordenar)</option>
-            <option value="ubicar_en_mapa">Ubicar en mapa</option>
-          </select>
-          <ActividadConfigEditor
-            tipo={editTipo}
-            value={configEdit}
-            onChange={setConfigEdit}
-            idPrefix="edit-act"
-          />
-          <ActividadConfigJsonToggle config={configEdit} onApplyJson={setConfigEdit} />
-          <div className="flex flex-wrap gap-3">
-            <Button type="submit">Guardar cambios</Button>
-            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
+              {PLANTILLAS_ACTIVIDADES.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </Select>
+            <Select
+              label="Tipo de actividad"
+              value={editing ? editTipo : tipo}
+              onChange={(e) => {
+                const t = e.target.value as ActividadTipo;
+                if (editing) {
+                  setEditTipo(t);
+                  setEditPlantillaId('');
+                  setConfigEdit(cfgPorTipo(t));
+                } else {
+                  setTipo(t);
+                  setPlantillaActividadId('');
+                  setConfigCreate(cfgPorTipo(t));
+                }
+              }}
+            >
+              <option value="seleccion_multiple">Selección múltiple</option>
+              <option value="relacion_conceptos">Relacionar columnas</option>
+              <option value="memoria">Juego de memoria</option>
+              <option value="ordenar_secuencia">Arrastrar y soltar (ordenar)</option>
+              <option value="ubicar_en_mapa">Ubicar en mapa</option>
+            </Select>
+            <ActividadConfigEditor
+              tipo={editing ? editTipo : tipo}
+              value={editing ? configEdit : configCreate}
+              onChange={editing ? setConfigEdit : setConfigCreate}
+              idPrefix={editing ? 'edit-act' : 'new-act'}
+            />
+            <ActividadConfigJsonToggle
+              config={editing ? configEdit : configCreate}
+              onApplyJson={editing ? setConfigEdit : setConfigCreate}
+            />
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={closeActividadForm}>
               Cancelar
             </Button>
-          </div>
-        </form>
-      ) : null}
+            <Button type="submit">{editing ? 'Guardar cambios' : 'Crear actividad'}</Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
 
-      {adding ? (
-        <form onSubmit={handleCreate} className="mb-6 card p-5 space-y-4 max-w-2xl">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título de la actividad"
-            className="input-field"
-            required
-          />
-          <label className="label">Plantilla rápida (opcional)</label>
-          <select
-            value={plantillaActividadId}
-            onChange={(e) => {
-              const id = e.target.value;
-              setPlantillaActividadId(id);
-              if (!id) return;
-              const p = PLANTILLAS_ACTIVIDADES.find((x) => x.id === id);
-              if (p) {
-                setTipo(p.tipo);
-                try {
-                  setConfigCreate(JSON.parse(p.configJson) as ActividadConfig);
-                } catch {
-                  setConfigCreate(cfgPorTipo(p.tipo));
-                }
-                setTitle((t) => (t.trim() ? t : p.tituloSugerido));
-              }
-            }}
-            className="input-field"
-          >
-            <option value="">— Elegir plantilla o editar JSON abajo —</option>
-            {PLANTILLAS_ACTIVIDADES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={tipo}
-            onChange={(e) => {
-              const t = e.target.value as ActividadTipo;
-              setTipo(t);
-              setPlantillaActividadId('');
-              setConfigCreate(cfgPorTipo(t));
-            }}
-            className="input-field"
-          >
-            <option value="seleccion_multiple">Selección múltiple</option>
-            <option value="relacion_conceptos">Relacionar columnas</option>
-            <option value="memoria">Juego de memoria</option>
-            <option value="ordenar_secuencia">Arrastrar y soltar (ordenar)</option>
-            <option value="ubicar_en_mapa">Ubicar en mapa</option>
-          </select>
-          <ActividadConfigEditor
-            tipo={tipo}
-            value={configCreate}
-            onChange={setConfigCreate}
-            idPrefix="new-act"
-          />
-          <ActividadConfigJsonToggle config={configCreate} onApplyJson={setConfigCreate} />
-          <div className="flex gap-3">
-            <Button type="submit">Crear actividad</Button>
-            <Button type="button" variant="secondary" onClick={() => setAdding(false)}>Cancelar</Button>
-          </div>
-        </form>
-      ) : (
-        <Button
-          type="button"
-          className="mb-6"
-          onClick={() => {
-            setEditing(null);
-            setAdding(true);
-            setPlantillaActividadId('');
-            setConfigCreate(cfgPorTipo(tipo));
+      <FormModal
+        open={moverOpen}
+        onClose={() => setMoverOpen(false)}
+        title="Mover actividad"
+        description="Solo aparecen temas de la misma unidad. La actividad se coloca al final del tema destino."
+        icon={<ArrowRightLeft className="w-5 h-5" />}
+      >
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleMoverActividadAOtroTema();
           }}
         >
-          + Nueva actividad
-        </Button>
-      )}
+          <FormBody className="space-y-4">
+            <Select
+              label="Actividad"
+              value={moverActividadId}
+              onChange={(e) => setMoverActividadId(e.target.value)}
+            >
+              <option value="">— Elegir —</option>
+              {actividadesOrdenadas.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.title}
+                </option>
+              ))}
+            </Select>
+            <Select
+              label="Tema destino"
+              value={moverTemaDestinoId}
+              onChange={(e) => setMoverTemaDestinoId(e.target.value)}
+            >
+              <option value="">— Elegir tema —</option>
+              {temasDestino.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </Select>
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={() => setMoverOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={moviendo || !moverActividadId || !moverTemaDestinoId}
+            >
+              {moviendo ? 'Moviendo…' : 'Mover al tema'}
+            </Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
 
       {loading ? (
         <p className="text-atenas-muted">Cargando actividades...</p>
@@ -530,51 +573,22 @@ export default function DocenteActividades() {
           })}
         </ul>
       )}
-      {actividades.length === 0 && !adding && !editing && !loading && (
+      {actividades.length === 0 && !formModalOpen && !loading && (
         <p className="text-atenas-muted mt-4">No hay actividades. Crea una con el botón anterior.</p>
       )}
 
       {!loading && !loadingTemas && actividades.length > 0 && temasDestino.length > 0 && (
-        <section className="mt-8 card p-5 max-w-2xl space-y-3 border border-atenas-mist-border">
-          <h3 className="text-sm font-semibold text-atenas-ink">Mover actividad a otro tema</h3>
-          <p className="text-xs text-atenas-muted">
-            Solo aparecen temas de la misma unidad. La actividad se coloca al final del tema destino.
-          </p>
-          <label className="label mb-0">Actividad</label>
-          <select
-            value={moverActividadId}
-            onChange={(e) => setMoverActividadId(e.target.value)}
-            className="input-field"
-          >
-            <option value="">— Elegir —</option>
-            {actividadesOrdenadas.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.title}
-              </option>
-            ))}
-          </select>
-          <label className="label mb-0">Tema destino</label>
-          <select
-            value={moverTemaDestinoId}
-            onChange={(e) => setMoverTemaDestinoId(e.target.value)}
-            className="input-field"
-          >
-            <option value="">— Elegir tema —</option>
-            {temasDestino.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
-              </option>
-            ))}
-          </select>
+        <div className="mt-8">
           <Button
             type="button"
             variant="secondary"
-            disabled={moviendo || !moverActividadId || !moverTemaDestinoId}
-            onClick={handleMoverActividadAOtroTema}
+            className="inline-flex items-center gap-1.5"
+            onClick={() => setMoverOpen(true)}
           >
-            {moviendo ? 'Moviendo…' : 'Mover al tema'}
+            <ArrowRightLeft className="w-4 h-4" aria-hidden />
+            Mover actividad a otro tema
           </Button>
-        </section>
+        </div>
       )}
 
       {!loading && !loadingTemas && actividades.length > 0 && temasDestino.length === 0 && (

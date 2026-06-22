@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Select } from '../ui/Select';
 import type {
   ActividadTipo,
   ActividadConfig,
@@ -362,8 +363,9 @@ export function ActividadConfigEditor({ tipo, value, onChange, idPrefix = 'cfg' 
                   onChange({ ...c, elementos: n });
                 }}
               />
-              <select
-                className="input-field max-w-[180px]"
+              <Select
+                compact
+                className="max-w-[180px]"
                 value={el.zonaCorrectaId}
                 onChange={(e) => {
                   const n = [...elementos];
@@ -378,7 +380,7 @@ export function ActividadConfigEditor({ tipo, value, onChange, idPrefix = 'cfg' 
                     {z.etiqueta || z.id}
                   </option>
                 ))}
-              </select>
+              </Select>
               <button
                 type="button"
                 className="text-red-700 text-sm"

@@ -12,7 +12,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
-import { Input } from '../../components/ui/Input';
+import { Input, Select } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
@@ -20,6 +20,8 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { SkeletonLines } from '../../components/ui/Skeleton';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatCard } from '../../components/ui/StatCard';
+import { Form, FormBody, FormFooter } from '../../components/ui/Form';
+import { FormModal } from '../../components/ui/FormModal';
 import { useUnidades } from '../../hooks/useUnidades';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { isOptionalHexColor, isOptionalHttpUrl, resolveCoverImageUrl } from '../../lib/unidadVisual';
@@ -78,33 +80,14 @@ function parseCertUmbral(raw: string): number | null {
   return cert;
 }
 
-type UnidadFormProps = {
-  mode: 'create' | 'edit';
+type UnidadFormFieldsProps = {
   form: FormState;
   onChange: (patch: Partial<FormState>) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
 };
 
-function UnidadForm({ mode, form, onChange, onSubmit, onCancel }: UnidadFormProps) {
+function UnidadFormFields({ form, onChange }: UnidadFormFieldsProps) {
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-base font-bold text-atenas-ink">
-            {mode === 'create' ? 'Nueva unidad' : 'Editar unidad'}
-          </h2>
-          <p className="text-sm text-atenas-muted mt-1">
-            {mode === 'create'
-              ? 'Completa los datos básicos. Los campos avanzados son opcionales.'
-              : 'Actualiza la información visible para los estudiantes.'}
-          </p>
-        </div>
-        <Button type="button" variant="secondary" className="shrink-0" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
-
+    <>
       <div className="space-y-3">
         <div>
           <label htmlFor="u-title" className="label">
@@ -152,7 +135,7 @@ function UnidadForm({ mode, form, onChange, onSubmit, onCancel }: UnidadFormProp
         </div>
       </div>
 
-      <details className="rounded-xl border border-atenas-mist-border bg-atenas-page/60 open:bg-white">
+      <details className="rounded-xl border border-atenas-mist-border bg-atenas-page/60 open:bg-white mt-5">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-atenas-ink [&::-webkit-details-marker]:hidden flex items-center justify-between gap-2">
           Apariencia y media
           <span className="text-xs font-normal text-atenas-muted">Opcional</span>
@@ -207,21 +190,18 @@ function UnidadForm({ mode, form, onChange, onSubmit, onCancel }: UnidadFormProp
               </div>
             </div>
             <div>
-              <label htmlFor="u-theme" className="label">
-                Tema visual (sin imagen)
-              </label>
-              <select
+              <Select
                 id="u-theme"
                 value={form.visualTheme}
                 onChange={(e) => onChange({ visualTheme: e.target.value })}
-                className="input-field"
+                label="Tema visual (sin imagen)"
               >
                 {VISUAL_THEME_OPTIONS.map((o) => (
                   <option key={o.value || 'default'} value={o.value}>
                     {o.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
           <div>
@@ -239,22 +219,13 @@ function UnidadForm({ mode, form, onChange, onSubmit, onCancel }: UnidadFormProp
           </div>
         </div>
       </details>
-
-      <div className="flex flex-wrap gap-2 pt-1">
-        <Button type="submit">{mode === 'create' ? 'Crear unidad' : 'Guardar cambios'}</Button>
-      </div>
-    </form>
+    </>
   );
 }
 
 type UnidadRowProps = {
   unidad: Unidad;
   index: number;
-  editing: boolean;
-  form: FormState;
-  onFormChange: (patch: Partial<FormState>) => void;
-  onSubmitEdit: (e: React.FormEvent) => void;
-  onCancelEdit: () => void;
   onStartEdit: () => void;
   onRemove: () => void;
   onTogglePublicada: () => void;
@@ -263,11 +234,6 @@ type UnidadRowProps = {
 function UnidadRow({
   unidad,
   index,
-  editing,
-  form,
-  onFormChange,
-  onSubmitEdit,
-  onCancelEdit,
   onStartEdit,
   onRemove,
   onTogglePublicada,
@@ -276,20 +242,6 @@ function UnidadRow({
   const publicada = unidad.publicada !== false;
   const coverUrl = resolveCoverImageUrl(unidad, index);
   const titulo = tituloUnidadConOrden(unidad.orden ?? 0, unidad.title, index);
-
-  if (editing) {
-    return (
-      <Card padding="md" className="border-atenas-blue/20 ring-1 ring-atenas-blue/10">
-        <UnidadForm
-          mode="edit"
-          form={form}
-          onChange={onFormChange}
-          onSubmit={onSubmitEdit}
-          onCancel={onCancelEdit}
-        />
-      </Card>
-    );
-  }
 
   return (
     <Card padding="none" hover className="overflow-hidden">
@@ -521,7 +473,7 @@ export default function DocenteContenidos() {
     );
   }
 
-  const showFormPanel = creating && !editingId;
+  const formModalOpen = creating || editingId !== null;
 
   return (
     <div>
@@ -529,25 +481,27 @@ export default function DocenteContenidos() {
         title="Unidades"
         description="Organiza el curso por unidades, configura temas y publica cuando estén listas para tus estudiantes."
         actions={
-          !creating && !editingId ? (
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to="/unidades?view=map"
-                className="btn-secondary inline-flex items-center gap-1.5 text-sm min-h-touch px-4"
-              >
-                <Map className="w-4 h-4" aria-hidden />
-                Vista mapa alumno
-              </Link>
-              <Button
-                type="button"
-                className="inline-flex items-center gap-1.5"
-                onClick={() => { resetForm(); setCreating(true); }}
-              >
-                <Plus className="w-4 h-4" aria-hidden />
-                Nueva unidad
-              </Button>
-            </div>
-          ) : undefined
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/unidades?view=map"
+              className="btn-secondary inline-flex items-center gap-1.5 text-sm min-h-touch px-4"
+            >
+              <Map className="w-4 h-4" aria-hidden />
+              Vista mapa alumno
+            </Link>
+            <Button
+              type="button"
+              className="inline-flex items-center gap-1.5"
+              onClick={() => {
+                resetForm();
+                setEditingId(null);
+                setCreating(true);
+              }}
+            >
+              <Plus className="w-4 h-4" aria-hidden />
+              Nueva unidad
+            </Button>
+          </div>
         }
       />
 
@@ -571,17 +525,34 @@ export default function DocenteContenidos() {
         />
       </div>
 
-      {showFormPanel && (
-        <Card padding="md" className="mb-6 border-atenas-success/20 ring-1 ring-atenas-success/10">
-          <UnidadForm
-            mode="create"
-            form={form}
-            onChange={patchForm}
-            onSubmit={handleCreate}
-            onCancel={cancelForm}
-          />
-        </Card>
-      )}
+      <FormModal
+        open={formModalOpen}
+        onClose={cancelForm}
+        title={editingId ? 'Editar unidad' : 'Nueva unidad'}
+        description={
+          editingId
+            ? 'Actualiza la información visible para los estudiantes.'
+            : 'Completa los datos básicos. Los campos avanzados son opcionales.'
+        }
+        icon={editingId ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+      >
+        <Form
+          onSubmit={(e) => {
+            if (editingId) void handleUpdate(e, editingId);
+            else void handleCreate(e);
+          }}
+        >
+          <FormBody>
+            <UnidadFormFields form={form} onChange={patchForm} />
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={cancelForm}>
+              Cancelar
+            </Button>
+            <Button type="submit">{editingId ? 'Guardar cambios' : 'Crear unidad'}</Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
 
       {unidades.length > 0 && (
         <div className="mb-5 space-y-3">
@@ -627,7 +598,7 @@ export default function DocenteContenidos() {
         </div>
       )}
 
-      {unidades.length === 0 && !creating ? (
+      {unidades.length === 0 && !formModalOpen ? (
         <EmptyState
           title="Aún no hay unidades"
           description="Crea la primera unidad del curso. Después podrás añadir temas, recursos y actividades."
@@ -636,7 +607,11 @@ export default function DocenteContenidos() {
             <Button
               type="button"
               className="inline-flex items-center gap-1.5"
-              onClick={() => { resetForm(); setCreating(true); }}
+              onClick={() => {
+                resetForm();
+                setEditingId(null);
+                setCreating(true);
+              }}
             >
               <Plus className="w-4 h-4" aria-hidden />
               Crear primera unidad
@@ -650,11 +625,6 @@ export default function DocenteContenidos() {
               <UnidadRow
                 unidad={u}
                 index={i}
-                editing={editingId === u.id}
-                form={form}
-                onFormChange={patchForm}
-                onSubmitEdit={(e) => void handleUpdate(e, u.id)}
-                onCancelEdit={cancelForm}
                 onStartEdit={() => startEdit(u)}
                 onRemove={() => void handleRemove(u.id)}
                 onTogglePublicada={() => void handleTogglePublicada(u.id, u.publicada ?? true)}

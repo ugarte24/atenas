@@ -20,7 +20,8 @@ import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { StatCard } from '../../components/ui/StatCard';
 import { Input, Select, Textarea } from '../../components/ui/Input';
-import { Form, FormBody, FormFooter, FormHeader, FormSection } from '../../components/ui/Form';
+import { Form, FormBody, FormFooter, FormSection } from '../../components/ui/Form';
+import { FormModal } from '../../components/ui/FormModal';
 import { useUnidad } from '../../hooks/useUnidad';
 import { useTemas } from '../../hooks/useTemas';
 import { tituloUnidadConOrden } from '../../lib/unidadTitulo';
@@ -43,105 +44,73 @@ function formFromTema(t: Tema): FormState {
   };
 }
 
-type TemaFormProps = {
-  mode: 'create' | 'edit';
+type TemaFormFieldsProps = {
   form: FormState;
   temas: Tema[];
   editingId?: string | null;
-  temaIndex?: number;
   onChange: (patch: Partial<FormState>) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
 };
 
-function TemaForm({ mode, form, temas, editingId, temaIndex, onChange, onSubmit, onCancel }: TemaFormProps) {
+function TemaFormFields({ form, temas, editingId, onChange }: TemaFormFieldsProps) {
   const prereqOptions = temas.filter((x) => x.id !== editingId);
   const contentEsHtml = form.content ? temaContentEsHtml(form.content) : false;
 
   return (
-    <Form onSubmit={onSubmit}>
-      <FormHeader
-        title={mode === 'create' ? 'Nuevo tema' : 'Editar tema'}
-        description={
-          mode === 'create'
-            ? 'Define el título y el contenido que verán tus estudiantes al abrir el tema.'
-            : 'Los recursos, actividades y evaluaciones asociados se conservan.'
-        }
-        icon={mode === 'create' ? <Plus className="w-5 h-5" /> : <Pencil className="w-5 h-5" />}
-        badge={
-          mode === 'edit' && temaIndex != null ? (
-            <Badge tone="default" className="tabular-nums">
-              Tema {temaIndex + 1}
-            </Badge>
-          ) : undefined
-        }
-      />
+    <>
+      <FormSection title="Información básica">
+        <Input
+          id="tema-title"
+          label="Título"
+          value={form.title}
+          onChange={(e) => onChange({ title: e.target.value })}
+          placeholder="Ej. T1.1 · La forma de la Tierra y sus movimientos"
+          required
+        />
+      </FormSection>
 
-      <FormBody>
-        <FormSection title="Información básica">
-          <Input
-            id="tema-title"
-            label="Título"
-            value={form.title}
-            onChange={(e) => onChange({ title: e.target.value })}
-            placeholder="Ej. T1.1 · La forma de la Tierra y sus movimientos"
-            required
-          />
-        </FormSection>
+      <FormSection
+        title="Contenido introductorio"
+        description="Texto o HTML que aparece al inicio de la lección del estudiante."
+      >
+        <Textarea
+          id="tema-content"
+          value={form.content}
+          onChange={(e) => onChange({ content: e.target.value })}
+          placeholder="Breve introducción, párrafos o etiquetas HTML (&lt;h3&gt;, &lt;p&gt;, etc.)"
+          rows={contentEsHtml ? 8 : 5}
+          className={contentEsHtml ? 'font-mono text-sm leading-relaxed' : undefined}
+        />
+        {contentEsHtml && (
+          <p className="flex items-start gap-2 text-xs text-atenas-muted rounded-2xl bg-atenas-page border border-atenas-mist-border px-3 py-2.5">
+            <Info className="w-4 h-4 shrink-0 text-atenas-blue mt-0.5" aria-hidden />
+            <span>
+              Este tema usa HTML. Puedes editar las etiquetas directamente o sustituirlas por texto
+              plano.
+            </span>
+          </p>
+        )}
+      </FormSection>
 
-        <FormSection
-          title="Contenido introductorio"
-          description="Texto o HTML que aparece al inicio de la lección del estudiante."
+      <FormSection
+        boxed
+        title="Prerequisito"
+        description="Opcional · el estudiante debe completar el tema seleccionado antes de acceder a este."
+      >
+        <Select
+          id="tema-prereq"
+          value={form.prereq}
+          onChange={(e) => onChange({ prereq: e.target.value })}
+          aria-label="Tema que debe completarse antes"
         >
-          <Textarea
-            id="tema-content"
-            value={form.content}
-            onChange={(e) => onChange({ content: e.target.value })}
-            placeholder="Breve introducción, párrafos o etiquetas HTML (&lt;h3&gt;, &lt;p&gt;, etc.)"
-            rows={contentEsHtml ? 8 : 5}
-            className={contentEsHtml ? 'font-mono text-sm leading-relaxed' : undefined}
-          />
-          {contentEsHtml && (
-            <p className="flex items-start gap-2 text-xs text-atenas-muted rounded-2xl bg-atenas-page border border-atenas-mist-border px-3 py-2.5">
-              <Info className="w-4 h-4 shrink-0 text-atenas-blue mt-0.5" aria-hidden />
-              <span>
-                Este tema usa HTML. Puedes editar las etiquetas directamente o sustituirlas por texto
-                plano.
-              </span>
-            </p>
-          )}
-        </FormSection>
-
-        <FormSection
-          boxed
-          title="Prerequisito"
-          description="Opcional · el estudiante debe completar el tema seleccionado antes de acceder a este."
-        >
-          <Select
-            id="tema-prereq"
-            value={form.prereq}
-            onChange={(e) => onChange({ prereq: e.target.value })}
-            aria-label="Tema que debe completarse antes"
-          >
-            <option value="">Sin prerequisito — acceso libre</option>
-            {prereqOptions.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.title}
-              </option>
-            ))}
-          </Select>
-        </FormSection>
-      </FormBody>
-
-      <FormFooter>
-        <Button type="button" variant="secondary" className="w-full sm:w-auto min-h-touch" onClick={onCancel}>
-          Cancelar
-        </Button>
-        <Button type="submit" className="w-full sm:w-auto min-h-touch">
-          {mode === 'create' ? 'Crear tema' : 'Guardar cambios'}
-        </Button>
-      </FormFooter>
-    </Form>
+          <option value="">Sin prerequisito — acceso libre</option>
+          {prereqOptions.map((x) => (
+            <option key={x.id} value={x.id}>
+              {x.title}
+            </option>
+          ))}
+        </Select>
+      </FormSection>
+    </>
   );
 }
 
@@ -149,46 +118,11 @@ type TemaRowProps = {
   tema: Tema;
   index: number;
   prereqTitle: string | null;
-  editing: boolean;
-  form: FormState;
-  temas: Tema[];
-  onFormChange: (patch: Partial<FormState>) => void;
-  onSubmitEdit: (e: React.FormEvent) => void;
-  onCancelEdit: () => void;
   onStartEdit: () => void;
   onRemove: () => void;
 };
 
-function TemaRow({
-  tema,
-  index,
-  prereqTitle,
-  editing,
-  form,
-  temas,
-  onFormChange,
-  onSubmitEdit,
-  onCancelEdit,
-  onStartEdit,
-  onRemove,
-}: TemaRowProps) {
-  if (editing) {
-    return (
-      <Card padding="none" className="border-atenas-blue/25 ring-1 ring-atenas-blue/10 overflow-hidden">
-        <TemaForm
-          mode="edit"
-          form={form}
-          temas={temas}
-          editingId={tema.id}
-          temaIndex={index}
-          onChange={onFormChange}
-          onSubmit={onSubmitEdit}
-          onCancel={onCancelEdit}
-        />
-      </Card>
-    );
-  }
-
+function TemaRow({ tema, index, prereqTitle, onStartEdit, onRemove }: TemaRowProps) {
   return (
     <Card padding="md" hover className="flex flex-col gap-4">
       <div className="flex items-start gap-3 min-w-0">
@@ -359,7 +293,8 @@ export default function DocenteTemas() {
     );
   }
 
-  const showFormPanel = creating && !editingId;
+  const formModalOpen = creating || editingId !== null;
+  const editingIndex = editingId ? temas.findIndex((t) => t.id === editingId) : -1;
 
   return (
     <div className="flex flex-col gap-6 pb-20 lg:pb-0">
@@ -379,19 +314,18 @@ export default function DocenteTemas() {
             : 'Gestiona los temas de esta unidad: recursos, actividades y evaluaciones.'
         }
         actions={
-          !creating && !editingId ? (
-            <Button
-              type="button"
-              className="inline-flex items-center gap-1.5 w-full sm:w-auto justify-center"
-              onClick={() => {
-                resetForm();
-                setCreating(true);
-              }}
-            >
-              <Plus className="w-4 h-4" aria-hidden />
-              Nuevo tema
-            </Button>
-          ) : undefined
+          <Button
+            type="button"
+            className="inline-flex items-center gap-1.5 w-full sm:w-auto justify-center"
+            onClick={() => {
+              resetForm();
+              setEditingId(null);
+              setCreating(true);
+            }}
+          >
+            <Plus className="w-4 h-4" aria-hidden />
+            Nuevo tema
+          </Button>
         }
       />
 
@@ -415,18 +349,48 @@ export default function DocenteTemas() {
         />
       </div>
 
-      {showFormPanel && (
-        <Card padding="none" className="border-atenas-success/25 ring-1 ring-atenas-success/10 overflow-hidden">
-          <TemaForm
-            mode="create"
-            form={form}
-            temas={temas}
-            onChange={patchForm}
-            onSubmit={handleCreate}
-            onCancel={cancelForm}
-          />
-        </Card>
-      )}
+      <FormModal
+        open={formModalOpen}
+        onClose={cancelForm}
+        title={editingId ? 'Editar tema' : 'Nuevo tema'}
+        description={
+          editingId
+            ? 'Los recursos, actividades y evaluaciones asociados se conservan.'
+            : 'Define el título y el contenido que verán tus estudiantes al abrir el tema.'
+        }
+        icon={editingId ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+      >
+        <Form
+          onSubmit={(e) => {
+            if (editingId) void handleUpdate(e, editingId);
+            else void handleCreate(e);
+          }}
+        >
+          <FormBody>
+            {editingId && editingIndex >= 0 && (
+              <div className="mb-4">
+                <Badge tone="default" className="tabular-nums">
+                  Tema {editingIndex + 1}
+                </Badge>
+              </div>
+            )}
+            <TemaFormFields
+              form={form}
+              temas={temas}
+              editingId={editingId}
+              onChange={patchForm}
+            />
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" className="w-full sm:w-auto min-h-touch" onClick={cancelForm}>
+              Cancelar
+            </Button>
+            <Button type="submit" className="w-full sm:w-auto min-h-touch">
+              {editingId ? 'Guardar cambios' : 'Crear tema'}
+            </Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
 
       {error && (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700" role="alert">
@@ -436,7 +400,7 @@ export default function DocenteTemas() {
 
       {loading ? (
         <SkeletonLines lines={4} />
-      ) : temas.length === 0 && !creating ? (
+      ) : temas.length === 0 && !formModalOpen ? (
         <EmptyState
           title="Sin temas todavía"
           description="Crea el primer tema para empezar a añadir recursos, actividades y evaluaciones."
@@ -465,12 +429,6 @@ export default function DocenteTemas() {
                 prereqTitle={
                   t.prerequisito_tema_id ? (temaMap.get(t.prerequisito_tema_id) ?? null) : null
                 }
-                editing={editingId === t.id}
-                form={form}
-                temas={temas}
-                onFormChange={patchForm}
-                onSubmitEdit={(e) => handleUpdate(e, t.id)}
-                onCancelEdit={cancelForm}
                 onStartEdit={() => startEdit(t)}
                 onRemove={() => handleRemove(t.id)}
               />

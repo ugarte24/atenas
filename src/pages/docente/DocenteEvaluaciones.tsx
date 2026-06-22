@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { ArrowRightLeft, Pencil, Plus } from 'lucide-react';
 import { useTema } from '../../hooks/useTema';
 import { useTemas } from '../../hooks/useTemas';
 import { useEvaluaciones } from '../../hooks/useEvaluaciones';
@@ -11,6 +12,9 @@ import { DocentePreviewModal } from '../../components/docente/DocentePreviewModa
 import { DocenteDetalleIntentosModal } from '../../components/docente/DocenteDetalleIntentosModal';
 import { Cuestionario } from '../../components/Cuestionario';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
+import { Form, FormBody, FormFooter } from '../../components/ui/Form';
+import { FormModal } from '../../components/ui/FormModal';
 
 export default function DocenteEvaluaciones() {
   const { temaId } = useParams<{ temaId: string }>();
@@ -34,6 +38,7 @@ export default function DocenteEvaluaciones() {
   const [moverEvaluacionId, setMoverEvaluacionId] = useState('');
   const [moverEvalTemaDestinoId, setMoverEvalTemaDestinoId] = useState('');
   const [moviendoEval, setMoviendoEval] = useState(false);
+  const [moverOpen, setMoverOpen] = useState(false);
   const [previewEvaluacion, setPreviewEvaluacion] = useState<Evaluacion | null>(null);
   const [detalleEvaluacion, setDetalleEvaluacion] = useState<Evaluacion | null>(null);
   const [filtroPubEv, setFiltroPubEv] = useState<'todas' | 'publicada' | 'borrador'>('todas');
@@ -162,6 +167,7 @@ export default function DocenteEvaluaciones() {
       if (editing?.id === moverEvaluacionId) setEditing(null);
       setMoverEvaluacionId('');
       setMoverEvalTemaDestinoId('');
+      setMoverOpen(false);
     } catch (err) {
       console.error(err);
       alert('Error al mover la evaluación');
@@ -295,6 +301,13 @@ export default function DocenteEvaluaciones() {
     }
   }
 
+  const formModalOpen = adding || editing !== null;
+
+  function closeEvaluacionForm() {
+    setAdding(false);
+    setEditing(null);
+  }
+
   if (loadingTema || !tema) {
     return <p className="text-atenas-muted">Cargando...</p>;
   }
@@ -357,247 +370,261 @@ export default function DocenteEvaluaciones() {
           className="input-field flex-1 max-w-md"
           aria-label="Buscar evaluaciones"
         />
-        <select
+        <Select
           value={filtroPubEv}
           onChange={(e) => setFiltroPubEv(e.target.value as typeof filtroPubEv)}
-          className="input-field max-w-[200px]"
+          className="max-w-[200px]"
           aria-label="Filtrar por publicación"
         >
           <option value="todas">Todas</option>
           <option value="publicada">Solo publicadas</option>
           <option value="borrador">Solo no publicadas</option>
-        </select>
+        </Select>
       </div>
 
-      {editing ? (
-        <form onSubmit={handleSaveEdit} className="mb-6 card p-5 space-y-4 max-w-2xl border-2 border-atenas-ink/20">
-          <p className="text-sm font-semibold text-atenas-ink">Editar evaluación</p>
-          <label className="label">Sobrescribir con plantilla (opcional)</label>
-          <select
-            value={editPlantillaId}
-            onChange={(e) => {
-              const id = e.target.value;
-              setEditPlantillaId(id);
-              if (!id) return;
-              const p = PLANTILLAS_EVALUACIONES.find((x) => x.id === id);
-              if (p) {
-                setEditTitle((t) => (t.trim() ? t : p.tituloSugerido));
-                setEditDescripcion((d) => (d.trim() ? d : p.descripcionSugerida ?? ''));
-                setEditUmbral(p.umbral);
-                setEditPreguntasJson(JSON.stringify(p.preguntas, null, 2));
-              }
-            }}
-            className="input-field"
-          >
-            <option value="">— Mantener preguntas actuales —</option>
-            {PLANTILLAS_EVALUACIONES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
+      <Button
+        type="button"
+        className="mb-6 inline-flex items-center gap-1.5"
+        onClick={() => {
+          setEditing(null);
+          setPlantillaEvalId('');
+          setAdding(true);
+        }}
+      >
+        <Plus className="w-4 h-4" aria-hidden />
+        Nueva evaluación
+      </Button>
+
+      <FormModal
+        open={formModalOpen}
+        onClose={closeEvaluacionForm}
+        title={editing ? 'Editar evaluación' : 'Nueva evaluación'}
+        description={
+          editing
+            ? 'Modifica título, umbral, opciones de examen y preguntas.'
+            : 'Configura la evaluación y las preguntas en formato JSON.'
+        }
+        icon={editing ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+      >
+        <Form onSubmit={editing ? handleSaveEdit : handleCreate}>
+          <FormBody className="space-y-4">
+            <Select
+              label="Plantilla (opcional)"
+              value={editing ? editPlantillaId : plantillaEvalId}
+              onChange={(e) => {
+                const id = e.target.value;
+                if (editing) {
+                  setEditPlantillaId(id);
+                  if (!id) return;
+                  const p = PLANTILLAS_EVALUACIONES.find((x) => x.id === id);
+                  if (p) {
+                    setEditTitle((t) => (t.trim() ? t : p.tituloSugerido));
+                    setEditDescripcion((d) => (d.trim() ? d : p.descripcionSugerida ?? ''));
+                    setEditUmbral(p.umbral);
+                    setEditPreguntasJson(JSON.stringify(p.preguntas, null, 2));
+                  }
+                } else {
+                  setPlantillaEvalId(id);
+                  if (!id) return;
+                  const p = PLANTILLAS_EVALUACIONES.find((x) => x.id === id);
+                  if (p) {
+                    setTitle((t) => (t.trim() ? t : p.tituloSugerido));
+                    setDescripcion((d) => (d.trim() ? d : p.descripcionSugerida ?? ''));
+                    setUmbralAprobado(p.umbral);
+                    setPreguntasJson(JSON.stringify(p.preguntas, null, 2));
+                  }
+                }
+              }}
+            >
+              <option value="">
+                {editing ? '— Mantener preguntas actuales —' : '— Elegir plantilla o editar JSON —'}
               </option>
-            ))}
-          </select>
-          <input
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            placeholder="Título"
-            className="input-field"
-            required
-          />
-          <input
-            value={editDescripcion}
-            onChange={(e) => setEditDescripcion(e.target.value)}
-            placeholder="Descripción (opcional)"
-            className="input-field"
-          />
-          <label className="label">Umbral para aprobar (%)</label>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={editUmbral}
-            onChange={(e) => setEditUmbral(Number(e.target.value))}
-            className="input-field max-w-[120px]"
-          />
-          <div>
-            <label htmlFor="edit-max-int" className="label">
-              Máx. intentos (vacío = ilimitado)
-            </label>
-            <input
-              id="edit-max-int"
-              type="number"
-              min={1}
-              value={editMaxIntentos}
-              onChange={(e) => setEditMaxIntentos(e.target.value)}
-              className="input-field max-w-[140px]"
-            />
-          </div>
-          <label className="flex items-center gap-2 text-atenas-ink">
-            <input
-              type="checkbox"
-              checked={editModoExamen}
-              onChange={(e) => setEditModoExamen(e.target.checked)}
-            />
-            Modo examen (tiempo limitado, solo nota al terminar)
-          </label>
-          {editModoExamen ? (
+              {PLANTILLAS_EVALUACIONES.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </Select>
             <div>
-              <label htmlFor="edit-min-lim" className="label">
-                Minutos límite
+              <label htmlFor="eval-title" className="label">
+                Título
               </label>
               <input
-                id="edit-min-lim"
+                id="eval-title"
+                value={editing ? editTitle : title}
+                onChange={(e) => (editing ? setEditTitle(e.target.value) : setTitle(e.target.value))}
+                placeholder="Título de la evaluación"
+                className="input-field"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="eval-desc" className="label">
+                Descripción (opcional)
+              </label>
+              <input
+                id="eval-desc"
+                value={editing ? editDescripcion : descripcion}
+                onChange={(e) =>
+                  editing ? setEditDescripcion(e.target.value) : setDescripcion(e.target.value)
+                }
+                placeholder="Descripción breve"
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label htmlFor="eval-umbral" className="label">
+                Umbral para aprobar (%)
+              </label>
+              <input
+                id="eval-umbral"
+                type="number"
+                min={0}
+                max={100}
+                value={editing ? editUmbral : umbralAprobado}
+                onChange={(e) =>
+                  editing
+                    ? setEditUmbral(Number(e.target.value))
+                    : setUmbralAprobado(Number(e.target.value))
+                }
+                className="input-field max-w-[120px]"
+              />
+            </div>
+            <div>
+              <label htmlFor="eval-max-int" className="label">
+                Máx. intentos (vacío = ilimitado)
+              </label>
+              <input
+                id="eval-max-int"
                 type="number"
                 min={1}
-                value={editMinutosLimite}
-                onChange={(e) => setEditMinutosLimite(e.target.value)}
+                value={editing ? editMaxIntentos : maxIntentos}
+                onChange={(e) =>
+                  editing ? setEditMaxIntentos(e.target.value) : setMaxIntentos(e.target.value)
+                }
                 className="input-field max-w-[140px]"
               />
             </div>
-          ) : null}
-          <label className="flex items-center gap-2 text-atenas-ink">
-            <input
-              type="checkbox"
-              checked={editOcultarCorrecta}
-              onChange={(e) => setEditOcultarCorrecta(e.target.checked)}
-            />
-            No mostrar la respuesta correcta si falla
-          </label>
-          <label className="label">Preguntas (JSON)</label>
-          <textarea
-            value={editPreguntasJson}
-            onChange={(e) => setEditPreguntasJson(e.target.value)}
-            className="input-field font-mono text-sm min-h-[240px]"
-            rows={14}
-          />
-          <div className="flex flex-wrap gap-3">
-            <Button type="submit">Guardar cambios</Button>
-            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
+            <label className="flex items-center gap-2 text-atenas-ink">
+              <input
+                type="checkbox"
+                checked={editing ? editModoExamen : modoExamen}
+                onChange={(e) =>
+                  editing ? setEditModoExamen(e.target.checked) : setModoExamen(e.target.checked)
+                }
+              />
+              Modo examen (tiempo limitado, solo nota al terminar)
+            </label>
+            {(editing ? editModoExamen : modoExamen) ? (
+              <div>
+                <label htmlFor="eval-min-lim" className="label">
+                  Minutos límite
+                </label>
+                <input
+                  id="eval-min-lim"
+                  type="number"
+                  min={1}
+                  value={editing ? editMinutosLimite : minutosLimite}
+                  onChange={(e) =>
+                    editing ? setEditMinutosLimite(e.target.value) : setMinutosLimite(e.target.value)
+                  }
+                  className="input-field max-w-[140px]"
+                />
+              </div>
+            ) : null}
+            <label className="flex items-center gap-2 text-atenas-ink">
+              <input
+                type="checkbox"
+                checked={editing ? editOcultarCorrecta : ocultarCorrecta}
+                onChange={(e) =>
+                  editing
+                    ? setEditOcultarCorrecta(e.target.checked)
+                    : setOcultarCorrecta(e.target.checked)
+                }
+              />
+              {editing ? 'No mostrar la respuesta correcta si falla' : 'Ocultar respuesta correcta'}
+            </label>
+            <div>
+              <label htmlFor="eval-preguntas" className="label">
+                Preguntas (JSON)
+              </label>
+              <textarea
+                id="eval-preguntas"
+                value={editing ? editPreguntasJson : preguntasJson}
+                onChange={(e) =>
+                  editing ? setEditPreguntasJson(e.target.value) : setPreguntasJson(e.target.value)
+                }
+                className="input-field font-mono text-sm min-h-[200px]"
+                rows={12}
+              />
+              {!editing && (
+                <p className="text-xs text-atenas-muted mt-1">
+                  Formato: array de {'{ enunciado, opciones: [ { texto, correcta } ] }'}
+                </p>
+              )}
+            </div>
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={closeEvaluacionForm}>
               Cancelar
             </Button>
-          </div>
-        </form>
-      ) : null}
+            <Button type="submit">{editing ? 'Guardar cambios' : 'Crear evaluación'}</Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
 
-      {adding ? (
-        <form onSubmit={handleCreate} className="mb-6 card p-5 space-y-4 max-w-2xl">
-          <label className="label">Plantilla rápida (opcional)</label>
-          <select
-            value={plantillaEvalId}
-            onChange={(e) => {
-              const id = e.target.value;
-              setPlantillaEvalId(id);
-              if (!id) return;
-              const p = PLANTILLAS_EVALUACIONES.find((x) => x.id === id);
-              if (p) {
-                setTitle((t) => (t.trim() ? t : p.tituloSugerido));
-                setDescripcion((d) => (d.trim() ? d : p.descripcionSugerida ?? ''));
-                setUmbralAprobado(p.umbral);
-                setPreguntasJson(JSON.stringify(p.preguntas, null, 2));
-              }
-            }}
-            className="input-field"
-          >
-            <option value="">— Elegir plantilla o editar JSON abajo —</option>
-            {PLANTILLAS_EVALUACIONES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título de la evaluación"
-            className="input-field"
-            required
-          />
-          <input
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            placeholder="Descripción (opcional)"
-            className="input-field"
-          />
-          <label className="label">Umbral para aprobar (%)</label>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={umbralAprobado}
-            onChange={(e) => setUmbralAprobado(Number(e.target.value))}
-            className="input-field max-w-[120px]"
-          />
-          <div>
-            <label htmlFor="new-max-int" className="label">
-              Máx. intentos (vacío = ilimitado)
-            </label>
-            <input
-              id="new-max-int"
-              type="number"
-              min={1}
-              value={maxIntentos}
-              onChange={(e) => setMaxIntentos(e.target.value)}
-              className="input-field max-w-[140px]"
-            />
-          </div>
-          <label className="flex items-center gap-2 text-atenas-ink">
-            <input
-              type="checkbox"
-              checked={modoExamen}
-              onChange={(e) => setModoExamen(e.target.checked)}
-            />
-            Modo examen
-          </label>
-          {modoExamen ? (
-            <div>
-              <label htmlFor="new-min-lim" className="label">
-                Minutos límite
-              </label>
-              <input
-                id="new-min-lim"
-                type="number"
-                min={1}
-                value={minutosLimite}
-                onChange={(e) => setMinutosLimite(e.target.value)}
-                className="input-field max-w-[140px]"
-              />
-            </div>
-          ) : null}
-          <label className="flex items-center gap-2 text-atenas-ink">
-            <input
-              type="checkbox"
-              checked={ocultarCorrecta}
-              onChange={(e) => setOcultarCorrecta(e.target.checked)}
-            />
-            Ocultar respuesta correcta
-          </label>
-          <label className="label">Preguntas (JSON)</label>
-          <textarea
-            value={preguntasJson}
-            onChange={(e) => setPreguntasJson(e.target.value)}
-            className="input-field font-mono text-sm min-h-[240px]"
-            rows={14}
-          />
-          <p className="text-xs text-atenas-muted">
-            Formato: array de {"{ enunciado, opciones: [ { texto, correcta } ] }"}
-          </p>
-          <div className="flex gap-3">
-            <Button type="submit">Crear evaluación</Button>
-            <Button type="button" variant="secondary" onClick={() => setAdding(false)}>Cancelar</Button>
-          </div>
-        </form>
-      ) : (
-        <Button
-          type="button"
-          className="mb-6"
-          onClick={() => {
-            setEditing(null);
-            setPlantillaEvalId('');
-            setAdding(true);
+      <FormModal
+        open={moverOpen}
+        onClose={() => setMoverOpen(false)}
+        title="Mover evaluación"
+        description="Solo temas de la misma unidad. La evaluación se coloca al final del tema destino."
+        icon={<ArrowRightLeft className="w-5 h-5" />}
+      >
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleMoverEvaluacionAOtroTema();
           }}
         >
-          + Nueva evaluación
-        </Button>
-      )}
+          <FormBody className="space-y-4">
+            <Select
+              label="Evaluación"
+              value={moverEvaluacionId}
+              onChange={(e) => setMoverEvaluacionId(e.target.value)}
+            >
+              <option value="">— Elegir —</option>
+              {evaluacionesOrdenadas.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.title}
+                </option>
+              ))}
+            </Select>
+            <Select
+              label="Tema destino"
+              value={moverEvalTemaDestinoId}
+              onChange={(e) => setMoverEvalTemaDestinoId(e.target.value)}
+            >
+              <option value="">— Elegir tema —</option>
+              {temasEvalDestino.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </Select>
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={() => setMoverOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={moviendoEval || !moverEvaluacionId || !moverEvalTemaDestinoId}
+            >
+              {moviendoEval ? 'Moviendo…' : 'Mover al tema'}
+            </Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
 
       {loading ? (
         <p className="text-atenas-muted">Cargando evaluaciones...</p>
@@ -690,51 +717,22 @@ export default function DocenteEvaluaciones() {
           })}
         </ul>
       )}
-      {evaluaciones.length === 0 && !adding && !editing && !loading && (
+      {evaluaciones.length === 0 && !formModalOpen && !loading && (
         <p className="text-atenas-muted mt-4">No hay evaluaciones. Crea una con el botón anterior.</p>
       )}
 
       {!loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length > 0 && (
-        <section className="mt-8 card p-5 max-w-2xl space-y-3 border border-atenas-mist-border">
-          <h3 className="text-sm font-semibold text-atenas-ink">Mover evaluación a otro tema</h3>
-          <p className="text-xs text-atenas-muted">
-            Solo temas de la misma unidad. La evaluación se coloca al final del tema destino.
-          </p>
-          <label className="label mb-0">Evaluación</label>
-          <select
-            value={moverEvaluacionId}
-            onChange={(e) => setMoverEvaluacionId(e.target.value)}
-            className="input-field"
-          >
-            <option value="">— Elegir —</option>
-            {evaluacionesOrdenadas.map((ev) => (
-              <option key={ev.id} value={ev.id}>
-                {ev.title}
-              </option>
-            ))}
-          </select>
-          <label className="label mb-0">Tema destino</label>
-          <select
-            value={moverEvalTemaDestinoId}
-            onChange={(e) => setMoverEvalTemaDestinoId(e.target.value)}
-            className="input-field"
-          >
-            <option value="">— Elegir tema —</option>
-            {temasEvalDestino.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
-              </option>
-            ))}
-          </select>
+        <div className="mt-8">
           <Button
             type="button"
             variant="secondary"
-            disabled={moviendoEval || !moverEvaluacionId || !moverEvalTemaDestinoId}
-            onClick={handleMoverEvaluacionAOtroTema}
+            className="inline-flex items-center gap-1.5"
+            onClick={() => setMoverOpen(true)}
           >
-            {moviendoEval ? 'Moviendo…' : 'Mover al tema'}
+            <ArrowRightLeft className="w-4 h-4" aria-hidden />
+            Mover evaluación a otro tema
           </Button>
-        </section>
+        </div>
       )}
 
       {!loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length === 0 && (

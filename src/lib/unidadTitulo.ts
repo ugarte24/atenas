@@ -18,6 +18,11 @@ export function tituloUnidadConOrden(
   return `Unidad ${num} · ${stripped || titulo}`;
 }
 
+/** Solo el nombre temático, sin prefijo «Unidad N». */
+export function nombreUnidadSinOrden(titulo: string): string {
+  return titulo.replace(/^\s*Unidad\s+\d+\s*[·•.-]\s*/i, '').trim() || titulo;
+}
+
 /** Etiqueta breve para listas y filtros (p. ej. desplegables). */
 export function tituloUnidadFiltro(
   orden: number,

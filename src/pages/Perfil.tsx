@@ -13,6 +13,7 @@ import {
   TrendingUp,
   User,
   AlertTriangle,
+  Pencil,
 } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -28,6 +29,8 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Alert } from '../components/ui/Alert';
 import { SkeletonLines } from '../components/ui/Skeleton';
+import { Form, FormBody, FormFooter } from '../components/ui/Form';
+import { FormModal } from '../components/ui/FormModal';
 import { RecentActivityList } from '../components/progress/RecentActivityList';
 import { cn } from '../components/ui/cn';
 import type { UserRole } from '../types';
@@ -60,6 +63,8 @@ export default function Perfil() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<'ok' | 'error' | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [editDatosOpen, setEditDatosOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const esEstudiante = profile?.role === 'estudiante';
   const dash = useEstudianteDashboard(esEstudiante);
   const { logros: logrosUsuario, loading: loadingLogros } = useLogrosUsuario();
@@ -90,6 +95,7 @@ export default function Perfil() {
       .eq('id', profile.id);
     setSaving(false);
     setMessage(error ? 'error' : 'ok');
+    if (!error) setEditDatosOpen(false);
   }
 
   async function handlePasswordSubmit(e: React.FormEvent) {
@@ -119,6 +125,7 @@ export default function Perfil() {
     setPasswordMessage('ok');
     setNewPassword('');
     setConfirmPassword('');
+    setPasswordModalOpen(false);
   }
 
   const quickLinks = [
@@ -283,90 +290,187 @@ export default function Perfil() {
       {(!esEstudiante || tab === 'datos') && (
         <div id="panel-datos" role="tabpanel" aria-labelledby="tab-datos" className="space-y-4">
           <Card padding="lg">
-            <div className="flex items-center gap-2 mb-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-atenas-mist text-atenas-ink">
-                <User className="w-4 h-4" aria-hidden />
-              </span>
-              <div>
-                <h2 className="text-base font-bold text-atenas-ink">Información personal</h2>
-                <p className="text-xs text-atenas-muted">Datos visibles en tu cuenta</p>
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-atenas-mist text-atenas-ink">
+                  <User className="w-4 h-4" aria-hidden />
+                </span>
+                <div>
+                  <h2 className="text-base font-bold text-atenas-ink">Información personal</h2>
+                  <p className="text-xs text-atenas-muted">Datos visibles en tu cuenta</p>
+                </div>
               </div>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <Input
-                label="Correo"
-                id="email"
-                type="email"
-                value={profile.email}
-                disabled
-                className="bg-atenas-mist text-atenas-muted cursor-not-allowed"
-              />
-              <Input
-                label="Nombre completo"
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-              <div className="flex items-center gap-2 rounded-xl bg-atenas-mist/60 border border-atenas-mist-border px-3 py-2.5">
-                <Mail className="w-4 h-4 text-atenas-muted shrink-0" aria-hidden />
-                <span className="text-sm text-atenas-muted">Rol:</span>
-                <span className="badge-role capitalize">{ROL_LABEL[profile.role as UserRole] ?? profile.role}</span>
-              </div>
-              {message === 'ok' && <Alert tone="success">Perfil actualizado correctamente.</Alert>}
-              {message === 'error' && (
-                <Alert tone="error">No se pudo actualizar. Vuelve a intentarlo.</Alert>
-              )}
-              <Button type="submit" disabled={saving} className="min-h-touch">
-                {saving ? 'Guardando…' : 'Guardar cambios'}
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-touch"
+                onClick={() => {
+                  setFullName(profile.full_name ?? '');
+                  setMessage(null);
+                  setEditDatosOpen(true);
+                }}
+              >
+                <Pencil className="w-4 h-4 mr-1.5" aria-hidden />
+                Editar datos
               </Button>
-            </form>
+            </div>
+            <dl className="space-y-4">
+              <div>
+                <dt className="text-xs font-medium text-atenas-muted mb-1">Correo</dt>
+                <dd className="text-sm text-atenas-ink">{profile.email}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-atenas-muted mb-1">Nombre completo</dt>
+                <dd className="text-sm font-medium text-atenas-ink">{profile.full_name || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-atenas-muted mb-1">Rol</dt>
+                <dd>
+                  <span className="badge-role capitalize">
+                    {ROL_LABEL[profile.role as UserRole] ?? profile.role}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+            {message === 'ok' && (
+              <Alert tone="success" className="mt-4">
+                Perfil actualizado correctamente.
+              </Alert>
+            )}
+            {message === 'error' && (
+              <Alert tone="error" className="mt-4">
+                No se pudo actualizar. Vuelve a intentarlo.
+              </Alert>
+            )}
           </Card>
 
           <Card padding="lg">
-            <div className="flex items-center gap-2 mb-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-atenas-mist text-atenas-ink">
-                <Shield className="w-4 h-4" aria-hidden />
-              </span>
-              <div>
-                <h2 className="text-base font-bold text-atenas-ink">Seguridad</h2>
-                <p className="text-xs text-atenas-muted">Cambia tu contraseña de acceso</p>
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-atenas-mist text-atenas-ink">
+                  <Shield className="w-4 h-4" aria-hidden />
+                </span>
+                <div>
+                  <h2 className="text-base font-bold text-atenas-ink">Seguridad</h2>
+                  <p className="text-xs text-atenas-muted">Cambia tu contraseña de acceso</p>
+                </div>
               </div>
-            </div>
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <Input
-                label="Nueva contraseña"
-                id="newPassword"
-                type="password"
-                autoComplete="new-password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-              <Input
-                label="Confirmar contraseña"
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-              {passwordError && <Alert tone="error">{passwordError}</Alert>}
-              {passwordMessage === 'ok' && (
-                <Alert tone="success">Contraseña actualizada correctamente.</Alert>
-              )}
-              {passwordMessage === 'error' && !passwordError && (
-                <Alert tone="error">No se pudo cambiar la contraseña. Vuelve a intentarlo.</Alert>
-              )}
-              <Button type="submit" disabled={savingPassword} variant="secondary" className="min-h-touch">
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-touch"
+                onClick={() => {
+                  setNewPassword('');
+                  setConfirmPassword('');
+                  setPasswordMessage(null);
+                  setPasswordError(null);
+                  setPasswordModalOpen(true);
+                }}
+              >
                 <Lock className="w-4 h-4 mr-1.5" aria-hidden />
-                {savingPassword ? 'Guardando…' : 'Actualizar contraseña'}
+                Cambiar contraseña
               </Button>
-            </form>
+            </div>
+            <p className="text-sm text-atenas-muted">
+              Usa una contraseña segura de al menos 6 caracteres.
+            </p>
+            {passwordMessage === 'ok' && (
+              <Alert tone="success" className="mt-4">
+                Contraseña actualizada correctamente.
+              </Alert>
+            )}
           </Card>
+
+          <FormModal
+            open={editDatosOpen}
+            onClose={() => setEditDatosOpen(false)}
+            title="Editar información personal"
+            description="Actualiza el nombre que aparece en tu cuenta."
+            icon={<User className="w-5 h-5" />}
+          >
+            <Form onSubmit={handleSubmit}>
+              <FormBody className="space-y-4">
+                <Input
+                  label="Correo"
+                  id="email-modal"
+                  type="email"
+                  value={profile.email}
+                  disabled
+                  className="bg-atenas-mist text-atenas-muted cursor-not-allowed"
+                />
+                <Input
+                  label="Nombre completo"
+                  id="fullName-modal"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+                <div className="flex items-center gap-2 rounded-xl bg-atenas-mist/60 border border-atenas-mist-border px-3 py-2.5">
+                  <Mail className="w-4 h-4 text-atenas-muted shrink-0" aria-hidden />
+                  <span className="text-sm text-atenas-muted">Rol:</span>
+                  <span className="badge-role capitalize">
+                    {ROL_LABEL[profile.role as UserRole] ?? profile.role}
+                  </span>
+                </div>
+                {message === 'error' && (
+                  <Alert tone="error">No se pudo actualizar. Vuelve a intentarlo.</Alert>
+                )}
+              </FormBody>
+              <FormFooter>
+                <Button type="button" variant="secondary" onClick={() => setEditDatosOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={saving}>
+                  {saving ? 'Guardando…' : 'Guardar cambios'}
+                </Button>
+              </FormFooter>
+            </Form>
+          </FormModal>
+
+          <FormModal
+            open={passwordModalOpen}
+            onClose={() => setPasswordModalOpen(false)}
+            title="Cambiar contraseña"
+            description="Introduce y confirma tu nueva contraseña de acceso."
+            icon={<Shield className="w-5 h-5" />}
+          >
+            <Form onSubmit={handlePasswordSubmit}>
+              <FormBody className="space-y-4">
+                <Input
+                  label="Nueva contraseña"
+                  id="newPassword-modal"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                <Input
+                  label="Confirmar contraseña"
+                  id="confirmPassword-modal"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                {passwordError && <Alert tone="error">{passwordError}</Alert>}
+                {passwordMessage === 'error' && !passwordError && (
+                  <Alert tone="error">No se pudo cambiar la contraseña. Vuelve a intentarlo.</Alert>
+                )}
+              </FormBody>
+              <FormFooter>
+                <Button type="button" variant="secondary" onClick={() => setPasswordModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={savingPassword}>
+                  {savingPassword ? 'Guardando…' : 'Actualizar contraseña'}
+                </Button>
+              </FormFooter>
+            </Form>
+          </FormModal>
         </div>
       )}
 

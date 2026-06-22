@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Activity,
   BookOpen,
-  ChevronDown,
   GraduationCap,
   Pencil,
   Plus,
@@ -30,12 +29,13 @@ import {
   DataTableTh,
   TableCellStack,
 } from '../components/ui/DataTable';
-import { Form, FormBody, FormFooter, FormGrid, FormHeader, FormSection } from '../components/ui/Form';
+import { Form, FormBody, FormFooter, FormGrid, FormSection } from '../components/ui/Form';
 import { FormModal } from '../components/ui/FormModal';
+import { UnidadPicker } from '../components/ui/UnidadPicker';
 import { supabase } from '../lib/supabase';
 import { useProfiles } from '../hooks/useProfiles';
 import { useUnidades } from '../hooks/useUnidades';
-import { tituloUnidadFiltro, tituloUnidadFiltroCompleto } from '../lib/unidadTitulo';
+import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import type { Profile, UserRole, Unidad } from '../types';
 
 const ROL_LABEL: Record<UserRole, string> = {
@@ -70,13 +70,14 @@ function AsignarDocenteUnidades({
   onGuardado: (t: string) => void;
   onError: (t: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const [selDoc, setSelDoc] = useState('');
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [loadingAsig, setLoadingAsig] = useState(false);
 
   useEffect(() => {
-    if (!selDoc) {
-      setChecks({});
+    if (!open || !selDoc) {
+      if (!selDoc) setChecks({});
       return;
     }
     let c = false;
@@ -94,7 +95,13 @@ function AsignarDocenteUnidades({
     return () => {
       c = true;
     };
-  }, [selDoc, unidades]);
+  }, [open, selDoc, unidades]);
+
+  function closeModal() {
+    setOpen(false);
+    setSelDoc('');
+    setChecks({});
+  }
 
   async function guardar() {
     if (!selDoc) return;
@@ -113,6 +120,7 @@ function AsignarDocenteUnidades({
           ? 'Unidades asignadas al docente.'
           : 'Sin unidades marcadas: el docente verá todas las unidades.'
       );
+      closeModal();
     } catch (e) {
       onError(e instanceof Error ? e.message : 'Error al guardar asignaciones');
     } finally {
@@ -123,133 +131,103 @@ function AsignarDocenteUnidades({
   if (!docentes.length || !unidades.length) return null;
 
   return (
-    <details className="card mb-6 overflow-hidden group">
-      <summary className="form-panel-header cursor-pointer list-none [&::-webkit-details-marker]:hidden flex items-center gap-3 select-none">
-        <div className="shrink-0 w-10 h-10 rounded-xl bg-atenas-blue/10 text-atenas-blue flex items-center justify-center">
-          <BookOpen className="w-5 h-5" aria-hidden />
-        </div>
-        <div className="flex-1 min-w-0 text-left">
-          <h2 className="text-sm font-bold text-atenas-ink">Asignar unidades a docentes</h2>
-          <p className="text-xs text-atenas-muted mt-0.5 leading-snug">
-            Opcional — restringe qué unidades ve cada docente en Contenidos.
-          </p>
-        </div>
-        <ChevronDown
-          className="w-5 h-5 text-atenas-muted shrink-0 transition-transform group-open:rotate-180"
-          aria-hidden
-        />
-      </summary>
-      <FormBody className="border-t border-atenas-mist-border">
-        <Select
-          id="asig-docente-sel"
-          label="Docente"
-          hint="Elige el docente al que quieres restringir o liberar unidades."
-          value={selDoc}
-          onChange={(e) => setSelDoc(e.target.value)}
-          className="max-w-xl"
-        >
-          <option value="">Seleccionar docente…</option>
-          {docentes.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.full_name} · {d.email}
-            </option>
-          ))}
-        </Select>
-        {selDoc && (
-          <FormSection
-            boxed
-            title="Unidades visibles"
-            description="Marca las unidades que este docente podrá gestionar en Contenidos."
-          >
-            <ul className="form-check-list">
-              {unidades.map((u) => (
-                <li key={u.id}>
-                  <label className="form-check-item">
-                    <input
-                      type="checkbox"
-                      checked={checks[u.id] === true}
-                      onChange={(e) =>
-                        setChecks((prev) => ({ ...prev, [u.id]: e.target.checked }))
-                      }
-                    />
-                    <span className="font-medium leading-snug">{u.title}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </FormSection>
-        )}
-      </FormBody>
-      {selDoc && (
-        <FormFooter className="border-t border-atenas-mist-border">
-          <Button type="button" disabled={loadingAsig} onClick={guardar}>
-            {loadingAsig ? 'Guardando…' : 'Guardar asignaciones'}
+    <>
+      <Card padding="md" className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="shrink-0 w-10 h-10 rounded-xl bg-atenas-blue/10 text-atenas-blue flex items-center justify-center">
+              <BookOpen className="w-5 h-5" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-atenas-ink">Asignar unidades a docentes</h2>
+              <p className="text-xs text-atenas-muted mt-0.5 leading-snug">
+                Opcional — restringe qué unidades ve cada docente en Contenidos.
+              </p>
+            </div>
+          </div>
+          <Button type="button" variant="secondary" className="shrink-0" onClick={() => setOpen(true)}>
+            Asignar unidades
           </Button>
-        </FormFooter>
-      )}
-    </details>
+        </div>
+      </Card>
+
+      <FormModal
+        open={open}
+        onClose={closeModal}
+        title="Asignar unidades a docentes"
+        description="Elige un docente y marca las unidades que podrá gestionar en Contenidos."
+        icon={<BookOpen className="w-5 h-5" />}
+      >
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void guardar();
+          }}
+        >
+          <FormBody>
+            <Select
+              id="asig-docente-sel"
+              label="Docente"
+              hint="Elige el docente al que quieres restringir o liberar unidades."
+              value={selDoc}
+              onChange={(e) => setSelDoc(e.target.value)}
+            >
+              <option value="">Seleccionar docente…</option>
+              {docentes.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.full_name} · {d.email}
+                </option>
+              ))}
+            </Select>
+            {selDoc && (
+              <FormSection
+                boxed
+                title="Unidades visibles"
+                description="Marca las unidades que este docente podrá gestionar en Contenidos."
+              >
+                <ul className="form-check-list">
+                  {unidades.map((u, index) => (
+                    <li key={u.id}>
+                      <label className="form-check-item">
+                        <input
+                          type="checkbox"
+                          checked={checks[u.id] === true}
+                          onChange={(e) =>
+                            setChecks((prev) => ({ ...prev, [u.id]: e.target.checked }))
+                          }
+                        />
+                        <span className="font-medium leading-snug">
+                          {tituloUnidadConOrden(u.orden ?? 0, u.title, index)}
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </FormSection>
+            )}
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={closeModal}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={!selDoc || loadingAsig}>
+              {loadingAsig ? 'Guardando…' : 'Guardar asignaciones'}
+            </Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
+    </>
   );
 }
 
 type UsuarioCardProps = {
   profile: Profile;
-  editing: boolean;
-  editName: string;
-  editRole: UserRole;
-  onEditName: (v: string) => void;
-  onEditRole: (v: UserRole) => void;
-  onSubmitEdit: (e: React.FormEvent) => void;
-  onCancelEdit: () => void;
   onStartEdit: () => void;
   onToggleActivo: () => void;
 };
 
-function UsuarioCard({
-  profile: p,
-  editing,
-  editName,
-  editRole,
-  onEditName,
-  onEditRole,
-  onSubmitEdit,
-  onCancelEdit,
-  onStartEdit,
-  onToggleActivo,
-}: UsuarioCardProps) {
+function UsuarioCard({ profile: p, onStartEdit, onToggleActivo }: UsuarioCardProps) {
   const inactivo = p.activo === false;
-
-  if (editing) {
-    return (
-      <Card padding="none" className="border-atenas-blue/25 ring-1 ring-atenas-blue/10 overflow-hidden">
-        <Form onSubmit={onSubmitEdit}>
-          <FormHeader title="Editar usuario" icon={<Pencil className="w-5 h-5" />} />
-          <FormBody>
-            <Input
-              value={editName}
-              onChange={(e) => onEditName(e.target.value)}
-              label="Nombre"
-              required
-            />
-            <Select
-              value={editRole}
-              onChange={(e) => onEditRole(e.target.value as UserRole)}
-              label="Rol"
-            >
-              <option value="estudiante">Estudiante</option>
-              <option value="docente">Docente</option>
-              <option value="admin">Administrador</option>
-            </Select>
-          </FormBody>
-          <FormFooter>
-            <Button type="button" variant="secondary" onClick={onCancelEdit}>
-              Cancelar
-            </Button>
-            <Button type="submit">Guardar</Button>
-          </FormFooter>
-        </Form>
-      </Card>
-    );
-  }
 
   return (
     <Card padding="md" className={inactivo ? 'opacity-75 bg-atenas-mist/40' : undefined}>
@@ -579,46 +557,37 @@ export default function AdminPanel() {
       />
 
       <div
-        className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4 px-0.5 text-xs sm:text-sm text-atenas-muted"
+        className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2 mb-4 px-0.5 text-xs sm:text-sm text-atenas-muted"
         aria-label="Resumen de actividad"
       >
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 min-w-0">
           <GraduationCap className="w-4 h-4 text-atenas-blue shrink-0" aria-hidden />
-          <span>
+          <span className="min-w-0">
             <strong className="text-atenas-ink font-semibold tabular-nums">
               {stats?.estudiantesActivos ?? '—'}
             </strong>{' '}
             estudiantes activos
           </span>
         </span>
-        <span className="hidden sm:inline text-atenas-mist-border" aria-hidden>
-          ·
-        </span>
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 min-w-0">
           <UserCog className="w-4 h-4 text-atenas-gold shrink-0" aria-hidden />
-          <span>
+          <span className="min-w-0">
             <strong className="text-atenas-ink font-semibold tabular-nums">{resumenRoles.docentes}</strong>{' '}
             docentes
           </span>
         </span>
-        <span className="hidden sm:inline text-atenas-mist-border" aria-hidden>
-          ·
-        </span>
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 min-w-0">
           <Activity className="w-4 h-4 text-atenas-success shrink-0" aria-hidden />
-          <span>
+          <span className="min-w-0">
             <strong className="text-atenas-ink font-semibold tabular-nums">{stats?.intentosHoy ?? '—'}</strong>{' '}
             intentos hoy
           </span>
         </span>
-        <span className="hidden md:inline text-atenas-mist-border" aria-hidden>
-          ·
-        </span>
-        <span className="hidden md:inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 min-w-0">
           <BookOpen className="w-4 h-4 text-atenas-blue shrink-0" aria-hidden />
-          <span>
+          <span className="min-w-0">
             <strong className="text-atenas-ink font-semibold tabular-nums">{stats?.intentosSemana ?? '—'}</strong>{' '}
-            en 7 días
+            intentos (7 días)
           </span>
         </span>
       </div>
@@ -685,6 +654,40 @@ export default function AdminPanel() {
               Cancelar
             </Button>
             <Button type="submit">Crear usuario</Button>
+          </FormFooter>
+        </Form>
+      </FormModal>
+
+      <FormModal
+        open={editingId !== null && !creating}
+        onClose={() => setEditingId(null)}
+        title="Editar usuario"
+        description="Actualiza el nombre y el rol del usuario."
+        icon={<Pencil className="w-5 h-5" />}
+      >
+        <Form onSubmit={(e) => editingId && handleUpdate(e, editingId)}>
+          <FormBody>
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              label="Nombre"
+              required
+            />
+            <Select
+              value={editRole}
+              onChange={(e) => setEditRole(e.target.value as UserRole)}
+              label="Rol"
+            >
+              <option value="estudiante">Estudiante</option>
+              <option value="docente">Docente</option>
+              <option value="admin">Administrador</option>
+            </Select>
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={() => setEditingId(null)}>
+              Cancelar
+            </Button>
+            <Button type="submit">Guardar cambios</Button>
           </FormFooter>
         </Form>
       </FormModal>
@@ -760,27 +763,17 @@ export default function AdminPanel() {
                 <option value="inactivo">Solo inactivos</option>
               </Select>
             </div>
-            <div className="flex flex-col min-w-0">
+            <div className="flex flex-col min-w-0 sm:col-span-2 lg:col-span-1">
               <p id="filtro-unidad-label" className="form-section-title mb-1.5 min-h-[1.25rem]">
                 Unidad con actividad
               </p>
-              <Select
+              <UnidadPicker
                 id="filtro-unidad-actividad"
+                unidades={unidades}
                 value={unidadActividadId}
-                onChange={(e) => setUnidadActividadId(e.target.value)}
+                onChange={setUnidadActividadId}
                 aria-labelledby="filtro-unidad-label"
-              >
-                <option value="">Todas las unidades</option>
-                {unidades.map((u, index) => {
-                  const completo = tituloUnidadFiltroCompleto(u.orden ?? 0, u.title, index);
-                  const corto = tituloUnidadFiltro(u.orden ?? 0, u.title, index);
-                  return (
-                    <option key={u.id} value={u.id} title={completo}>
-                      {corto}
-                    </option>
-                  );
-                })}
-              </Select>
+              />
             </div>
           </div>
 
@@ -824,13 +817,6 @@ export default function AdminPanel() {
               <UsuarioCard
                 key={p.id}
                 profile={p}
-                editing={editingId === p.id}
-                editName={editName}
-                editRole={editRole}
-                onEditName={setEditName}
-                onEditRole={setEditRole}
-                onSubmitEdit={(e) => void handleUpdate(e, p.id)}
-                onCancelEdit={() => setEditingId(null)}
                 onStartEdit={() => startEdit(p)}
                 onToggleActivo={() => void handleToggleActivo(p.id, p.activo !== false)}
               />
@@ -858,44 +844,15 @@ export default function AdminPanel() {
                 {profilesFiltrados.map((p) => (
                   <DataTableRow key={p.id} className={p.activo === false ? 'opacity-75' : undefined}>
                     <DataTableTd>
-                      {editingId === p.id ? (
-                        <form
-                          onSubmit={(e) => handleUpdate(e, p.id)}
-                          className="flex flex-wrap items-center gap-2"
+                      <div className="flex items-center gap-3 min-w-[200px]">
+                        <div
+                          className="w-9 h-9 rounded-full bg-atenas-sidebar text-white text-xs font-bold flex items-center justify-center shrink-0"
+                          aria-hidden
                         >
-                          <input
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="input-field input-field--compact max-w-[180px]"
-                            required
-                          />
-                          <select
-                            value={editRole}
-                            onChange={(e) => setEditRole(e.target.value as UserRole)}
-                            className="input-field input-field--compact max-w-[140px]"
-                          >
-                            <option value="estudiante">Estudiante</option>
-                            <option value="docente">Docente</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                          <Button type="submit" size="sm">
-                            Guardar
-                          </Button>
-                          <Button type="button" variant="secondary" size="sm" onClick={() => setEditingId(null)}>
-                            Cancelar
-                          </Button>
-                        </form>
-                      ) : (
-                        <div className="flex items-center gap-3 min-w-[200px]">
-                          <div
-                            className="w-9 h-9 rounded-full bg-atenas-sidebar text-white text-xs font-bold flex items-center justify-center shrink-0"
-                            aria-hidden
-                          >
-                            {iniciales(p.full_name)}
-                          </div>
-                          <TableCellStack primary={p.full_name} secondary={p.email} />
+                          {iniciales(p.full_name)}
                         </div>
-                      )}
+                        <TableCellStack primary={p.full_name} secondary={p.email} />
+                      </div>
                     </DataTableTd>
                     <DataTableTd>
                       <Badge tone={rolBadgeTone(p.role)}>{ROL_LABEL[p.role]}</Badge>
@@ -906,8 +863,7 @@ export default function AdminPanel() {
                       </Badge>
                     </DataTableTd>
                     <DataTableTd align="right">
-                      {editingId !== p.id && (
-                        <div className="table-actions">
+                      <div className="table-actions">
                           <button
                             type="button"
                             onClick={() => startEdit(p)}
@@ -933,7 +889,6 @@ export default function AdminPanel() {
                             <Power aria-hidden />
                           </button>
                         </div>
-                      )}
                     </DataTableTd>
                   </DataTableRow>
                 ))}

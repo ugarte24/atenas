@@ -6,6 +6,8 @@ export { PageHeader } from './PageHeader';
 export type { BreadcrumbItem } from './PageHeader';
 export { Input, Textarea } from './Input';
 export { Select } from './Select';
+export { UnidadPicker } from './UnidadPicker';
+export { FieldPicker } from './FieldPicker';
 export { ProgressBar } from './ProgressBar';
 export { StatCard } from './StatCard';
 export { EmptyState } from './EmptyState';
