@@ -22,22 +22,36 @@ async function fetchEmblemaAsDataUrl(): Promise<string | undefined> {
   }
 }
 
+export async function prepareCertificadoParams(
+  params: CertificadoParams
+): Promise<CertificadoParams> {
+  const emblemaData = await fetchEmblemaAsDataUrl();
+  return {
+    ...params,
+    emblemaUrl: emblemaData ?? params.emblemaUrl ?? resolveCertificadoEmblemaUrl(),
+  };
+}
+
+export async function buildCertificadoHtmlBlobUrl(params: CertificadoParams): Promise<string> {
+  const ready = await prepareCertificadoParams(params);
+  const html = buildCertificadoPrintDocument(ready, {
+    variant: 'print',
+    autoPrint: false,
+  });
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  return URL.createObjectURL(blob);
+}
+
 /**
- * Abre el certificado en una nueva pestaña (HTML).
- * Blob URL evita pestaña en blanco con noopener + document.write.
+ * Abre el certificado en una nueva pestaña (HTML) con barra Imprimir / PDF.
  */
 export async function openCertificadoEnVentana(params: CertificadoParams): Promise<void> {
-  const emblemaData = await fetchEmblemaAsDataUrl();
-  const html = buildCertificadoPrintDocument(
-    {
-      ...params,
-      emblemaUrl: emblemaData ?? params.emblemaUrl ?? resolveCertificadoEmblemaUrl(),
-    },
-    {
-      variant: 'print',
-      autoPrint: false,
-    }
-  );
+  const ready = await prepareCertificadoParams(params);
+  const html = buildCertificadoPrintDocument(ready, {
+    variant: 'print',
+    autoPrint: false,
+    includeToolbar: true,
+  });
 
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);

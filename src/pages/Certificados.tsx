@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Award,
-  ExternalLink,
+  Download,
   Loader2,
   Lock,
   CheckCircle2,
@@ -14,7 +14,9 @@ import { useMisionesAlumno } from '../hooks/useMisiones';
 import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
-import { openCertificadoEnVentana } from '../lib/certificadoVentana';
+import { downloadCertificadoPdf } from '../lib/certificadoPdf';
+import type { CertificadoParams } from '../lib/certificadoPrintHtml';
+import { CertificadoPreviewModal } from '../components/certificado/CertificadoPreviewModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -34,7 +36,8 @@ export default function Certificados() {
   const [certs, setCerts] = useState<CertState>({});
   const [loadingPct, setLoadingPct] = useState(true);
   const [filtro, setFiltro] = useState<Filtro>('todos');
-  const [openingId, setOpeningId] = useState<string | null>(null);
+  const [previewParams, setPreviewParams] = useState<CertificadoParams | null>(null);
+  const [pdfId, setPdfId] = useState<string | null>(null);
 
   const publicadas = useMemo(() => unidades.filter((u) => u.publicada !== false), [unidades]);
 
@@ -85,10 +88,19 @@ export default function Certificados() {
     });
   }, [publicadas, certs, filtro]);
 
-  async function abrirCertificado(unidadId: string, titulo: string, pct: number, umbral: number) {
-    setOpeningId(unidadId);
+  function abrirCertificado(titulo: string, pct: number, umbral: number) {
+    setPreviewParams({
+      nombreEstudiante: profile?.full_name ?? 'Estudiante',
+      tituloUnidad: titulo,
+      porcentajeUnidad: pct,
+      umbralCertificado: umbral,
+    });
+  }
+
+  async function descargarPdf(unidadId: string, titulo: string, pct: number, umbral: number) {
+    setPdfId(unidadId);
     try {
-      await openCertificadoEnVentana({
+      await downloadCertificadoPdf({
         nombreEstudiante: profile?.full_name ?? 'Estudiante',
         tituloUnidad: titulo,
         porcentajeUnidad: pct,
@@ -96,13 +108,9 @@ export default function Certificados() {
       });
     } catch (e) {
       console.error(e);
-      window.alert(
-        e instanceof Error && e.message.includes('emergentes')
-          ? e.message
-          : 'No se pudo abrir el certificado. Intenta de nuevo.'
-      );
+      window.alert('No se pudo generar el PDF. Intenta de nuevo.');
     } finally {
-      setOpeningId(null);
+      setPdfId(null);
     }
   }
 
@@ -114,6 +122,11 @@ export default function Certificados() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <CertificadoPreviewModal
+        open={previewParams != null}
+        onClose={() => setPreviewParams(null)}
+        params={previewParams}
+      />
       <PageHeader
         title="Certificados"
         description="Completa cada unidad al umbral indicado para obtener tu diploma."
@@ -222,7 +235,6 @@ export default function Certificados() {
                 const titulo = tituloUnidadConOrden(u.orden, u.title);
                 const m = misiones.find((x) => x.id === u.id);
                 const certLoading = !st;
-                const opening = openingId === u.id;
                 const eligible = st?.eligible ?? false;
                 const pct = st?.pct ?? 0;
                 const falta = Math.max(0, umbral - pct);
@@ -318,27 +330,33 @@ export default function Certificados() {
                       </div>
 
                       {!certLoading && eligible && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="primary"
-                          disabled={opening}
-                          onClick={() => abrirCertificado(u.id, titulo, pct, umbral)}
-                          className="inline-flex w-full items-center justify-center gap-2 shadow-sm"
-                          aria-busy={opening}
-                        >
-                          {opening ? (
-                            <>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="primary"
+                            onClick={() => abrirCertificado(titulo, pct, umbral)}
+                            className="inline-flex flex-1 items-center justify-center gap-2 shadow-sm"
+                          >
+                            Ver certificado
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            disabled={pdfId === u.id}
+                            onClick={() => void descargarPdf(u.id, titulo, pct, umbral)}
+                            className="inline-flex flex-1 items-center justify-center gap-2"
+                            aria-busy={pdfId === u.id}
+                          >
+                            {pdfId === u.id ? (
                               <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
-                              Abriendo…
-                            </>
-                          ) : (
-                            <>
-                              <ExternalLink className="w-4 h-4 shrink-0" aria-hidden />
-                              Ver certificado
-                            </>
-                          )}
-                        </Button>
+                            ) : (
+                              <Download className="w-4 h-4 shrink-0" aria-hidden />
+                            )}
+                            PDF
+                          </Button>
+                        </div>
                       )}
 
                       {!certLoading && !eligible && (

@@ -19,7 +19,8 @@ import { useUnidadContenidoAgregado } from '../hooks/useUnidadContenidoAgregado'
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { Badge } from '../components/ui/Badge';
 import { cn } from '../components/ui/cn';
-import { openCertificadoEnVentana } from '../lib/certificadoVentana';
+import { CertificadoPreviewModal } from '../components/certificado/CertificadoPreviewModal';
+import type { CertificadoParams } from '../lib/certificadoPrintHtml';
 
 type UnidadTab = 'temas' | 'recursos' | 'actividades' | 'evaluaciones';
 
@@ -33,7 +34,7 @@ export default function UnidadTemas() {
   const { temas, loading } = useTemas(unidadId ?? null);
   const [bloqueoTema, setBloqueoTema] = useState<Record<string, boolean>>({});
   const [pctUnidad, setPctUnidad] = useState<number | null>(null);
-  const [certPdfLoading, setCertPdfLoading] = useState(false);
+  const [previewParams, setPreviewParams] = useState<CertificadoParams | null>(null);
 
   const temaIds = useMemo(() => temas.map((t) => t.id), [temas]);
   const esEstudiante = profile?.role === 'estudiante';
@@ -102,6 +103,11 @@ export default function UnidadTemas() {
 
   return (
     <div>
+      <CertificadoPreviewModal
+        open={previewParams != null}
+        onClose={() => setPreviewParams(null)}
+        params={previewParams}
+      />
       <Breadcrumbs
         className="mb-4"
         items={[
@@ -264,24 +270,17 @@ export default function UnidadTemas() {
 
       {tab === 'temas' && mostrarCert && (
         <div className="mb-6">
-          <Button disabled={certPdfLoading} onClick={async () => {
-              setCertPdfLoading(true);
-              try {
-                await openCertificadoEnVentana({
-                  nombreEstudiante: nombreEstudiante,
-                  tituloUnidad: unidad.title,
-                  porcentajeUnidad: pctUnidad ?? 0,
-                  umbralCertificado: umbralCert ?? 0,
-                });
-              } catch (e) {
-                console.error(e);
-                window.alert('No se pudo abrir el certificado. Intenta de nuevo en unos segundos.');
-              } finally {
-                setCertPdfLoading(false);
-              }
+          <Button
+            onClick={() => {
+              setPreviewParams({
+                nombreEstudiante,
+                tituloUnidad: unidad.title,
+                porcentajeUnidad: pctUnidad ?? 0,
+                umbralCertificado: umbralCert ?? 0,
+              });
             }}
           >
-            {certPdfLoading ? 'Abriendo…' : 'Ver certificado'}
+            Ver certificado
           </Button>
         </div>
       )}
