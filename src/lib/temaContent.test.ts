@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeTemaContent, temaContentEsHtml, temaContentPreview } from './temaContent';
+import { normalizeTemaContent, temaContentEsHtml, temaContentPreview, temaContentToPlainText } from './temaContent';
 
 describe('temaContentPreview', () => {
   it('quita etiquetas HTML y deja texto legible', () => {
@@ -20,6 +20,22 @@ describe('temaContentEsHtml', () => {
   it('detecta HTML rico', () => {
     expect(temaContentEsHtml('<h3>Título</h3>')).toBe(true);
     expect(temaContentEsHtml('Solo texto')).toBe(false);
+  });
+});
+
+describe('temaContentToPlainText', () => {
+  it('devuelve texto plano sin cambios', () => {
+    expect(temaContentToPlainText('Hola\n\nMundo')).toBe('Hola\n\nMundo');
+  });
+
+  it('convierte HTML heredado a texto editable', () => {
+    const html = '<h3>La Tierra</h3><p>Es esférica.</p>';
+    expect(temaContentToPlainText(html)).toBe('La Tierra\nEs esférica.');
+  });
+
+  it('devuelve cadena vacía si no hay contenido', () => {
+    expect(temaContentToPlainText(null)).toBe('');
+    expect(temaContentToPlainText('   ')).toBe('');
   });
 });
 

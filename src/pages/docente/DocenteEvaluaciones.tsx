@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowRightLeft, Pencil, Plus } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import {
+  ArrowRightLeft,
+  ClipboardCheck,
+  FileCheck,
+  Pencil,
+  Plus,
+  Users,
+} from 'lucide-react';
 import { useTema } from '../../hooks/useTema';
 import { useTemas } from '../../hooks/useTemas';
 import { useEvaluaciones } from '../../hooks/useEvaluaciones';
@@ -10,15 +17,23 @@ import { PLANTILLAS_EVALUACIONES } from '../../constants/plantillasEvaluaciones'
 import { PREGUNTAS_EJEMPLO_EVALUACION } from '../../constants/preguntasEjemploEvaluacion';
 import { DocentePreviewModal } from '../../components/docente/DocentePreviewModal';
 import { DocenteDetalleIntentosModal } from '../../components/docente/DocenteDetalleIntentosModal';
+import {
+  DocenteGestionItemCard,
+  DocenteListToolbar,
+  DocenteTemaSubpageShell,
+  gestionActionIcons,
+} from '../../components/docente/DocenteTemaSubpage';
 import { Cuestionario } from '../../components/Cuestionario';
 import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
 import { Select } from '../../components/ui/Select';
+import { StatCard } from '../../components/ui/StatCard';
+import { SkeletonLines } from '../../components/ui/Skeleton';
 import { Form, FormBody, FormFooter } from '../../components/ui/Form';
 import { FormModal } from '../../components/ui/FormModal';
 
 export default function DocenteEvaluaciones() {
   const { temaId } = useParams<{ temaId: string }>();
-  const navigate = useNavigate();
   const { tema, loading: loadingTema } = useTema(temaId ?? null);
   const { temas: temasUnidad, loading: loadingTemas } = useTemas(tema?.unidad_id ?? null);
   const { evaluaciones, loading, create, update, remove } = useEvaluaciones(temaId ?? null);
@@ -125,6 +140,12 @@ export default function DocenteEvaluaciones() {
       return true;
     });
   }, [evaluacionesOrdenadas, filtroPubEv, busquedaEv]);
+
+  const resumen = useMemo(() => {
+    const publicadas = evaluaciones.filter((e) => e.publicada).length;
+    const conIntentos = evaluaciones.filter((e) => (statsPorEvaluacion[e.id]?.alumnos ?? 0) > 0).length;
+    return { total: evaluaciones.length, publicadas, conIntentos };
+  }, [evaluaciones, statsPorEvaluacion]);
 
   async function moverEvaluacion(id: string, dir: 'up' | 'down') {
     const list = [...evaluaciones].sort((a, b) => a.orden - b.orden || a.id.localeCompare(b.id));
@@ -309,7 +330,7 @@ export default function DocenteEvaluaciones() {
   }
 
   if (loadingTema || !tema) {
-    return <p className="text-atenas-muted">Cargando...</p>;
+    return <SkeletonLines lines={6} />;
   }
 
   const preguntasPreview = previewEvaluacion
@@ -319,7 +340,7 @@ export default function DocenteEvaluaciones() {
     : [];
 
   return (
-    <div>
+    <>
       {detalleEvaluacion ? (
         <DocenteDetalleIntentosModal
           tipo="evaluacion"
@@ -352,48 +373,200 @@ export default function DocenteEvaluaciones() {
         </DocentePreviewModal>
       ) : null}
 
-      <button
-        type="button"
-        onClick={() => navigate(`/docente/unidades/${tema.unidad_id}`)}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-atenas-mist"
-        
+      <DocenteTemaSubpageShell
+        unidadId={tema.unidad_id}
+        temaTitle={tema.title}
+        sectionLabel="Evaluaciones"
+        sectionDescription="Crea y publica evaluaciones para comprobar lo aprendido en este tema."
+        icon={<FileCheck className="w-5 h-5" />}
+        primaryAction={
+          <Button
+            type="button"
+            className="inline-flex items-center gap-1.5 w-full sm:w-auto justify-center"
+            onClick={() => {
+              setEditing(null);
+              setPlantillaEvalId('');
+              setAdding(true);
+            }}
+          >
+            <Plus className="w-4 h-4" aria-hidden />
+            Nueva evaluación
+          </Button>
+        }
+        stats={
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <StatCard
+              label="Evaluaciones"
+              value={resumen.total}
+              icon={<FileCheck className="w-5 h-5 text-atenas-blue" />}
+            />
+            <StatCard
+              label="Publicadas"
+              value={resumen.publicadas}
+              hint="Visibles para alumnos"
+              icon={<ClipboardCheck className="w-5 h-5 text-atenas-success" />}
+            />
+            <StatCard
+              label="Con intentos"
+              value={resumen.conIntentos}
+              hint="Al menos un alumno"
+              icon={<Users className="w-5 h-5 text-violet-600" />}
+            />
+          </div>
+        }
+        toolbar={
+          evaluaciones.length > 0 ? (
+            <DocenteListToolbar
+              search={busquedaEv}
+              onSearchChange={setBusquedaEv}
+              searchPlaceholder="Buscar por título…"
+              searchAriaLabel="Buscar evaluaciones"
+              filterValue={filtroPubEv}
+              onFilterChange={(v) => setFiltroPubEv(v as typeof filtroPubEv)}
+              filterAriaLabel="Filtrar por publicación"
+              filterOptions={[
+                { value: 'todas', label: 'Todas' },
+                { value: 'publicada', label: 'Solo publicadas' },
+                { value: 'borrador', label: 'Solo borradores' },
+              ]}
+            />
+          ) : undefined
+        }
+        loading={loading}
+        empty={
+          evaluaciones.length === 0 && !formModalOpen
+            ? {
+                title: 'Sin evaluaciones todavía',
+                description: 'Crea la primera evaluación para medir el aprendizaje de tus estudiantes.',
+                icon: <FileCheck className="w-7 h-7" />,
+                action: (
+                  <Button
+                    type="button"
+                    className="inline-flex items-center gap-1.5"
+                    onClick={() => {
+                      setEditing(null);
+                      setPlantillaEvalId('');
+                      setAdding(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4" aria-hidden />
+                    Crear evaluación
+                  </Button>
+                ),
+              }
+            : undefined
+        }
+        footer={
+          !loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length > 0 ? (
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className="inline-flex items-center gap-1.5"
+                onClick={() => setMoverOpen(true)}
+              >
+                <ArrowRightLeft className="w-4 h-4" aria-hidden />
+                Mover evaluación a otro tema
+              </Button>
+            </div>
+          ) : !loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length === 0 ? (
+            <p className="text-xs text-atenas-muted max-w-2xl">
+              Para mover evaluaciones a otro tema, crea al menos un tema más en esta unidad.
+            </p>
+          ) : undefined
+        }
       >
-        ← Temas
-      </button>
-      <h2 className="text-xl font-bold text-atenas-ink mb-4">{tema.title} — Evaluaciones</h2>
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <input
-          type="search"
-          placeholder="Buscar por título…"
-          value={busquedaEv}
-          onChange={(e) => setBusquedaEv(e.target.value)}
-          className="input-field flex-1 max-w-md"
-          aria-label="Buscar evaluaciones"
-        />
-        <Select
-          value={filtroPubEv}
-          onChange={(e) => setFiltroPubEv(e.target.value as typeof filtroPubEv)}
-          className="max-w-[200px]"
-          aria-label="Filtrar por publicación"
-        >
-          <option value="todas">Todas</option>
-          <option value="publicada">Solo publicadas</option>
-          <option value="borrador">Solo no publicadas</option>
-        </Select>
-      </div>
+        {evaluaciones.length > 0 && evaluacionesFiltradas.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-atenas-mist-border bg-atenas-card px-4 py-8 text-center text-sm text-atenas-muted">
+            Ninguna evaluación coincide con la búsqueda o el filtro.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-4 list-none p-0 m-0">
+            {evaluacionesFiltradas.map((ev) => {
+              const realIdx = evaluacionesOrdenadas.findIndex((x) => x.id === ev.id);
+              const stats = statsPorEvaluacion[ev.id];
+              const subtitle =
+                stats && stats.alumnos > 0
+                  ? `${stats.alumnos} alumno${stats.alumnos !== 1 ? 's' : ''} · ${stats.aprobados} aprobado${stats.aprobados !== 1 ? 's' : ''}${
+                      stats.promedio != null ? ` · Media ${stats.promedio}%` : ''
+                    }`
+                  : 'Sin intentos aún';
 
-      <Button
-        type="button"
-        className="mb-6 inline-flex items-center gap-1.5"
-        onClick={() => {
-          setEditing(null);
-          setPlantillaEvalId('');
-          setAdding(true);
-        }}
-      >
-        <Plus className="w-4 h-4" aria-hidden />
-        Nueva evaluación
-      </Button>
+              return (
+                <li key={ev.id}>
+                  <DocenteGestionItemCard
+                    title={ev.title}
+                    subtitle={subtitle}
+                    chips={
+                      <>
+                        <Badge tone="default">Umbral {ev.umbral_aprobado}%</Badge>
+                        {ev.modo_examen && <Badge tone="warning">Modo examen</Badge>}
+                        {ev.max_intentos != null && (
+                          <Badge tone="muted">Máx. {ev.max_intentos} intentos</Badge>
+                        )}
+                      </>
+                    }
+                    order={{
+                      disabled: reordenando,
+                      canMoveUp: realIdx > 0,
+                      canMoveDown: realIdx >= 0 && realIdx < evaluacionesOrdenadas.length - 1,
+                      onUp: () => void moverEvaluacion(ev.id, 'up'),
+                      onDown: () => void moverEvaluacion(ev.id, 'down'),
+                    }}
+                    published={{
+                      value: ev.publicada,
+                      onToggle: () => void handleTogglePublicada(ev.id, ev.publicada),
+                    }}
+                    actions={[
+                      {
+                        key: 'dup',
+                        label: 'Duplicar',
+                        onClick: () => void duplicarEvaluacion(ev),
+                        tone: 'muted',
+                        icon: gestionActionIcons.duplicate,
+                      },
+                      {
+                        key: 'edit',
+                        label: 'Editar',
+                        onClick: () => openEdit(ev),
+                        icon: gestionActionIcons.edit,
+                      },
+                      {
+                        key: 'preview',
+                        label: 'Vista previa',
+                        onClick: () => setPreviewEvaluacion(ev),
+                        tone: 'success',
+                        icon: gestionActionIcons.preview,
+                      },
+                      {
+                        key: 'students',
+                        label: 'Ver alumnos',
+                        onClick: () => setDetalleEvaluacion(ev),
+                        tone: 'violet',
+                        icon: gestionActionIcons.students,
+                      },
+                      {
+                        key: 'student-view',
+                        label: 'Vista alumno',
+                        href: `/evaluaciones/${ev.id}`,
+                        external: true,
+                        icon: gestionActionIcons.external,
+                      },
+                      {
+                        key: 'delete',
+                        label: 'Eliminar',
+                        onClick: () => void handleRemove(ev.id),
+                        tone: 'danger',
+                        icon: gestionActionIcons.delete,
+                      },
+                    ]}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </DocenteTemaSubpageShell>
 
       <FormModal
         open={formModalOpen}
@@ -625,121 +798,6 @@ export default function DocenteEvaluaciones() {
           </FormFooter>
         </Form>
       </FormModal>
-
-      {loading ? (
-        <p className="text-atenas-muted">Cargando evaluaciones...</p>
-      ) : (
-        <ul className="space-y-2">
-          {evaluacionesFiltradas.map((ev) => {
-            const realIdx = evaluacionesOrdenadas.findIndex((x) => x.id === ev.id);
-            return (
-            <li key={ev.id} className="flex flex-wrap items-center gap-2 sm:gap-3 p-3 sm:p-4 card">
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  disabled={reordenando || realIdx <= 0}
-                  onClick={() => moverEvaluacion(ev.id, 'up')}
-                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
-                  aria-label="Subir"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  disabled={reordenando || realIdx < 0 || realIdx >= evaluacionesOrdenadas.length - 1}
-                  onClick={() => moverEvaluacion(ev.id, 'down')}
-                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
-                  aria-label="Bajar"
-                >
-                  ↓
-                </button>
-              </div>
-              <div className="flex-1 min-w-[140px]">
-                <span className="font-medium text-atenas-ink block">{ev.title}</span>
-                {statsPorEvaluacion[ev.id] && (
-                  <span className="text-xs text-atenas-muted mt-0.5 block">
-                    {statsPorEvaluacion[ev.id].alumnos === 0
-                      ? 'Sin intentos aún'
-                      : `${statsPorEvaluacion[ev.id].alumnos} alumno${statsPorEvaluacion[ev.id].alumnos !== 1 ? 's' : ''} · ${statsPorEvaluacion[ev.id].aprobados} aprobado${statsPorEvaluacion[ev.id].aprobados !== 1 ? 's' : ''}${
-                          statsPorEvaluacion[ev.id].promedio != null
-                            ? ` · Media ${statsPorEvaluacion[ev.id].promedio}%`
-                            : ''
-                        }`}
-                  </span>
-                )}
-              </div>
-              <span className="text-sm text-atenas-muted">Umbral: {ev.umbral_aprobado}%</span>
-              <button
-                type="button"
-                onClick={() => handleTogglePublicada(ev.id, ev.publicada)}
-                className={`badge ${ev.publicada ? 'bg-emerald-100 text-emerald-800' : 'bg-atenas-mist text-atenas-muted'}`}
-              >
-                {ev.publicada ? 'Publicada' : 'No publicada'}
-              </button>
-              <button
-                type="button"
-                onClick={() => duplicarEvaluacion(ev)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-atenas-muted"
-                title="Duplicar como borrador no publicado"
-              >
-                Duplicar
-              </button>
-              <button
-                type="button"
-                onClick={() => openEdit(ev)}
-                className="text-sm font-medium hover:underline min-h-touch px-1"
-                
-              >
-                Editar
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewEvaluacion(ev)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-emerald-700"
-              >
-                Vista previa
-              </button>
-              <button
-                type="button"
-                onClick={() => setDetalleEvaluacion(ev)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-violet-700"
-              >
-                Ver alumnos
-              </button>
-              <Link to={`/evaluaciones/${ev.id}`} className="text-sm font-medium hover:underline"  target="_blank" rel="noopener noreferrer">
-                Ver alumno
-              </Link>
-              <button type="button" onClick={() => handleRemove(ev.id)} className="text-sm text-red-600 hover:text-red-700">
-                Eliminar
-              </button>
-            </li>
-          );
-          })}
-        </ul>
-      )}
-      {evaluaciones.length === 0 && !formModalOpen && !loading && (
-        <p className="text-atenas-muted mt-4">No hay evaluaciones. Crea una con el botón anterior.</p>
-      )}
-
-      {!loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length > 0 && (
-        <div className="mt-8">
-          <Button
-            type="button"
-            variant="secondary"
-            className="inline-flex items-center gap-1.5"
-            onClick={() => setMoverOpen(true)}
-          >
-            <ArrowRightLeft className="w-4 h-4" aria-hidden />
-            Mover evaluación a otro tema
-          </Button>
-        </div>
-      )}
-
-      {!loading && !loadingTemas && evaluaciones.length > 0 && temasEvalDestino.length === 0 && (
-        <p className="text-xs text-atenas-muted mt-6 max-w-2xl">
-          Para mover evaluaciones a otro tema, crea al menos un tema más en esta unidad.
-        </p>
-      )}
-    </div>
+    </>
   );
 }

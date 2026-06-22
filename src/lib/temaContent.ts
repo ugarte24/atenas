@@ -4,6 +4,18 @@ export function temaContentEsHtml(raw: string): boolean {
 }
 
 /**
+ * Texto plano para editar en el panel docente (sin etiquetas HTML).
+ * Convierte contenido heredado con marcado a texto legible.
+ */
+export function temaContentToPlainText(raw: string | null | undefined): string {
+  if (!raw?.trim()) return '';
+  if (/<[a-z][^>]*>/i.test(raw)) {
+    return temaContentPreview(raw);
+  }
+  return raw.trim();
+}
+
+/**
  * Convierte HTML o texto con etiquetas sueltas en texto plano legible (previews, cards).
  */
 export function temaContentPreview(raw: string | null | undefined): string {

@@ -6,7 +6,6 @@ import {
   ClipboardList,
   FileCheck,
   GitBranch,
-  Info,
   Layers,
   Pencil,
   Plus,
@@ -25,7 +24,7 @@ import { FormModal } from '../../components/ui/FormModal';
 import { useUnidad } from '../../hooks/useUnidad';
 import { useTemas } from '../../hooks/useTemas';
 import { tituloUnidadConOrden } from '../../lib/unidadTitulo';
-import { temaContentEsHtml, temaContentPreview } from '../../lib/temaContent';
+import { temaContentPreview, temaContentToPlainText } from '../../lib/temaContent';
 import type { Tema } from '../../types';
 
 type FormState = {
@@ -39,7 +38,7 @@ const EMPTY_FORM: FormState = { title: '', content: '', prereq: '' };
 function formFromTema(t: Tema): FormState {
   return {
     title: t.title,
-    content: t.content ?? '',
+    content: temaContentToPlainText(t.content),
     prereq: t.prerequisito_tema_id ?? '',
   };
 }
@@ -53,7 +52,7 @@ type TemaFormFieldsProps = {
 
 function TemaFormFields({ form, temas, editingId, onChange }: TemaFormFieldsProps) {
   const prereqOptions = temas.filter((x) => x.id !== editingId);
-  const contentEsHtml = form.content ? temaContentEsHtml(form.content) : false;
+  const previewText = form.content.trim();
 
   return (
     <>
@@ -69,25 +68,29 @@ function TemaFormFields({ form, temas, editingId, onChange }: TemaFormFieldsProp
       </FormSection>
 
       <FormSection
-        title="Contenido introductorio"
-        description="Texto o HTML que aparece al inicio de la lección del estudiante."
+        title="Introducción para tus estudiantes"
+        description="Escribe con tus propias palabras. Es el texto que verán al abrir la lección, antes de los recursos y actividades."
       >
         <Textarea
           id="tema-content"
+          label="Texto de introducción"
+          hint="Puedes usar varios párrafos. Deja una línea en blanco entre párrafos."
           value={form.content}
           onChange={(e) => onChange({ content: e.target.value })}
-          placeholder="Breve introducción, párrafos o etiquetas HTML (&lt;h3&gt;, &lt;p&gt;, etc.)"
-          rows={contentEsHtml ? 8 : 5}
-          className={contentEsHtml ? 'font-mono text-sm leading-relaxed' : undefined}
+          placeholder={
+            'Ej. En esta lección descubrirás cómo se mueve la Tierra y por qué tenemos día y noche.\n\nPresta atención a las imágenes y actividades que vienen a continuación.'
+          }
+          rows={7}
         />
-        {contentEsHtml && (
-          <p className="flex items-start gap-2 text-xs text-atenas-muted rounded-2xl bg-atenas-page border border-atenas-mist-border px-3 py-2.5">
-            <Info className="w-4 h-4 shrink-0 text-atenas-blue mt-0.5" aria-hidden />
-            <span>
-              Este tema usa HTML. Puedes editar las etiquetas directamente o sustituirlas por texto
-              plano.
-            </span>
-          </p>
+        {previewText && (
+          <div className="rounded-2xl border border-atenas-mist-border bg-atenas-page px-4 py-3.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-atenas-muted mb-2">
+              Así lo verán tus estudiantes
+            </p>
+            <div className="whitespace-pre-wrap text-sm text-atenas-muted-strong leading-relaxed">
+              {previewText}
+            </div>
+          </div>
         )}
       </FormSection>
 

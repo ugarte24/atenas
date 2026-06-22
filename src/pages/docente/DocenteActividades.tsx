@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowRightLeft, Pencil, Plus } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import {
+  ArrowRightLeft,
+  ClipboardList,
+  Eye,
+  Pencil,
+  Plus,
+  Users,
+} from 'lucide-react';
 import { useTema } from '../../hooks/useTema';
 import { useTemas } from '../../hooks/useTemas';
 import { useActividades } from '../../hooks/useActividades';
@@ -10,8 +17,17 @@ import { PLANTILLAS_ACTIVIDADES } from '../../constants/plantillasActividades';
 import { EJEMPLO_CONFIG_ACTIVIDAD } from '../../constants/ejemploConfigActividad';
 import { DocenteDetalleIntentosModal } from '../../components/docente/DocenteDetalleIntentosModal';
 import { DocentePreviewModal } from '../../components/docente/DocentePreviewModal';
+import {
+  DocenteGestionItemCard,
+  DocenteListToolbar,
+  DocenteTemaSubpageShell,
+  gestionActionIcons,
+} from '../../components/docente/DocenteTemaSubpage';
 import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
 import { Select } from '../../components/ui/Select';
+import { StatCard } from '../../components/ui/StatCard';
+import { SkeletonLines } from '../../components/ui/Skeleton';
 import { Form, FormBody, FormFooter } from '../../components/ui/Form';
 import { FormModal } from '../../components/ui/FormModal';
 import { ActividadPreviewBody } from '../../components/docente/ActividadPreviewBody';
@@ -30,7 +46,6 @@ function cfgPorTipo(t: ActividadTipo): ActividadConfig {
 
 export default function DocenteActividades() {
   const { temaId } = useParams<{ temaId: string }>();
-  const navigate = useNavigate();
   const { tema, loading: loadingTema } = useTema(temaId ?? null);
   const { temas: temasUnidad, loading: loadingTemas } = useTemas(tema?.unidad_id ?? null);
   const { actividades, loading, create, update, remove } = useActividades(temaId ?? null);
@@ -113,6 +128,20 @@ export default function DocenteActividades() {
       return true;
     });
   }, [actividadesOrdenadas, filtroPub, busqueda]);
+
+  const resumen = useMemo(() => {
+    const publicadas = actividades.filter((a) => a.publicada).length;
+    const conIntentos = actividades.filter((a) => (statsPorActividad[a.id]?.alumnos ?? 0) > 0).length;
+    return { total: actividades.length, publicadas, conIntentos };
+  }, [actividades, statsPorActividad]);
+
+  const TIPO_LABEL: Record<ActividadTipo, string> = {
+    seleccion_multiple: 'Selección múltiple',
+    relacion_conceptos: 'Relacionar columnas',
+    memoria: 'Memoria',
+    ordenar_secuencia: 'Ordenar secuencia',
+    ubicar_en_mapa: 'Ubicar en mapa',
+  };
 
   async function moverActividad(id: string, dir: 'up' | 'down') {
     const list = [...actividades].sort((a, b) => a.orden - b.orden || a.id.localeCompare(b.id));
@@ -250,11 +279,11 @@ export default function DocenteActividades() {
   }
 
   if (loadingTema || !tema) {
-    return <p className="text-atenas-muted">Cargando...</p>;
+    return <SkeletonLines lines={6} />;
   }
 
   return (
-    <div>
+    <>
       {detalleActividad ? (
         <DocenteDetalleIntentosModal
           tipo="actividad"
@@ -274,49 +303,194 @@ export default function DocenteActividades() {
         </DocentePreviewModal>
       ) : null}
 
-      <button
-        type="button"
-        onClick={() => navigate(`/docente/unidades/${tema.unidad_id}`)}
-        className="text-sm font-medium mb-4 min-h-touch flex items-center rounded-lg px-2 -ml-2 hover:bg-atenas-mist"
-        
+      <DocenteTemaSubpageShell
+        unidadId={tema.unidad_id}
+        temaTitle={tema.title}
+        sectionLabel="Actividades"
+        sectionDescription="Diseña actividades interactivas para practicar los contenidos del tema."
+        icon={<ClipboardList className="w-5 h-5" />}
+        primaryAction={
+          <Button
+            type="button"
+            className="inline-flex items-center gap-1.5 w-full sm:w-auto justify-center"
+            onClick={() => {
+              setEditing(null);
+              setAdding(true);
+              setPlantillaActividadId('');
+              setConfigCreate(cfgPorTipo(tipo));
+            }}
+          >
+            <Plus className="w-4 h-4" aria-hidden />
+            Nueva actividad
+          </Button>
+        }
+        stats={
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <StatCard
+              label="Actividades"
+              value={resumen.total}
+              icon={<ClipboardList className="w-5 h-5 text-atenas-blue" />}
+            />
+            <StatCard
+              label="Publicadas"
+              value={resumen.publicadas}
+              hint="Visibles para alumnos"
+              icon={<Eye className="w-5 h-5 text-atenas-success" />}
+            />
+            <StatCard
+              label="Con intentos"
+              value={resumen.conIntentos}
+              hint="Al menos un alumno"
+              icon={<Users className="w-5 h-5 text-violet-600" />}
+            />
+          </div>
+        }
+        toolbar={
+          actividades.length > 0 ? (
+            <DocenteListToolbar
+              search={busqueda}
+              onSearchChange={setBusqueda}
+              searchPlaceholder="Buscar por título o tipo…"
+              searchAriaLabel="Buscar actividades"
+              filterValue={filtroPub}
+              onFilterChange={(v) => setFiltroPub(v as typeof filtroPub)}
+              filterAriaLabel="Filtrar por publicación"
+              filterOptions={[
+                { value: 'todas', label: 'Todas' },
+                { value: 'publicada', label: 'Solo publicadas' },
+                { value: 'borrador', label: 'Solo borradores' },
+              ]}
+            />
+          ) : undefined
+        }
+        loading={loading}
+        empty={
+          actividades.length === 0 && !formModalOpen
+            ? {
+                title: 'Sin actividades todavía',
+                description: 'Crea la primera actividad interactiva para que tus estudiantes practiquen.',
+                icon: <ClipboardList className="w-7 h-7" />,
+                action: (
+                  <Button
+                    type="button"
+                    className="inline-flex items-center gap-1.5"
+                    onClick={() => {
+                      setEditing(null);
+                      setAdding(true);
+                      setPlantillaActividadId('');
+                      setConfigCreate(cfgPorTipo(tipo));
+                    }}
+                  >
+                    <Plus className="w-4 h-4" aria-hidden />
+                    Crear actividad
+                  </Button>
+                ),
+              }
+            : undefined
+        }
+        footer={
+          !loading && !loadingTemas && actividades.length > 0 && temasDestino.length > 0 ? (
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className="inline-flex items-center gap-1.5"
+                onClick={() => setMoverOpen(true)}
+              >
+                <ArrowRightLeft className="w-4 h-4" aria-hidden />
+                Mover actividad a otro tema
+              </Button>
+            </div>
+          ) : !loading && !loadingTemas && actividades.length > 0 && temasDestino.length === 0 ? (
+            <p className="text-xs text-atenas-muted max-w-2xl">
+              Para mover actividades a otro tema, crea al menos un tema más en esta unidad.
+            </p>
+          ) : undefined
+        }
       >
-        ← Temas
-      </button>
-      <h2 className="text-xl font-bold text-atenas-ink mb-4">{tema.title} — Actividades</h2>
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <input
-          type="search"
-          placeholder="Buscar por título o tipo…"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="input-field flex-1 max-w-md"
-          aria-label="Buscar actividades"
-        />
-        <Select
-          value={filtroPub}
-          onChange={(e) => setFiltroPub(e.target.value as typeof filtroPub)}
-          className="max-w-[200px]"
-          aria-label="Filtrar por publicación"
-        >
-          <option value="todas">Todas</option>
-          <option value="publicada">Solo publicadas</option>
-          <option value="borrador">Solo no publicadas</option>
-        </Select>
-      </div>
+        {actividades.length > 0 && actividadesFiltradas.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-atenas-mist-border bg-atenas-card px-4 py-8 text-center text-sm text-atenas-muted">
+            Ninguna actividad coincide con la búsqueda o el filtro.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-4 list-none p-0 m-0">
+            {actividadesFiltradas.map((a) => {
+              const realIdx = actividadesOrdenadas.findIndex((x) => x.id === a.id);
+              const stats = statsPorActividad[a.id];
+              const subtitle =
+                stats && stats.alumnos > 0
+                  ? `${stats.alumnos} alumno${stats.alumnos !== 1 ? 's' : ''}${
+                      stats.promedio != null ? ` · Nota media ${stats.promedio}%` : ''
+                    }`
+                  : 'Sin intentos aún';
 
-      <Button
-        type="button"
-        className="mb-6 inline-flex items-center gap-1.5"
-        onClick={() => {
-          setEditing(null);
-          setAdding(true);
-          setPlantillaActividadId('');
-          setConfigCreate(cfgPorTipo(tipo));
-        }}
-      >
-        <Plus className="w-4 h-4" aria-hidden />
-        Nueva actividad
-      </Button>
+              return (
+                <li key={a.id}>
+                  <DocenteGestionItemCard
+                    title={a.title}
+                    subtitle={subtitle}
+                    chips={<Badge tone="default">{TIPO_LABEL[a.tipo] ?? a.tipo}</Badge>}
+                    order={{
+                      disabled: reordenando,
+                      canMoveUp: realIdx > 0,
+                      canMoveDown: realIdx >= 0 && realIdx < actividadesOrdenadas.length - 1,
+                      onUp: () => void moverActividad(a.id, 'up'),
+                      onDown: () => void moverActividad(a.id, 'down'),
+                    }}
+                    published={{
+                      value: a.publicada,
+                      onToggle: () => void handleTogglePublicada(a.id, a.publicada),
+                    }}
+                    actions={[
+                      {
+                        key: 'dup',
+                        label: 'Duplicar',
+                        onClick: () => void duplicarActividad(a),
+                        tone: 'muted',
+                        icon: gestionActionIcons.duplicate,
+                      },
+                      {
+                        key: 'edit',
+                        label: 'Editar',
+                        onClick: () => openEdit(a),
+                        icon: gestionActionIcons.edit,
+                      },
+                      {
+                        key: 'preview',
+                        label: 'Vista previa',
+                        onClick: () => setPreviewActividad(a),
+                        tone: 'success',
+                        icon: gestionActionIcons.preview,
+                      },
+                      {
+                        key: 'students',
+                        label: 'Ver alumnos',
+                        onClick: () => setDetalleActividad(a),
+                        tone: 'violet',
+                        icon: gestionActionIcons.students,
+                      },
+                      {
+                        key: 'student-view',
+                        label: 'Vista alumno',
+                        href: `/actividades/${a.id}`,
+                        external: true,
+                        icon: gestionActionIcons.external,
+                      },
+                      {
+                        key: 'delete',
+                        label: 'Eliminar',
+                        onClick: () => void handleRemove(a.id),
+                        tone: 'danger',
+                        icon: gestionActionIcons.delete,
+                      },
+                    ]}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </DocenteTemaSubpageShell>
 
       <FormModal
         open={formModalOpen}
@@ -481,121 +655,6 @@ export default function DocenteActividades() {
           </FormFooter>
         </Form>
       </FormModal>
-
-      {loading ? (
-        <p className="text-atenas-muted">Cargando actividades...</p>
-      ) : (
-        <ul className="space-y-2">
-          {actividadesFiltradas.map((a) => {
-            const realIdx = actividadesOrdenadas.findIndex((x) => x.id === a.id);
-            return (
-            <li key={a.id} className="flex flex-wrap items-center gap-2 sm:gap-3 p-3 sm:p-4 card">
-              <div className="flex items-center gap-1 shrink-0" title="Orden en el tema">
-                <button
-                  type="button"
-                  disabled={reordenando || realIdx <= 0}
-                  onClick={() => moverActividad(a.id, 'up')}
-                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
-                  aria-label="Subir"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  disabled={reordenando || realIdx < 0 || realIdx >= actividadesOrdenadas.length - 1}
-                  onClick={() => moverActividad(a.id, 'down')}
-                  className="min-h-touch min-w-touch rounded-lg border border-atenas-mist-border text-atenas-muted hover:bg-atenas-page disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
-                  aria-label="Bajar"
-                >
-                  ↓
-                </button>
-              </div>
-              <div className="flex-1 min-w-[140px]">
-                <span className="font-medium text-atenas-ink block">{a.title}</span>
-                {statsPorActividad[a.id] && (
-                  <span className="text-xs text-atenas-muted mt-0.5 block">
-                    {statsPorActividad[a.id].alumnos === 0
-                      ? 'Sin intentos aún'
-                      : `${statsPorActividad[a.id].alumnos} alumno${statsPorActividad[a.id].alumnos !== 1 ? 's' : ''}${
-                          statsPorActividad[a.id].promedio != null
-                            ? ` · Nota media ${statsPorActividad[a.id].promedio}%`
-                            : ''
-                        }`}
-                  </span>
-                )}
-              </div>
-              <span className="text-sm text-atenas-muted capitalize">{a.tipo.replace(/_/g, ' ')}</span>
-              <button
-                type="button"
-                onClick={() => handleTogglePublicada(a.id, a.publicada)}
-                className={`badge ${a.publicada ? 'bg-emerald-100 text-emerald-800' : 'bg-atenas-mist text-atenas-muted'}`}
-              >
-                {a.publicada ? 'Publicada' : 'No publicada'}
-              </button>
-              <button
-                type="button"
-                onClick={() => duplicarActividad(a)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-atenas-muted"
-                title="Duplicar como borrador no publicado"
-              >
-                Duplicar
-              </button>
-              <button
-                type="button"
-                onClick={() => openEdit(a)}
-                className="text-sm font-medium hover:underline min-h-touch px-1"
-                
-              >
-                Editar
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewActividad(a)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-emerald-700"
-              >
-                Vista previa
-              </button>
-              <button
-                type="button"
-                onClick={() => setDetalleActividad(a)}
-                className="text-sm font-medium hover:underline min-h-touch px-1 text-violet-700"
-              >
-                Ver alumnos
-              </button>
-              <Link to={`/actividades/${a.id}`} className="text-sm font-medium hover:underline"  target="_blank" rel="noopener noreferrer">
-                Ver alumno
-              </Link>
-              <button type="button" onClick={() => handleRemove(a.id)} className="text-sm text-red-600 hover:text-red-700">
-                Eliminar
-              </button>
-            </li>
-          );
-          })}
-        </ul>
-      )}
-      {actividades.length === 0 && !formModalOpen && !loading && (
-        <p className="text-atenas-muted mt-4">No hay actividades. Crea una con el botón anterior.</p>
-      )}
-
-      {!loading && !loadingTemas && actividades.length > 0 && temasDestino.length > 0 && (
-        <div className="mt-8">
-          <Button
-            type="button"
-            variant="secondary"
-            className="inline-flex items-center gap-1.5"
-            onClick={() => setMoverOpen(true)}
-          >
-            <ArrowRightLeft className="w-4 h-4" aria-hidden />
-            Mover actividad a otro tema
-          </Button>
-        </div>
-      )}
-
-      {!loading && !loadingTemas && actividades.length > 0 && temasDestino.length === 0 && (
-        <p className="text-xs text-atenas-muted mt-6 max-w-2xl">
-          Para mover actividades a otro tema, crea al menos un tema más en esta unidad.
-        </p>
-      )}
-    </div>
+    </>
   );
 }
