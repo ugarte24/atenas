@@ -122,7 +122,6 @@ export function buildCertificadoPrintDocument(
   const actStat = escapeHtml(formatActividadesStat(actDone, actTotal));
   const evalStat = escapeHtml(formatEvaluacionesStat(evalDone, evalTotal));
   const tiempo = formatTiempoCertificado(params.tiempoEstudioSegundos ?? 0);
-  const certId = escapeHtml(params.certificadoId ?? `AT-${anio}-000000`);
 
   const emblemaRaw = params.emblemaUrl ?? resolveCertificadoEmblemaUrl();
   const emblemaUrl = emblemaRaw.startsWith('data:') ? emblemaRaw : escapeHtml(emblemaRaw);
@@ -133,14 +132,8 @@ export function buildCertificadoPrintDocument(
   const qrBlock = params.qrDataUrl
     ? `<div class="cert-qr">
         <img class="cert-qr__img" src="${params.qrDataUrl}" alt="" width="72" height="72" />
-        <div class="cert-qr__meta">
-          <p class="cert-qr__id">ID: ${certId}</p>
-          <p class="cert-qr__hint">Verifica la autenticidad del certificado.</p>
-        </div>
       </div>`
-    : `<div class="cert-qr cert-qr--id-only">
-        <p class="cert-qr__id">ID: ${certId}</p>
-      </div>`;
+    : '';
 
   const rootClass =
     variant === 'pdf'
@@ -364,7 +357,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-emblema-wrap {
       position: absolute; top: 0.5rem; right: 0.5rem;
-      width: 1.2in; height: 1.2in; z-index: 10; pointer-events: none;
+      width: 1.2in; height: 1.2in; z-index: 1; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -373,14 +366,14 @@ export function buildCertificadoPrintDocument(
     .cert-emblema-wrap.cert-emblema--hidden { display: none !important; }
 
     .cert-content {
-      position: relative; z-index: 1;
-      min-height: 0; overflow: hidden;
+      position: relative; z-index: 2;
+      min-height: 0;
       display: flex; flex-direction: column;
-      padding-right: 1.35in;
+      padding-right: 0.15rem;
     }
 
     .cert-bottom {
-      position: relative; z-index: 1;
+      position: relative; z-index: 2;
       flex-shrink: 0;
       display: flex; flex-direction: column;
       gap: 0.2rem;
@@ -391,6 +384,7 @@ export function buildCertificadoPrintDocument(
       font-size: 1.05rem; letter-spacing: 0.13em; text-transform: uppercase;
       color: var(--cert-ink); margin-bottom: 0.25rem; line-height: 1.2;
       text-align: left;
+      position: relative; z-index: 2;
     }
 
     .cert-stars { color: var(--cert-gold); font-size: 0.72rem; letter-spacing: 0.35em; margin-bottom: 0.2rem; }
@@ -399,12 +393,13 @@ export function buildCertificadoPrintDocument(
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
       font-size: 1.28rem; letter-spacing: 0.05em; text-transform: uppercase;
       color: var(--cert-ink); line-height: 1.2; margin-bottom: 0.15rem;
+      position: relative; z-index: 2;
     }
     .cert-subtitle {
       font-size: 0.72rem; font-style: italic; color: var(--cert-muted); margin-bottom: 0.35rem;
     }
 
-    .cert-name-block { margin: 0.25rem 0 0.32rem; max-width: 95%; }
+    .cert-name-block { margin: 0.25rem 0 0.32rem; max-width: 100%; position: relative; z-index: 2; }
     .cert-name-rule {
       height: 2px; background: linear-gradient(90deg, transparent, var(--cert-gold) 20%, var(--cert-gold) 80%, transparent);
       position: relative;
@@ -420,12 +415,13 @@ export function buildCertificadoPrintDocument(
     }
     .cert-name--upper { text-transform: uppercase; letter-spacing: 0.05em; }
 
-    .cert-unit { font-size: 0.76rem; color: #2d3748; margin-bottom: 0.45rem; }
+    .cert-unit { font-size: 0.76rem; color: #2d3748; margin-bottom: 0.45rem; position: relative; z-index: 2; }
     .cert-unit strong { font-weight: 600; color: var(--cert-ink); }
     .cert-unit em { font-style: italic; }
 
     .cert-grade-row {
       display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; margin-bottom: 0.4rem;
+      position: relative; z-index: 2;
     }
     .cert-grade-badge {
       flex-shrink: 0; width: 80px; height: 80px; border-radius: 50%;
@@ -448,7 +444,8 @@ export function buildCertificadoPrintDocument(
 
     .cert-summary {
       border: 1px solid rgba(201,166,106,0.55); border-radius: 4px;
-      background: var(--cert-tan); padding: 0.4rem 0.55rem 0.45rem; margin-top: 0.1rem;
+      background: rgba(245, 230, 200, 0.92); padding: 0.4rem 0.55rem 0.45rem; margin-top: 0.1rem;
+      position: relative; z-index: 2;
     }
     .cert-summary__title {
       font-family: 'Cinzel', Georgia, serif; font-size: 0.58rem; font-weight: 600;
@@ -502,14 +499,11 @@ export function buildCertificadoPrintDocument(
     }
     .cert-date svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.7; }
 
-    .cert-qr { display: flex; align-items: center; gap: 0.4rem; }
+    .cert-qr { display: flex; align-items: center; justify-content: flex-end; }
     .cert-qr__img {
       width: 48px; height: 48px; border: 1px solid rgba(201,166,106,0.4);
       border-radius: 3px; background: #fff;
     }
-    .cert-qr__id { font-size: 0.58rem; font-weight: 600; color: var(--cert-ink); letter-spacing: 0.04em; }
-    .cert-qr__hint { font-size: 0.48rem; color: var(--cert-muted); margin-top: 0.08rem; max-width: 8rem; line-height: 1.25; }
-    .cert-qr--id-only { justify-content: flex-end; }
 
     html.certificado-root--pdf .cert-aside__brand,
     html.certificado-root--pdf .cert-title,
