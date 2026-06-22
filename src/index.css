@@ -271,8 +271,12 @@
   .select-wrap {
     @apply relative w-full;
   }
-  .select-wrap select.input-field {
+  .select-wrap select.input-field,
+  select.input-field.select-field {
     background-image: none;
+  }
+  .select-wrap select.input-field {
+    @apply min-h-touch;
   }
   .select-wrap__chevron {
     @apply absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-atenas-muted-strong;

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Activity,
   BookOpen,
+  ChevronDown,
   GraduationCap,
   Pencil,
   Plus,
@@ -12,7 +13,6 @@ import {
   UserX,
 } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
-import { StatCard } from '../components/ui/StatCard';
 import { SkeletonLines } from '../components/ui/Skeleton';
 import { Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
@@ -123,13 +123,23 @@ function AsignarDocenteUnidades({
   if (!docentes.length || !unidades.length) return null;
 
   return (
-    <Card padding="none" className="mb-6 overflow-hidden">
-      <FormHeader
-        title="Asignar unidades a docentes"
-        description="Si no marcas ninguna unidad, el docente verá todas. Si marcas al menos una, solo verá esas."
-        icon={<BookOpen className="w-5 h-5" />}
-      />
-      <FormBody>
+    <details className="card mb-6 overflow-hidden group">
+      <summary className="form-panel-header cursor-pointer list-none [&::-webkit-details-marker]:hidden flex items-center gap-3 select-none">
+        <div className="shrink-0 w-10 h-10 rounded-xl bg-atenas-blue/10 text-atenas-blue flex items-center justify-center">
+          <BookOpen className="w-5 h-5" aria-hidden />
+        </div>
+        <div className="flex-1 min-w-0 text-left">
+          <h2 className="text-sm font-bold text-atenas-ink">Asignar unidades a docentes</h2>
+          <p className="text-xs text-atenas-muted mt-0.5 leading-snug">
+            Opcional — restringe qué unidades ve cada docente en Contenidos.
+          </p>
+        </div>
+        <ChevronDown
+          className="w-5 h-5 text-atenas-muted shrink-0 transition-transform group-open:rotate-180"
+          aria-hidden
+        />
+      </summary>
+      <FormBody className="border-t border-atenas-mist-border">
         <Select
           id="asig-docente-sel"
           label="Docente"
@@ -171,13 +181,13 @@ function AsignarDocenteUnidades({
         )}
       </FormBody>
       {selDoc && (
-        <FormFooter>
+        <FormFooter className="border-t border-atenas-mist-border">
           <Button type="button" disabled={loadingAsig} onClick={guardar}>
             {loadingAsig ? 'Guardando…' : 'Guardar asignaciones'}
           </Button>
         </FormFooter>
       )}
-    </Card>
+    </details>
   );
 }
 
@@ -256,23 +266,34 @@ function UsuarioCard({
             <Badge tone={rolBadgeTone(p.role)}>{ROL_LABEL[p.role]}</Badge>
           </div>
           <p className="text-xs text-atenas-muted truncate mt-0.5">{p.email}</p>
-          <div className="mt-2">
+          <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
             <Badge tone={inactivo ? 'muted' : 'success'}>{inactivo ? 'Desactivado' : 'Activo'}</Badge>
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+              <button
+                type="button"
+                onClick={onStartEdit}
+                className="table-action-btn"
+                title="Editar usuario"
+                aria-label={`Editar ${p.full_name}`}
+              >
+                <Pencil aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={onToggleActivo}
+                className={
+                  inactivo
+                    ? 'table-action-btn table-action-btn--success'
+                    : 'table-action-btn table-action-btn--danger'
+                }
+                title={inactivo ? 'Activar usuario' : 'Desactivar usuario'}
+                aria-label={inactivo ? `Activar ${p.full_name}` : `Desactivar ${p.full_name}`}
+              >
+                <Power aria-hidden />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-atenas-mist-border">
-        <Button type="button" variant="secondary" className="text-sm px-3" onClick={onStartEdit}>
-          Editar
-        </Button>
-        <Button
-          type="button"
-          variant={inactivo ? 'primary' : 'danger'}
-          className="text-sm px-3"
-          onClick={onToggleActivo}
-        >
-          {inactivo ? 'Activar' : 'Desactivar'}
-        </Button>
       </div>
     </Card>
   );
@@ -507,7 +528,13 @@ export default function AdminPanel() {
   if (loading) {
     return (
       <div>
-        <PageHeader title="Gestión de usuarios" description="Alta, roles y estado de cuentas." />
+        <PageHeader
+          variant="hero"
+          eyebrow="Administración"
+          title="Gestión de usuarios"
+          description="Alta, roles y estado de cuentas."
+          icon={<Users className="w-6 h-6" />}
+        />
         <SkeletonLines lines={6} />
       </div>
     );
@@ -523,12 +550,19 @@ export default function AdminPanel() {
   return (
     <div>
       <PageHeader
+        variant="hero"
+        breadcrumbs={[
+          { label: 'Administración', to: '/admin' },
+          { label: 'Usuarios' },
+        ]}
+        icon={<Users className="w-6 h-6" />}
         title="Gestión de usuarios"
-        description="Dar de alta estudiantes y docentes. Edita roles y activa o desactiva cuentas."
+        description="Alta de cuentas, roles y acceso a la plataforma."
         actions={
           <Button
             type="button"
-            className="inline-flex items-center gap-1.5"
+            variant="gold"
+            className="inline-flex items-center justify-center gap-1.5 w-full sm:w-auto min-h-touch px-5 text-sm"
             onClick={() => {
               setEditingId(null);
               setFormEmail('');
@@ -544,33 +578,53 @@ export default function AdminPanel() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <StatCard
-          label="Estudiantes activos"
-          value={stats?.estudiantesActivos ?? '—'}
-          icon={<GraduationCap className="w-5 h-5 text-atenas-blue" />}
-        />
-        <StatCard
-          label="Docentes"
-          value={resumenRoles.docentes}
-          hint={`${resumenRoles.total} usuarios total`}
-          icon={<UserCog className="w-5 h-5 text-atenas-gold" />}
-        />
-        <StatCard
-          label="Intentos hoy"
-          value={stats?.intentosHoy ?? '—'}
-          hint="Actividades + evaluaciones"
-          icon={<Activity className="w-5 h-5 text-atenas-success" />}
-        />
-        <StatCard
-          label="Intentos (7 días)"
-          value={stats?.intentosSemana ?? '—'}
-          icon={<BookOpen className="w-5 h-5 text-violet-600" />}
-        />
+      <div
+        className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4 px-0.5 text-xs sm:text-sm text-atenas-muted"
+        aria-label="Resumen de actividad"
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <GraduationCap className="w-4 h-4 text-atenas-blue shrink-0" aria-hidden />
+          <span>
+            <strong className="text-atenas-ink font-semibold tabular-nums">
+              {stats?.estudiantesActivos ?? '—'}
+            </strong>{' '}
+            estudiantes activos
+          </span>
+        </span>
+        <span className="hidden sm:inline text-atenas-mist-border" aria-hidden>
+          ·
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <UserCog className="w-4 h-4 text-atenas-gold shrink-0" aria-hidden />
+          <span>
+            <strong className="text-atenas-ink font-semibold tabular-nums">{resumenRoles.docentes}</strong>{' '}
+            docentes
+          </span>
+        </span>
+        <span className="hidden sm:inline text-atenas-mist-border" aria-hidden>
+          ·
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Activity className="w-4 h-4 text-atenas-success shrink-0" aria-hidden />
+          <span>
+            <strong className="text-atenas-ink font-semibold tabular-nums">{stats?.intentosHoy ?? '—'}</strong>{' '}
+            intentos hoy
+          </span>
+        </span>
+        <span className="hidden md:inline text-atenas-mist-border" aria-hidden>
+          ·
+        </span>
+        <span className="hidden md:inline-flex items-center gap-1.5">
+          <BookOpen className="w-4 h-4 text-atenas-blue shrink-0" aria-hidden />
+          <span>
+            <strong className="text-atenas-ink font-semibold tabular-nums">{stats?.intentosSemana ?? '—'}</strong>{' '}
+            en 7 días
+          </span>
+        </span>
       </div>
 
       {message && (
-        <Alert tone={message.type === 'ok' ? 'success' : 'error'} className="mb-6">
+        <Alert tone={message.type === 'ok' ? 'success' : 'error'} className="mb-4">
           {message.text}
         </Alert>
       )}
@@ -635,100 +689,110 @@ export default function AdminPanel() {
         </Form>
       </FormModal>
 
-      <AsignarDocenteUnidades
-        docentes={profiles.filter((p) => p.role === 'docente')}
-        unidades={unidades}
-        onGuardado={(text) => setMessage({ type: 'ok', text })}
-        onError={(text) => setMessage({ type: 'error', text })}
-      />
-
-      <div className="mb-5 space-y-3">
-        <div className="relative max-w-md">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-atenas-muted pointer-events-none"
-            aria-hidden
-          />
-          <Input
-            type="search"
-            placeholder="Buscar nombre o correo…"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            aria-label="Buscar usuarios"
-            className="pl-9"
-          />
-        </div>
-
-        <div
-          className="flex gap-1 p-1 rounded-xl bg-atenas-mist border border-atenas-mist-border overflow-x-auto scrollbar-nav-hide"
-          role="tablist"
-          aria-label="Filtrar por rol"
-        >
-          {(
-            [
-              ['', 'Todos'],
-              ['estudiante', 'Estudiantes'],
-              ['docente', 'Docentes'],
-              ['admin', 'Admins'],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key || 'all'}
-              type="button"
-              role="tab"
-              aria-selected={filtroRol === key}
-              className={`segment-tab shrink-0 ${filtroRol === key ? 'segment-tab--active' : 'segment-tab--inactive'}`}
-              onClick={() => setFiltroRol(key)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-          <Select
-            label="Estado"
-            value={filtroActivo}
-            onChange={(e) => setFiltroActivo(e.target.value as typeof filtroActivo)}
-            compact
-            aria-label="Filtrar por estado"
-          >
-            <option value="todos">Todos</option>
-            <option value="activo">Solo activos</option>
-            <option value="inactivo">Solo inactivos</option>
-          </Select>
-          <Select
-            id="filtro-unidad-actividad"
-            label="Actividad en unidad"
-            hint="Usuarios con intentos en actividades o evaluaciones de la unidad elegida."
-            value={unidadActividadId}
-            onChange={(e) => setUnidadActividadId(e.target.value)}
-            className="min-w-0"
-            aria-label="Filtrar por actividad en unidad"
-          >
-            <option value="">Todas las unidades</option>
-            {unidades.map((u, index) => {
-              const completo = tituloUnidadFiltroCompleto(u.orden ?? 0, u.title, index);
-              const corto = tituloUnidadFiltro(u.orden ?? 0, u.title, index);
-              return (
-                <option key={u.id} value={u.id} title={completo}>
-                  {corto}
-                </option>
-              );
-            })}
-          </Select>
-        </div>
-
-        {hayFiltros && (
-          <div className="flex flex-wrap items-center gap-3 text-xs text-atenas-muted">
-            <span>
-              Mostrando {profilesFiltrados.length} de {profiles.length} usuarios
-            </span>
-            <button type="button" className="font-semibold text-atenas-ink underline" onClick={limpiarFiltros}>
-              Limpiar filtros
-            </button>
+      <Card padding="sm" className="mb-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="relative flex-1 min-w-0">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-atenas-muted pointer-events-none z-10"
+                aria-hidden
+              />
+              <Input
+                type="search"
+                placeholder="Buscar por nombre o correo…"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                aria-label="Buscar usuarios"
+                className="pl-11"
+              />
+            </div>
+            <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+              <span className="text-xs text-atenas-muted whitespace-nowrap tabular-nums">
+                <strong className="text-atenas-ink font-semibold">{profilesFiltrados.length}</strong>
+                <span className="text-atenas-muted"> / {profiles.length}</span>
+              </span>
+              {hayFiltros && (
+                <Button type="button" variant="secondary" className="text-xs px-3 py-2 min-h-0" onClick={limpiarFiltros}>
+                  Limpiar
+                </Button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          <div
+            className="flex gap-1 p-1 rounded-xl bg-atenas-page border border-atenas-mist-border overflow-x-auto scrollbar-nav-hide"
+            role="tablist"
+            aria-label="Filtrar por rol"
+          >
+            {(
+              [
+                ['', 'Todos'],
+                ['estudiante', 'Estudiantes'],
+                ['docente', 'Docentes'],
+                ['admin', 'Admins'],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key || 'all'}
+                type="button"
+                role="tab"
+                aria-selected={filtroRol === key}
+                className={`segment-tab shrink-0 flex-1 sm:flex-none min-w-[5rem] text-xs sm:text-sm ${filtroRol === key ? 'segment-tab--active' : 'segment-tab--inactive'}`}
+                onClick={() => setFiltroRol(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col min-w-0">
+              <p id="filtro-estado-label" className="form-section-title mb-1.5 min-h-[1.25rem]">
+                Estado
+              </p>
+              <Select
+                value={filtroActivo}
+                onChange={(e) => setFiltroActivo(e.target.value as typeof filtroActivo)}
+                aria-labelledby="filtro-estado-label"
+              >
+                <option value="todos">Todos los estados</option>
+                <option value="activo">Solo activos</option>
+                <option value="inactivo">Solo inactivos</option>
+              </Select>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <p id="filtro-unidad-label" className="form-section-title mb-1.5 min-h-[1.25rem]">
+                Unidad con actividad
+              </p>
+              <Select
+                id="filtro-unidad-actividad"
+                value={unidadActividadId}
+                onChange={(e) => setUnidadActividadId(e.target.value)}
+                aria-labelledby="filtro-unidad-label"
+              >
+                <option value="">Todas las unidades</option>
+                {unidades.map((u, index) => {
+                  const completo = tituloUnidadFiltroCompleto(u.orden ?? 0, u.title, index);
+                  const corto = tituloUnidadFiltro(u.orden ?? 0, u.title, index);
+                  return (
+                    <option key={u.id} value={u.id} title={completo}>
+                      {corto}
+                    </option>
+                  );
+                })}
+              </Select>
+            </div>
+          </div>
+
+          {hayFiltros && (
+            <div className="flex justify-end">
+              <Badge tone="default" className="text-[10px]">
+                Filtros activos
+              </Badge>
+            </div>
+          )}
+        </div>
+      </Card>
 
       {profiles.length === 0 && !creating ? (
         <EmptyState
@@ -774,7 +838,13 @@ export default function AdminPanel() {
           </div>
 
           <div className="hidden md:block">
-          <DataTableShell className="mb-6">
+          <div className="flex items-center justify-between mb-2 px-0.5">
+            <h2 className="text-sm font-bold text-atenas-ink">Usuarios</h2>
+            <span className="text-xs text-atenas-muted tabular-nums">
+              {profilesFiltrados.length} de {profiles.length}
+            </span>
+          </div>
+          <DataTableShell className="mb-4">
             <DataTable>
               <DataTableHead>
                 <DataTableRow>
@@ -873,6 +943,13 @@ export default function AdminPanel() {
           </div>
         </>
       )}
+
+      <AsignarDocenteUnidades
+        docentes={profiles.filter((p) => p.role === 'docente')}
+        unidades={unidades}
+        onGuardado={(text) => setMessage({ type: 'ok', text })}
+        onError={(text) => setMessage({ type: 'error', text })}
+      />
     </div>
   );
 }
