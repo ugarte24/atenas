@@ -7,6 +7,11 @@ import { XpBar } from './gamification/XpBar';
 import { useGamificacionEstudiante } from '../hooks/useGamificacionEstudiante';
 import { nivelDesdeXp } from '../lib/gamificacion';
 import { isDocenteNavActive, type DocenteNavItem } from '../constants/docenteNav';
+import {
+  DOCENTE_NAV_SECTION_LABELS,
+  groupDocenteNavItems,
+  type DocenteNavSection,
+} from '../constants/docenteNav';
 import { STUDENT_BOTTOM_NAV_ITEMS } from '../constants/studentNav';
 
 export type DrawerLink = {
@@ -15,6 +20,7 @@ export type DrawerLink = {
   end?: boolean;
   icon?: LucideIcon;
   match?: DocenteNavItem['match'];
+  navSection?: DocenteNavSection;
   section?: 'main' | 'account';
 };
 
@@ -58,6 +64,12 @@ function isDrawerLinkActive(link: DrawerLink, pathname: string, navIsActive: boo
       pathname
     );
   }
+  if (link.match === 'vista-alumno') {
+    return isDocenteNavActive(
+      { id: 'vista-alumno', to: link.to, label: link.label, icon: LayoutDashboard, match: 'vista-alumno' },
+      pathname
+    );
+  }
   return navIsActive;
 }
 
@@ -87,6 +99,21 @@ export function AppDrawer({ open, onClose, links, role, profileName, onSignOut }
     }
     return { primaryLinks: primary, extraLinks: extra, mainStaffLinks: [], accountStaffLinks: [] };
   }, [links, esStaff, bottomNavPaths]);
+
+  const staffNavGroups = useMemo(() => {
+    if (!esStaff || mainStaffLinks.length === 0) return [];
+    return groupDocenteNavItems(
+      mainStaffLinks.map((l) => ({
+        id: l.to + l.label,
+        to: l.to,
+        label: l.label,
+        icon: l.icon ?? LayoutDashboard,
+        end: l.end,
+        match: l.match,
+        navSection: l.navSection ?? 'pedagogia',
+      }))
+    );
+  }, [esStaff, mainStaffLinks]);
 
   useEffect(() => {
     if (!open) return;
@@ -223,7 +250,24 @@ export function AppDrawer({ open, onClose, links, role, profileName, onSignOut }
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5 scrollbar-nav-hide" aria-label="Menú principal">
           {esStaff ? (
             <>
-              {mainStaffLinks.map((link) => renderSidebarNavLink(link))}
+              {staffNavGroups.map(({ section, items }) => (
+                <div key={section}>
+                  <p className="px-3 pt-3 first:pt-0 pb-1 text-[10px] font-bold uppercase tracking-wider sidebar-muted">
+                    {DOCENTE_NAV_SECTION_LABELS[section]}
+                  </p>
+                  {items.map((item) =>
+                    renderSidebarNavLink({
+                      to: item.to,
+                      label: item.label,
+                      end: item.end,
+                      icon: item.icon,
+                      match: item.match,
+                      navSection: item.navSection,
+                      section: 'main',
+                    })
+                  )}
+                </div>
+              ))}
               {accountStaffLinks.length > 0 && (
                 <>
                   <p className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider sidebar-muted">

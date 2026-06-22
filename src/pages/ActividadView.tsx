@@ -19,11 +19,16 @@ import { Alert } from '../components/ui/Alert';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { useMascotVisitorContext } from '../contexts/MascotVisitorContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { StaffPreviewBanner } from '../components/StaffPreviewBanner';
+import { ActividadPreviewBody } from '../components/docente/ActividadPreviewBody';
 import type { ActividadConfig } from '../types';
 
 export default function ActividadView() {
   const { actividadId } = useParams<{ actividadId: string }>();
   const navigate = useNavigate();
+  const { profile } = useAuthContext();
+  const esStaff = profile?.role === 'docente' || profile?.role === 'admin';
   const { actividad, loading, error } = useActividad(actividadId ?? null);
   const { guardarIntento, saving } = useIntento(actividadId ?? null);
   const { puntos } = useGamificacionEstudiante();
@@ -58,7 +63,7 @@ export default function ActividadView() {
       </div>
     );
   }
-  if (!actividad.publicada) {
+  if (!actividad.publicada && !esStaff) {
     return (
       <Card padding="md" className="max-w-md mx-auto">
         <p className="text-atenas-muted">Esta actividad no está publicada.</p>
@@ -66,6 +71,37 @@ export default function ActividadView() {
           Volver
         </Button>
       </Card>
+    );
+  }
+
+  if (esStaff) {
+    return (
+      <div className="max-w-2xl mx-auto pb-safe">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="-ml-2 mb-4"
+        >
+          ← Volver al tema
+        </Button>
+        <StaffPreviewBanner />
+        {!actividad.publicada && (
+          <p className="mb-4 text-sm text-amber-900/80 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            Borrador: esta actividad aún no está publicada para estudiantes.
+          </p>
+        )}
+        <ParchmentLayout
+          title={actividad.title}
+          subtitle={actividad.tipo.replace(/_/g, ' ')}
+          step={1}
+          totalSteps={1}
+          footer={<ParchmentFooter step={1} totalSteps={1} progress={50} />}
+        >
+          <ActividadPreviewBody actividad={actividad} />
+        </ParchmentLayout>
+      </div>
     );
   }
 

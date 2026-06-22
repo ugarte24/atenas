@@ -23,8 +23,8 @@ export type GamificacionEstudiante = {
 
 export function useGamificacionEstudiante(): GamificacionEstudiante {
   const { user, profile } = useAuthContext();
-  const { misiones, loading: loadingMisiones } = useMisionesAlumno();
   const isStudent = profile?.role === 'estudiante';
+  const { misiones, loading: loadingMisiones } = useMisionesAlumno(isStudent);
   const { bonusXp, loading: loadingRewards } = useMapRewards(isStudent);
   const [puntosBase, setPuntosBase] = useState(0);
   const [racha, setRacha] = useState(0);
@@ -35,9 +35,9 @@ export function useGamificacionEstudiante(): GamificacionEstudiante {
     let cancelled = false;
     async function fetchPuntosYRacha() {
       if (!user || profile?.role !== 'estudiante') {
-        setPuntosBase(0);
-        setRacha(0);
-        setLoadingExtra(false);
+        setPuntosBase((p) => (p === 0 ? p : 0));
+        setRacha((r) => (r === 0 ? r : 0));
+        setLoadingExtra((l) => (l ? false : l));
         return;
       }
       setLoadingExtra(true);
@@ -83,7 +83,7 @@ export function useGamificacionEstudiante(): GamificacionEstudiante {
     return () => {
       cancelled = true;
     };
-  }, [user, profile?.role]);
+  }, [user?.id, profile?.role]);
 
   const porcentajeGlobal = useMemo(() => {
     const conTemas = misiones.filter((m) => m.totalPasos > 0);

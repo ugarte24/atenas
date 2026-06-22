@@ -47,6 +47,8 @@ export function Cuestionario({
     minutosExamen > 0 ? minutosExamen * 60 : null
   );
   const startedAtRef = useRef(Date.now());
+  const onStepChangeRef = useRef(onStepChange);
+  onStepChangeRef.current = onStepChange;
 
   const total = preguntas.length;
   const esUltima = currentIndex >= total - 1;
@@ -54,8 +56,8 @@ export function Cuestionario({
   const respondidaActual = respuestas[currentIndex] !== undefined;
 
   useEffect(() => {
-    onStepChange?.(currentIndex + 1, total);
-  }, [currentIndex, total, onStepChange]);
+    onStepChangeRef.current?.(currentIndex + 1, total);
+  }, [currentIndex, total]);
 
   const enviarAutomatico = useCallback(async () => {
     if (enviado || disabled) return;

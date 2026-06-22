@@ -19,7 +19,7 @@ type EstadoMisiones = {
   error: string | null;
 };
 
-export function useMisionesAlumno(): EstadoMisiones {
+export function useMisionesAlumno(enabled = true): EstadoMisiones {
   const { user } = useAuthContext();
   const [misiones, setMisiones] = useState<Mision[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export function useMisionesAlumno(): EstadoMisiones {
     let cancelled = false;
 
     async function fetchMisiones() {
-      if (!user) {
+      if (!enabled || !user) {
         setMisiones([]);
         setLoading(false);
         return;
@@ -151,7 +151,7 @@ export function useMisionesAlumno(): EstadoMisiones {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [enabled, user?.id]);
 
   return { misiones, loading, error };
 }

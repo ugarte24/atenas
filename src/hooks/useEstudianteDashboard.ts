@@ -68,17 +68,31 @@ export function useEstudianteDashboard(enabled: boolean): EstudianteDashboard {
 
   useEffect(() => {
     if (!enabled || !user) {
-      setState((s) => ({
-        ...s,
-        unidades: [],
-        timeline: [],
-        xp: 0,
-        nivel: null,
-        racha: 0,
-        rachaEnRiesgo: false,
-        loading: false,
-        error: null,
-      }));
+      setState((s) => {
+        if (
+          !s.loading &&
+          s.unidades.length === 0 &&
+          s.timeline.length === 0 &&
+          s.xp === 0 &&
+          s.nivel === null &&
+          s.racha === 0 &&
+          !s.rachaEnRiesgo &&
+          s.error === null
+        ) {
+          return s;
+        }
+        return {
+          ...s,
+          unidades: [],
+          timeline: [],
+          xp: 0,
+          nivel: null,
+          racha: 0,
+          rachaEnRiesgo: false,
+          loading: false,
+          error: null,
+        };
+      });
       return;
     }
     const userId = user.id;

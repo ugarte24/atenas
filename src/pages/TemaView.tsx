@@ -116,10 +116,11 @@ export default function TemaView() {
       setActiveSection(null);
       return;
     }
-    if (!activeSection || !sections.some((s) => s.id === activeSection)) {
-      setActiveSection(sections[0]!.id);
-    }
-  }, [sections, activeSection]);
+    setActiveSection((current) => {
+      if (current && sections.some((s) => s.id === current)) return current;
+      return sections[0]!.id;
+    });
+  }, [sections]);
 
   const temaIndex = temasUnidad.findIndex((t) => t.id === temaId);
   const prevTema = temaIndex > 0 ? temasUnidad[temaIndex - 1] : null;

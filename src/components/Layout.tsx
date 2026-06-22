@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Menu } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { StudentBottomNav } from './StudentBottomNav';
@@ -47,8 +47,9 @@ function profileShortName(fullName: string, email: string): string {
   return `${parts[0]} ${segundoInicial}. ${apellidos}`;
 }
 
-function roleBadgeTone(role: string): 'gold' | 'default' | 'success' {
-  if (role === 'docente' || role === 'admin') return 'gold';
+function roleBadgeTone(role: string): 'gold' | 'default' | 'warning' {
+  if (role === 'admin') return 'warning';
+  if (role === 'docente') return 'gold';
   return 'default';
 }
 
@@ -57,6 +58,7 @@ export function Layout({ children }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   async function handleSignOut() {
     await signOut();
@@ -81,50 +83,56 @@ export function Layout({ children }: Props) {
         ? '/admin'
         : '/';
 
-  const drawerLinks: DrawerLink[] = profile
-    ? [
-        ...(esEstudiante
-          ? STUDENT_DRAWER_ITEMS.map(({ to, label, end, icon }) => ({ to, label, end, icon }))
-          : []),
-        ...(profile.role === 'admin'
-          ? [
-              ...getAdminMainNavItems().map(({ to, label, end, icon, match }) => ({
-                to,
-                label,
-                end,
-                icon,
-                match,
-                section: 'main' as const,
-              })),
-              ...getAdminAccountNavItems().map(({ to, label, end, icon }) => ({
-                to,
-                label,
-                end,
-                icon,
-                section: 'account' as const,
-              })),
-            ]
-          : profile.role === 'docente'
-          ? DOCENTE_MAIN_NAV_ITEMS.map(({ to, label, end, icon, match }) => ({
-              to,
-              label,
-              end,
-              icon,
-              match,
-              section: 'main' as const,
-            }))
-          : []),
-        ...(profile.role === 'docente'
-          ? DOCENTE_ACCOUNT_NAV_ITEMS.map(({ to, label, end, icon }) => ({
-              to,
-              label,
-              end,
-              icon,
-              section: 'account' as const,
-            }))
-          : []),
-      ]
-    : [];
+  const drawerLinks: DrawerLink[] = useMemo(
+    () =>
+      profile
+        ? [
+            ...(esEstudiante
+              ? STUDENT_DRAWER_ITEMS.map(({ to, label, end, icon }) => ({ to, label, end, icon }))
+              : []),
+            ...(profile.role === 'admin'
+              ? [
+                  ...getAdminMainNavItems().map(({ to, label, end, icon, match, navSection }) => ({
+                    to,
+                    label,
+                    end,
+                    icon,
+                    match,
+                    navSection,
+                    section: 'main' as const,
+                  })),
+                  ...getAdminAccountNavItems().map(({ to, label, end, icon }) => ({
+                    to,
+                    label,
+                    end,
+                    icon,
+                    section: 'account' as const,
+                  })),
+                ]
+              : profile.role === 'docente'
+                ? DOCENTE_MAIN_NAV_ITEMS.map(({ to, label, end, icon, match, navSection }) => ({
+                    to,
+                    label,
+                    end,
+                    icon,
+                    match,
+                    navSection,
+                    section: 'main' as const,
+                  }))
+                : []),
+            ...(profile.role === 'docente'
+              ? DOCENTE_ACCOUNT_NAV_ITEMS.map(({ to, label, end, icon }) => ({
+                  to,
+                  label,
+                  end,
+                  icon,
+                  section: 'account' as const,
+                }))
+              : []),
+          ]
+        : [],
+    [profile, esEstudiante]
+  );
 
   const hasDesktopSidebar = showStudentSidebar || showDocenteSidebar || showAdminSidebar;
 
@@ -157,6 +165,7 @@ export function Layout({ children }: Props) {
               showStudentSidebar={showStudentSidebar}
               drawerOpen={drawerOpen}
               setDrawerOpen={setDrawerOpen}
+              closeDrawer={closeDrawer}
               drawerLinks={drawerLinks}
               handleSignOut={handleSignOut}
               homeTo={homeTo}
@@ -176,6 +185,7 @@ export function Layout({ children }: Props) {
             showStudentSidebar={showStudentSidebar}
             drawerOpen={drawerOpen}
             setDrawerOpen={setDrawerOpen}
+            closeDrawer={closeDrawer}
             drawerLinks={drawerLinks}
             handleSignOut={handleSignOut}
             homeTo={homeTo}
@@ -198,6 +208,7 @@ type LayoutMainProps = {
   showStudentSidebar: boolean;
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
+  closeDrawer: () => void;
   drawerLinks: DrawerLink[];
   handleSignOut: () => Promise<void>;
   homeTo: string;
@@ -213,6 +224,7 @@ function LayoutMain({
   showStudentSidebar,
   drawerOpen,
   setDrawerOpen,
+  closeDrawer,
   drawerLinks,
   handleSignOut,
   homeTo,
@@ -303,7 +315,7 @@ function LayoutMain({
         {profile && (
           <AppDrawer
             open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
+            onClose={closeDrawer}
             links={drawerLinks}
             role={profile.role}
             profileName={profile.full_name ?? undefined}

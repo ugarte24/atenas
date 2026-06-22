@@ -2,7 +2,13 @@ import { NavLink, Link, useLocation } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { cn } from './ui/cn';
 import { AppVersionFootnote } from './AppVersionFootnote';
-import { DOCENTE_MAIN_NAV_ITEMS, isDocenteNavActive } from '../constants/docenteNav';
+import {
+  DOCENTE_ACCOUNT_NAV_ITEMS,
+  DOCENTE_MAIN_NAV_ITEMS,
+  DOCENTE_NAV_SECTION_LABELS,
+  groupDocenteNavItems,
+  isDocenteNavActive,
+} from '../constants/docenteNav';
 
 type Props = {
   onSignOut: () => void;
@@ -20,6 +26,7 @@ function linkClass(isActive: boolean) {
 
 export function DocenteSidebar({ onSignOut, className }: Props) {
   const location = useLocation();
+  const navGroups = groupDocenteNavItems(DOCENTE_MAIN_NAV_ITEMS);
 
   return (
     <aside
@@ -46,8 +53,28 @@ export function DocenteSidebar({ onSignOut, className }: Props) {
         </Link>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Panel docente">
-        {DOCENTE_MAIN_NAV_ITEMS.map((item) => {
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto scrollbar-nav-hide" aria-label="Panel docente">
+        {navGroups.map(({ section, items }) => (
+          <div key={section} className={section !== 'pedagogia' ? 'pt-2' : undefined}>
+            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider sidebar-muted">
+              {DOCENTE_NAV_SECTION_LABELS[section]}
+            </p>
+            {items.map((item) => {
+              const isActive = isDocenteNavActive(item, location.pathname);
+              return (
+                <NavLink key={item.id} to={item.to} end={item.end} className={linkClass(isActive)}>
+                  <item.icon className="w-5 h-5 shrink-0" aria-hidden />
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </div>
+        ))}
+
+        <p className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider sidebar-muted">
+          Cuenta
+        </p>
+        {DOCENTE_ACCOUNT_NAV_ITEMS.map((item) => {
           const isActive = isDocenteNavActive(item, location.pathname);
           return (
             <NavLink key={item.id} to={item.to} end={item.end} className={linkClass(isActive)}>
@@ -58,7 +85,7 @@ export function DocenteSidebar({ onSignOut, className }: Props) {
         })}
       </nav>
 
-      <div className="px-3 pb-6 pt-2 border-t border-white/15">
+      <div className="px-3 pb-6 pt-2 border-t border-white/15 shrink-0">
         <button
           type="button"
           onClick={onSignOut}

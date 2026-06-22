@@ -5,7 +5,7 @@ import { cn } from '../../components/ui/cn';
 const tabs = [
   { to: '/docente', label: 'Inicio', icon: LayoutDashboard, end: true },
   { to: '/docente/contenidos', label: 'Contenidos', icon: FolderOpen, match: 'contenidos' },
-  { to: '/docente/progreso', label: 'Progreso', icon: Users, end: true },
+  { to: '/docente/progreso', label: 'Estudiantes', icon: Users, end: true },
 ];
 
 export default function DocenteLayout() {

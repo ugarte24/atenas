@@ -12,11 +12,13 @@ import { supabase } from '../lib/supabase';
 import { formatMaxIntentos } from '../hooks/useResumenEvaluacionesUsuario';
 import { useMotionSafe } from '../hooks/useMotionSafe';
 import { ConfettiBurst } from '../components/motion/ConfettiBurst';
+import { StaffPreviewBanner } from '../components/StaffPreviewBanner';
 
 export default function EvaluacionView() {
   const { evaluacionId } = useParams<{ evaluacionId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
+  const esStaff = profile?.role === 'docente' || profile?.role === 'admin';
   const { reduceMotion, spring } = useMotionSafe();
   const { evaluacion, loading, error } = useEvaluacion(evaluacionId ?? null);
   const { guardarIntento, saving, error: saveErr, clearError } = useEvaluacionIntento(evaluacionId ?? null);
@@ -30,6 +32,11 @@ export default function EvaluacionView() {
   const [ultimoIntentoAprobado, setUltimoIntentoAprobado] = useState(false);
   const [tickIntentos, setTickIntentos] = useState(0);
 
+  const handleStepChange = useCallback((step: number) => {
+    setPreguntaActual(step);
+  }, []);
+  const noopSubmit = useCallback(() => {}, []);
+
   const maxIntentos = evaluacion?.max_intentos ?? null;
   const ilimitado = maxIntentos == null || maxIntentos <= 0;
   const agotado = !ilimitado && maxIntentos != null && intentosCount >= maxIntentos;
@@ -41,7 +48,7 @@ export default function EvaluacionView() {
     (ilimitado || (maxIntentos != null && intentosCount < maxIntentos));
 
   useEffect(() => {
-    if (!user || !evaluacionId) return;
+    if (esStaff || !user || !evaluacionId) return;
     let cancelled = false;
     (async () => {
       const { data, error: e } = await supabase
@@ -63,7 +70,7 @@ export default function EvaluacionView() {
     return () => {
       cancelled = true;
     };
-  }, [user, evaluacionId, sesion, tickIntentos]);
+  }, [user, evaluacionId, sesion, tickIntentos, esStaff]);
 
   const handleSubmit = useCallback(
     async (
@@ -93,7 +100,7 @@ export default function EvaluacionView() {
   if (error) {
     return <p className="text-red-800 font-medium">{error}</p>;
   }
-  if (!evaluacion.publicada) {
+  if (!evaluacion.publicada && !esStaff) {
     return (
       <div className="card p-6 max-w-md">
         <p className="text-atenas-muted-strong">Esta evaluación no está publicada.</p>
@@ -111,6 +118,58 @@ export default function EvaluacionView() {
     : evaluacion.ocultar_respuesta_correcta === true
       ? 'errores_sin_solucion'
       : 'completo';
+
+  if (esStaff) {
+    return (
+      <div className="max-w-lg mx-auto px-1 sm:px-0 pb-24">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="text-sm font-semibold mb-4 min-h-touch flex items-center rounded-xl px-3 -ml-2 text-atenas-ink hover:bg-atenas-mist"
+        >
+          ← Volver al tema
+        </button>
+        <StaffPreviewBanner />
+        {!evaluacion.publicada && (
+          <p className="mb-4 text-sm text-amber-900/80 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            Borrador: esta evaluación aún no está publicada para estudiantes.
+          </p>
+        )}
+        <ParchmentLayout
+          title={evaluacion.title}
+          subtitle={evaluacion.descripcion ?? undefined}
+          step={preguntaActual}
+          totalSteps={preguntas.length}
+          footer={
+            <ParchmentFooter
+              step={preguntaActual}
+              totalSteps={preguntas.length}
+              progress={preguntas.length ? Math.round((preguntaActual / preguntas.length) * 100) : 0}
+            />
+          }
+        >
+          <p className="text-sm text-amber-900/80 mb-5">
+            Para aprobar: <strong>{evaluacion.umbral_aprobado}%</strong>
+            {' · '}
+            Intentos: {formatMaxIntentos(evaluacion.max_intentos)}
+          </p>
+          {modoExamen && (
+            <p className="text-sm font-medium text-amber-900 mb-4 bg-amber-100/50 border border-amber-200 rounded-lg px-3 py-2">
+              Modo examen activo.
+            </p>
+          )}
+          <Cuestionario
+            preguntas={preguntas}
+            umbralAprobado={evaluacion.umbral_aprobado}
+            onSubmit={noopSubmit}
+            feedback={feedback}
+            minutosExamen={modoExamen ? (evaluacion.minutos_limite ?? 30) : 0}
+            onStepChange={handleStepChange}
+          />
+        </ParchmentLayout>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto px-1 sm:px-0 pb-24">
@@ -234,7 +293,7 @@ export default function EvaluacionView() {
             disabled={saving}
             feedback={feedback}
             minutosExamen={modoExamen ? (evaluacion.minutos_limite ?? 30) : 0}
-            onStepChange={(step) => setPreguntaActual(step)}
+            onStepChange={handleStepChange}
           />
           {ultimoGuardadoOk && puedeReintentar && (
             <div className="mt-6 pt-4 border-t border-amber-200/50">

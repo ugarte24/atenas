@@ -6,18 +6,26 @@ import {
   type DocenteNavItem,
 } from './docenteNav';
 
-/** Navegación principal admin = panel docente + administración (sin duplicar en Cuenta). */
+/** Navegación principal admin: gestión pedagógica + vista alumno + plataforma. */
 export function getAdminMainNavItems(): DocenteNavItem[] {
-  const docente = DOCENTE_MAIN_NAV_ITEMS.map((item) =>
-    item.id === 'inicio' ? { ...item, label: 'Panel docente' } : item
+  const pedagogia = DOCENTE_MAIN_NAV_ITEMS.filter((item) => item.navSection !== 'preview').map(
+    (item) => (item.id === 'inicio' ? { ...item, label: 'Resumen' } : item)
   );
+  const preview = DOCENTE_MAIN_NAV_ITEMS.filter((item) => item.navSection === 'preview');
   return [
-    ...docente,
-    { id: 'admin', to: '/admin', label: 'Administración', icon: Shield, end: true },
+    ...pedagogia,
+    ...preview,
+    {
+      id: 'admin',
+      to: '/admin',
+      label: 'Administración',
+      icon: Shield,
+      end: true,
+      navSection: 'plataforma',
+    },
   ];
 }
 
-/** Cuenta admin: solo perfil (Administración va en el menú principal). */
 export function getAdminAccountNavItems(): DocenteNavItem[] {
   return DOCENTE_ACCOUNT_NAV_ITEMS;
 }

@@ -3,10 +3,11 @@ import { LogOut } from 'lucide-react';
 import { cn } from './ui/cn';
 import { AppVersionFootnote } from './AppVersionFootnote';
 import {
-  getAdminAccountNavItems,
-  getAdminMainNavItems,
+  DOCENTE_NAV_SECTION_LABELS,
+  groupDocenteNavItems,
   isDocenteNavActive,
-} from '../constants/adminNav';
+} from '../constants/docenteNav';
+import { getAdminAccountNavItems, getAdminMainNavItems } from '../constants/adminNav';
 
 type Props = {
   onSignOut: () => void;
@@ -26,6 +27,7 @@ export function AdminSidebar({ onSignOut, className }: Props) {
   const location = useLocation();
   const mainItems = getAdminMainNavItems();
   const accountItems = getAdminAccountNavItems();
+  const navGroups = groupDocenteNavItems(mainItems);
 
   return (
     <aside
@@ -55,15 +57,22 @@ export function AdminSidebar({ onSignOut, className }: Props) {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto scrollbar-nav-hide" aria-label="Panel administrador">
-        {mainItems.map((item) => {
-          const isActive = isDocenteNavActive(item, location.pathname);
-          return (
-            <NavLink key={item.id} to={item.to} end={item.end} className={linkClass(isActive)}>
-              <item.icon className="w-5 h-5 shrink-0" aria-hidden />
-              {item.label}
-            </NavLink>
-          );
-        })}
+        {navGroups.map(({ section, items }) => (
+          <div key={section} className={section !== 'pedagogia' ? 'pt-2' : undefined}>
+            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider sidebar-muted">
+              {DOCENTE_NAV_SECTION_LABELS[section]}
+            </p>
+            {items.map((item) => {
+              const isActive = isDocenteNavActive(item, location.pathname);
+              return (
+                <NavLink key={item.id} to={item.to} end={item.end} className={linkClass(isActive)}>
+                  <item.icon className="w-5 h-5 shrink-0" aria-hidden />
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </div>
+        ))}
 
         <p className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider sidebar-muted">
           Cuenta

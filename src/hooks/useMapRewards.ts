@@ -22,8 +22,14 @@ export function useMapRewards(enabled = true) {
 
   const reload = useCallback(async () => {
     if (!isStudent || !user) {
-      setSnapshot(EMPTY);
-      setLoading(false);
+      setSnapshot((prev) =>
+        prev.bonusXp === 0 &&
+        prev.openedChestIds.size === 0 &&
+        prev.completedDailyKeys.size === 0
+          ? prev
+          : EMPTY
+      );
+      setLoading((prev) => (prev ? false : prev));
       return;
     }
     setLoading(true);
