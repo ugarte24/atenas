@@ -56,8 +56,7 @@ export async function buildCertificadoHtmlBlobUrl(params: CertificadoParams): Pr
  * Abre el certificado en una nueva pestaña con barra Imprimir / Descargar PDF.
  */
 export async function openCertificadoEnVentana(params: CertificadoParams): Promise<void> {
-  const ready = await prepareCertificadoParams(params);
-  saveCertificadoPreviewParams(ready);
+  saveCertificadoPreviewParams(params);
 
   const url = certificadoVistaUrl();
   const win = window.open(url, '_blank', 'noopener,noreferrer');
