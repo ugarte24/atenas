@@ -1,11 +1,48 @@
 import { useState, useEffect, useMemo } from 'react';
+import {
+  Activity,
+  BookOpen,
+  GraduationCap,
+  Plus,
+  Search,
+  UserCog,
+  Users,
+  UserX,
+} from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { StatCard } from '../components/ui/StatCard';
 import { SkeletonLines } from '../components/ui/Skeleton';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Card } from '../components/ui/Card';
+import { Alert } from '../components/ui/Alert';
+import { EmptyState } from '../components/ui/EmptyState';
 import { supabase } from '../lib/supabase';
 import { useProfiles } from '../hooks/useProfiles';
 import { useUnidades } from '../hooks/useUnidades';
 import type { Profile, UserRole, Unidad } from '../types';
+
+const ROL_LABEL: Record<UserRole, string> = {
+  estudiante: 'Estudiante',
+  docente: 'Docente',
+  admin: 'Administrador',
+};
+
+function iniciales(nombre: string): string {
+  return nombre
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+function rolBadgeTone(role: UserRole): 'default' | 'gold' | 'warning' {
+  if (role === 'admin') return 'warning';
+  if (role === 'docente') return 'gold';
+  return 'default';
+}
 
 function AsignarDocenteUnidades({
   docentes,
@@ -58,11 +95,11 @@ function AsignarDocenteUnidades({
       }
       onGuardado(
         rows.length
-          ? 'Unidades asignadas al docente. Si no marca ninguna, el docente verá todas las unidades.'
-          : 'Sin unidades marcadas: el docente verá todas las unidades (comportamiento por defecto).'
+          ? 'Unidades asignadas al docente.'
+          : 'Sin unidades marcadas: el docente verá todas las unidades.'
       );
     } catch (e) {
-      onError(e instanceof Error ? e.message : 'Error al guardar asignaciones (¿ejecutaste la migración SQL?)');
+      onError(e instanceof Error ? e.message : 'Error al guardar asignaciones');
     } finally {
       setLoadingAsig(false);
     }
@@ -71,12 +108,10 @@ function AsignarDocenteUnidades({
   if (!docentes.length || !unidades.length) return null;
 
   return (
-    <section className="card p-5 mb-8 border border-atenas-mist-border" aria-labelledby="asig-doc-h">
-      <h2 id="asig-doc-h" className="font-semibold text-atenas-ink mb-2">
-        Docente — unidades visibles en Contenidos
-      </h2>
+    <Card padding="md" className="mb-6">
+      <h2 className="text-base font-bold text-atenas-ink mb-1">Asignar unidades a docentes</h2>
       <p className="text-sm text-atenas-muted mb-4">
-        Si no asignas ninguna unidad a un docente, verá todas. Si marcas al menos una, solo verá esas.
+        Si no marcas ninguna unidad, el docente verá todas. Si marcas al menos una, solo verá esas.
       </p>
       <label htmlFor="asig-docente-sel" className="label">
         Docente
@@ -96,14 +131,15 @@ function AsignarDocenteUnidades({
       </select>
       {selDoc && (
         <>
-          <fieldset className="border border-atenas-mist-border rounded-lg p-3 mb-4">
-            <legend className="text-sm font-medium px-1">Unidades</legend>
-            <ul className="space-y-2 list-none m-0 p-0 max-h-48 overflow-y-auto">
+          <fieldset className="border border-atenas-mist-border rounded-xl p-3 mb-4 bg-atenas-page/50">
+            <legend className="text-sm font-medium px-1 text-atenas-ink">Unidades visibles</legend>
+            <ul className="space-y-2 list-none m-0 p-0 max-h-48 overflow-y-auto scrollbar-nav-hide">
               {unidades.map((u) => (
                 <li key={u.id}>
-                  <label className="flex items-center gap-2 text-atenas-ink cursor-pointer">
+                  <label className="flex items-center gap-2 text-atenas-ink cursor-pointer text-sm min-h-touch">
                     <input
                       type="checkbox"
+                      className="rounded border-atenas-mist-border"
                       checked={checks[u.id] === true}
                       onChange={(e) =>
                         setChecks((prev) => ({ ...prev, [u.id]: e.target.checked }))
@@ -115,17 +151,109 @@ function AsignarDocenteUnidades({
               ))}
             </ul>
           </fieldset>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={loadingAsig}
-            onClick={guardar}
-          >
+          <Button type="button" disabled={loadingAsig} onClick={guardar}>
             {loadingAsig ? 'Guardando…' : 'Guardar asignaciones'}
-          </button>
+          </Button>
         </>
       )}
-    </section>
+    </Card>
+  );
+}
+
+type UsuarioCardProps = {
+  profile: Profile;
+  editing: boolean;
+  editName: string;
+  editRole: UserRole;
+  onEditName: (v: string) => void;
+  onEditRole: (v: UserRole) => void;
+  onSubmitEdit: (e: React.FormEvent) => void;
+  onCancelEdit: () => void;
+  onStartEdit: () => void;
+  onToggleActivo: () => void;
+};
+
+function UsuarioCard({
+  profile: p,
+  editing,
+  editName,
+  editRole,
+  onEditName,
+  onEditRole,
+  onSubmitEdit,
+  onCancelEdit,
+  onStartEdit,
+  onToggleActivo,
+}: UsuarioCardProps) {
+  const inactivo = p.activo === false;
+
+  if (editing) {
+    return (
+      <Card padding="md" className="border-atenas-blue/20 ring-1 ring-atenas-blue/10">
+        <form onSubmit={onSubmitEdit} className="space-y-3">
+          <p className="text-sm font-semibold text-atenas-ink">Editar usuario</p>
+          <input
+            value={editName}
+            onChange={(e) => onEditName(e.target.value)}
+            className="input-field"
+            required
+            aria-label="Nombre"
+          />
+          <select
+            value={editRole}
+            onChange={(e) => onEditRole(e.target.value as UserRole)}
+            className="input-field"
+            aria-label="Rol"
+          >
+            <option value="estudiante">Estudiante</option>
+            <option value="docente">Docente</option>
+            <option value="admin">Administrador</option>
+          </select>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit">Guardar</Button>
+            <Button type="button" variant="secondary" onClick={onCancelEdit}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </Card>
+    );
+  }
+
+  return (
+    <Card padding="md" className={inactivo ? 'opacity-75 bg-atenas-mist/40' : undefined}>
+      <div className="flex items-start gap-3">
+        <div
+          className="w-10 h-10 rounded-xl bg-atenas-sidebar text-white text-xs font-bold flex items-center justify-center shrink-0"
+          aria-hidden
+        >
+          {iniciales(p.full_name)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold text-atenas-ink leading-snug truncate">{p.full_name}</p>
+            <Badge tone={rolBadgeTone(p.role)}>{ROL_LABEL[p.role]}</Badge>
+          </div>
+          <p className="text-xs text-atenas-muted truncate mt-0.5">{p.email}</p>
+          <div className="mt-2">
+            <Badge tone={inactivo ? 'muted' : 'success'}>{inactivo ? 'Desactivado' : 'Activo'}</Badge>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-atenas-mist-border">
+        <Button type="button" variant="secondary" className="text-sm px-3" onClick={onStartEdit}>
+          Editar
+        </Button>
+        <Button
+          type="button"
+          variant={inactivo ? 'primary' : 'danger'}
+          className="text-sm px-3"
+          onClick={onToggleActivo}
+        >
+          {inactivo ? 'Activar' : 'Desactivar'}
+        </Button>
+      </div>
+    </Card>
   );
 }
 
@@ -242,6 +370,11 @@ export default function AdminPanel() {
     };
   }, [unidadActividadId]);
 
+  const resumenRoles = useMemo(() => {
+    const docentes = profiles.filter((p) => p.role === 'docente' && p.activo !== false).length;
+    return { total: profiles.length, docentes };
+  }, [profiles]);
+
   const profilesFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     return profiles.filter((p) => {
@@ -253,6 +386,12 @@ export default function AdminPanel() {
       return true;
     });
   }, [profiles, filtroRol, filtroActivo, busqueda, userIdsEnUnidad]);
+
+  const hayFiltros =
+    busqueda.trim() !== '' ||
+    filtroRol !== '' ||
+    filtroActivo !== 'todos' ||
+    unidadActividadId !== '';
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -277,7 +416,7 @@ export default function AdminPanel() {
       if (profileError) throw profileError;
       setMessage({
         type: 'ok',
-        text: 'Usuario creado. Puede iniciar sesión con ese correo y contraseña. Si en Supabase está activada la confirmación de correo, el usuario deberá confirmar primero.',
+        text: 'Usuario creado. Puede iniciar sesión con ese correo y contraseña.',
       });
       setFormEmail('');
       setFormPassword('');
@@ -294,13 +433,14 @@ export default function AdminPanel() {
       setMessage({
         type: 'error',
         text: isRateLimit
-          ? 'Límite de solicitudes alcanzado. Supabase permite pocos registros por minuto. Espera 1-2 minutos y vuelve a intentar.'
+          ? 'Límite de solicitudes alcanzado. Espera 1-2 minutos e intenta de nuevo.'
           : msg || 'Error al crear el usuario',
       });
     }
   }
 
   function startEdit(p: Profile) {
+    setCreating(false);
     setEditingId(p.id);
     setEditName(p.full_name);
     setEditRole(p.role);
@@ -336,96 +476,157 @@ export default function AdminPanel() {
     }
   }
 
+  function limpiarFiltros() {
+    setBusqueda('');
+    setFiltroRol('');
+    setFiltroActivo('todos');
+    setUnidadActividadId('');
+  }
+
   if (loading) {
     return (
-      <div className="px-1 sm:px-0">
-        <PageHeader title="Gestión de usuarios" />
-        <SkeletonLines lines={5} />
+      <div>
+        <PageHeader title="Gestión de usuarios" description="Alta, roles y estado de cuentas." />
+        <SkeletonLines lines={6} />
       </div>
     );
   }
-  if (error) return <p className="text-red-600">{error}</p>;
+  if (error) {
+    return (
+      <Alert tone="error" className="mt-4">
+        {error}
+      </Alert>
+    );
+  }
 
   return (
-    <div className="px-1 sm:px-0">
+    <div>
       <PageHeader
         title="Gestión de usuarios"
-        description="Dar de alta estudiantes y docentes. Solo el administrador puede editar roles y desactivar cuentas."
+        description="Dar de alta estudiantes y docentes. Edita roles y activa o desactiva cuentas."
+        actions={
+          !creating ? (
+            <Button
+              type="button"
+              className="inline-flex items-center gap-1.5"
+              onClick={() => {
+                setEditingId(null);
+                setCreating(true);
+              }}
+            >
+              <Plus className="w-4 h-4" aria-hidden />
+              Nuevo usuario
+            </Button>
+          ) : undefined
+        }
       />
 
-      {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <StatCard label="Estudiantes activos" value={stats.estudiantesActivos} />
-          <StatCard
-            label="Intentos hoy"
-            value={stats.intentosHoy}
-            hint="Actividades + evaluaciones"
-          />
-          <StatCard label="Intentos (7 días)" value={stats.intentosSemana} />
-        </div>
-      )}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <StatCard
+          label="Estudiantes activos"
+          value={stats?.estudiantesActivos ?? '—'}
+          icon={<GraduationCap className="w-5 h-5 text-atenas-blue" />}
+        />
+        <StatCard
+          label="Docentes"
+          value={resumenRoles.docentes}
+          hint={`${resumenRoles.total} usuarios total`}
+          icon={<UserCog className="w-5 h-5 text-atenas-gold" />}
+        />
+        <StatCard
+          label="Intentos hoy"
+          value={stats?.intentosHoy ?? '—'}
+          hint="Actividades + evaluaciones"
+          icon={<Activity className="w-5 h-5 text-atenas-success" />}
+        />
+        <StatCard
+          label="Intentos (7 días)"
+          value={stats?.intentosSemana ?? '—'}
+          icon={<BookOpen className="w-5 h-5 text-violet-600" />}
+        />
+      </div>
 
       {message && (
-        <div
-          className={`mb-6 p-4 rounded-xl border ${
-            message.type === 'ok'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-              : 'bg-red-50 border-red-200 text-red-900'
-          }`}
-          role="status"
-        >
+        <Alert tone={message.type === 'ok' ? 'success' : 'error'} className="mb-6">
           {message.text}
-        </div>
+        </Alert>
       )}
 
-      <div className="flex flex-col lg:flex-row flex-wrap gap-3 mb-6">
-        <input
-          type="search"
-          placeholder="Buscar nombre o email…"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="input-field flex-1 min-w-[200px] max-w-md"
-          aria-label="Buscar usuarios"
-        />
-        <select
-          value={filtroRol}
-          onChange={(e) => setFiltroRol(e.target.value as '' | UserRole)}
-          className="input-field max-w-[180px]"
-          aria-label="Filtrar por rol"
-        >
-          <option value="">Todos los roles</option>
-          <option value="estudiante">Estudiante</option>
-          <option value="docente">Docente</option>
-          <option value="admin">Admin</option>
-        </select>
-        <select
-          value={filtroActivo}
-          onChange={(e) => setFiltroActivo(e.target.value as typeof filtroActivo)}
-          className="input-field max-w-[180px]"
-          aria-label="Filtrar por estado"
-        >
-          <option value="todos">Activos e inactivos</option>
-          <option value="activo">Solo activos</option>
-          <option value="inactivo">Solo inactivos</option>
-        </select>
-        <select
-          value={unidadActividadId}
-          onChange={(e) => setUnidadActividadId(e.target.value)}
-          className="input-field flex-1 min-w-[220px] max-w-md"
-          aria-label="Filtrar por actividad en unidad"
-        >
-          <option value="">Cualquier unidad (sin filtrar por contenido)</option>
-          {unidades.map((u) => (
-            <option key={u.id} value={u.id}>
-              Con actividad en: {u.title}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p className="text-xs text-atenas-muted mb-4">
-        El filtro por unidad muestra usuarios que completaron al menos una actividad o evaluación de esa
-        unidad.
-      </p>
+      {creating && (
+        <Card padding="md" className="mb-6 border-atenas-success/20 ring-1 ring-atenas-success/10">
+          <form onSubmit={handleCreate} className="space-y-4 max-w-lg">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-atenas-ink">Nuevo usuario</h2>
+                <p className="text-sm text-atenas-muted mt-1">
+                  Supabase puede limitar registros por minuto. Si falla, espera un momento.
+                </p>
+              </div>
+              <Button type="button" variant="secondary" onClick={() => setCreating(false)}>
+                Cancelar
+              </Button>
+            </div>
+            <div>
+              <label htmlFor="nu-email" className="label">
+                Correo
+              </label>
+              <input
+                id="nu-email"
+                type="email"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+                placeholder="correo@ejemplo.com"
+                className="input-field"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="nu-pass" className="label">
+                Contraseña temporal
+              </label>
+              <input
+                id="nu-pass"
+                type="password"
+                value={formPassword}
+                onChange={(e) => setFormPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="input-field"
+                required
+                minLength={6}
+              />
+            </div>
+            <div>
+              <label htmlFor="nu-name" className="label">
+                Nombre completo
+              </label>
+              <input
+                id="nu-name"
+                value={formFullName}
+                onChange={(e) => setFormFullName(e.target.value)}
+                placeholder="Nombre y apellidos"
+                className="input-field"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="nu-role" className="label">
+                Rol
+              </label>
+              <select
+                id="nu-role"
+                value={formRole}
+                onChange={(e) => setFormRole(e.target.value as UserRole)}
+                className="input-field"
+              >
+                <option value="estudiante">Estudiante</option>
+                <option value="docente">Docente</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+            <Button type="submit">Crear usuario</Button>
+          </form>
+        </Card>
+      )}
 
       <AsignarDocenteUnidades
         docentes={profiles.filter((p) => p.role === 'docente')}
@@ -434,179 +635,226 @@ export default function AdminPanel() {
         onError={(text) => setMessage({ type: 'error', text })}
       />
 
-      {creating ? (
-        <form onSubmit={handleCreate} className="mb-8 card p-5 sm:p-6 space-y-4 max-w-md">
-          <h3 className="font-semibold text-atenas-ink">Nuevo usuario</h3>
-          <p className="text-sm text-atenas-muted">
-            Si aparece &quot;límite de solicitudes&quot;, espera 1-2 minutos; Supabase limita los registros por
-            minuto.
-          </p>
-          <input
-            type="email"
-            value={formEmail}
-            onChange={(e) => setFormEmail(e.target.value)}
-            placeholder="Correo electrónico"
-            className="input-field"
-            required
+      <div className="mb-5 space-y-3">
+        <div className="relative max-w-md">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-atenas-muted pointer-events-none"
+            aria-hidden
           />
-          <input
-            type="password"
-            value={formPassword}
-            onChange={(e) => setFormPassword(e.target.value)}
-            placeholder="Contraseña temporal"
-            className="input-field"
-            required
-            minLength={6}
+          <Input
+            type="search"
+            placeholder="Buscar nombre o correo…"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            aria-label="Buscar usuarios"
+            className="pl-9"
           />
-          <input
-            value={formFullName}
-            onChange={(e) => setFormFullName(e.target.value)}
-            placeholder="Nombre completo"
-            className="input-field"
-            required
-          />
-          <select
-            value={formRole}
-            onChange={(e) => setFormRole(e.target.value as UserRole)}
-            className="input-field"
-          >
-            <option value="estudiante">Estudiante</option>
-            <option value="docente">Docente</option>
-            <option value="admin">Administrador</option>
-          </select>
-          <div className="flex gap-3 pt-2">
-            <button type="submit" className="btn-primary">
-              Crear usuario
+        </div>
+
+        <div
+          className="flex gap-1 p-1 rounded-xl bg-atenas-mist border border-atenas-mist-border overflow-x-auto scrollbar-nav-hide"
+          role="tablist"
+          aria-label="Filtrar por rol"
+        >
+          {(
+            [
+              ['', 'Todos'],
+              ['estudiante', 'Estudiantes'],
+              ['docente', 'Docentes'],
+              ['admin', 'Admins'],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key || 'all'}
+              type="button"
+              role="tab"
+              aria-selected={filtroRol === key}
+              className={`segment-tab shrink-0 ${filtroRol === key ? 'segment-tab--active' : 'segment-tab--inactive'}`}
+              onClick={() => setFiltroRol(key)}
+            >
+              {label}
             </button>
-            <button type="button" onClick={() => setCreating(false)} className="btn-secondary">
-              Cancelar
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <select
+            value={filtroActivo}
+            onChange={(e) => setFiltroActivo(e.target.value as typeof filtroActivo)}
+            className="input-field max-w-xs text-sm min-h-touch"
+            aria-label="Filtrar por estado"
+          >
+            <option value="todos">Activos e inactivos</option>
+            <option value="activo">Solo activos</option>
+            <option value="inactivo">Solo inactivos</option>
+          </select>
+          <select
+            value={unidadActividadId}
+            onChange={(e) => setUnidadActividadId(e.target.value)}
+            className="input-field flex-1 text-sm min-h-touch"
+            aria-label="Filtrar por actividad en unidad"
+          >
+            <option value="">Todas las unidades</option>
+            {unidades.map((u) => (
+              <option key={u.id} value={u.id}>
+                Con actividad en: {u.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {hayFiltros && (
+          <div className="flex flex-wrap items-center gap-3 text-xs text-atenas-muted">
+            <span>
+              Mostrando {profilesFiltrados.length} de {profiles.length} usuarios
+            </span>
+            <button type="button" className="font-semibold text-atenas-ink underline" onClick={limpiarFiltros}>
+              Limpiar filtros
             </button>
           </div>
-        </form>
-      ) : (
-        <button type="button" onClick={() => setCreating(true)} className="btn-primary mb-6">
-          + Dar de alta usuario
-        </button>
-      )}
-
-      <p className="text-sm text-atenas-muted mb-2">
-        Mostrando <strong>{profilesFiltrados.length}</strong> de {profiles.length} usuarios
-      </p>
-
-      <div className="overflow-x-auto rounded-xl border border-atenas-mist-border shadow-card -mx-1 sm:mx-0">
-        <table className="w-full border-collapse bg-white table-mobile">
-          <thead>
-            <tr className="bg-atenas-mist border-b border-atenas-mist-border">
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
-                Nombre
-              </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink hidden sm:table-cell">
-                Email
-              </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
-                Rol
-              </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
-                Estado
-              </th>
-              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold text-atenas-ink">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {profilesFiltrados.map((p) => (
-              <tr
-                key={p.id}
-                className={`border-b border-atenas-mist last:border-0 ${p.activo === false ? 'bg-atenas-mist/80' : ''}`}
-              >
-                <td className="px-3 sm:px-4 py-2.5 sm:py-3">
-                  {editingId === p.id ? (
-                    <form
-                      onSubmit={(e) => handleUpdate(e, p.id)}
-                      className="flex flex-wrap items-center gap-2"
-                    >
-                      <input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="input-field py-2 text-sm max-w-[160px] sm:max-w-[180px]"
-                        required
-                      />
-                      <select
-                        value={editRole}
-                        onChange={(e) => setEditRole(e.target.value as UserRole)}
-                        className="input-field py-2 text-sm max-w-[120px] sm:max-w-[140px]"
-                      >
-                        <option value="estudiante">Estudiante</option>
-                        <option value="docente">Docente</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      <button type="submit" className="btn-primary py-2 text-sm">
-                        Guardar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingId(null)}
-                        className="btn-secondary py-2 text-sm"
-                      >
-                        Cancelar
-                      </button>
-                    </form>
-                  ) : (
-                    <span className="font-medium text-atenas-ink text-sm">{p.full_name}</span>
-                  )}
-                  {editingId !== p.id && (
-                    <span className="sm:hidden block text-xs text-atenas-muted mt-0.5 truncate max-w-[200px]">
-                      {p.email}
-                    </span>
-                  )}
-                </td>
-                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-atenas-muted text-xs sm:text-sm hidden sm:table-cell">
-                  {p.email}
-                </td>
-                <td className="px-3 sm:px-4 py-2.5 sm:py-3 capitalize text-atenas-muted-strong text-sm">{p.role}</td>
-                <td className="px-3 sm:px-4 py-2.5 sm:py-3">
-                  {p.activo === false ? (
-                    <span className="badge bg-red-100 text-red-800">Desactivado</span>
-                  ) : (
-                    <span className="badge bg-emerald-100 text-emerald-800">Activo</span>
-                  )}
-                </td>
-                <td className="px-3 sm:px-4 py-2.5 sm:py-3">
-                  {editingId !== p.id && (
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(p)}
-                        className="text-sm font-medium hover:underline text-atenas-ink"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleActivo(p.id, p.activo !== false)}
-                        className={`text-sm font-medium ${
-                          p.activo === false
-                            ? 'text-emerald-700 hover:text-emerald-800'
-                            : 'text-red-700 hover:text-red-800'
-                        }`}
-                      >
-                        {p.activo === false ? 'Activar' : 'Desactivar'}
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        )}
       </div>
 
-      {profiles.length === 0 && !creating && (
-        <p className="text-atenas-muted mt-6">No hay usuarios. Da de alta el primero con el botón anterior.</p>
-      )}
-      {profiles.length > 0 && profilesFiltrados.length === 0 && (
-        <p className="text-atenas-muted mt-4 text-sm">Ningún usuario coincide con los filtros.</p>
+      {profiles.length === 0 && !creating ? (
+        <EmptyState
+          title="No hay usuarios"
+          description="Crea el primer estudiante o docente con el botón Nuevo usuario."
+          icon={<Users className="w-7 h-7 text-atenas-blue" />}
+          action={
+            <Button type="button" className="inline-flex items-center gap-1.5" onClick={() => setCreating(true)}>
+              <Plus className="w-4 h-4" aria-hidden />
+              Crear usuario
+            </Button>
+          }
+        />
+      ) : profilesFiltrados.length === 0 ? (
+        <EmptyState
+          title="Sin resultados"
+          description="Ningún usuario coincide con los filtros aplicados."
+          icon={<UserX className="w-7 h-7 text-atenas-muted" />}
+          action={
+            <Button type="button" variant="secondary" onClick={limpiarFiltros}>
+              Limpiar filtros
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="md:hidden space-y-3 mb-6">
+            {profilesFiltrados.map((p) => (
+              <UsuarioCard
+                key={p.id}
+                profile={p}
+                editing={editingId === p.id}
+                editName={editName}
+                editRole={editRole}
+                onEditName={setEditName}
+                onEditRole={setEditRole}
+                onSubmitEdit={(e) => void handleUpdate(e, p.id)}
+                onCancelEdit={() => setEditingId(null)}
+                onStartEdit={() => startEdit(p)}
+                onToggleActivo={() => void handleToggleActivo(p.id, p.activo !== false)}
+              />
+            ))}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-atenas-mist-border shadow-card">
+            <table className="w-full border-collapse bg-white table-mobile">
+              <thead>
+                <tr className="bg-atenas-mist border-b border-atenas-mist-border">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Usuario</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Rol</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Estado</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {profilesFiltrados.map((p) => (
+                  <tr
+                    key={p.id}
+                    className={`border-b border-atenas-mist last:border-0 ${p.activo === false ? 'bg-atenas-mist/50' : ''}`}
+                  >
+                    <td className="px-4 py-3">
+                      {editingId === p.id ? (
+                        <form
+                          onSubmit={(e) => handleUpdate(e, p.id)}
+                          className="flex flex-wrap items-center gap-2"
+                        >
+                          <input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="input-field py-2 text-sm max-w-[180px]"
+                            required
+                          />
+                          <select
+                            value={editRole}
+                            onChange={(e) => setEditRole(e.target.value as UserRole)}
+                            className="input-field py-2 text-sm max-w-[140px]"
+                          >
+                            <option value="estudiante">Estudiante</option>
+                            <option value="docente">Docente</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                          <Button type="submit" size="sm">
+                            Guardar
+                          </Button>
+                          <Button type="button" variant="secondary" size="sm" onClick={() => setEditingId(null)}>
+                            Cancelar
+                          </Button>
+                        </form>
+                      ) : (
+                        <div className="flex items-center gap-3 min-w-[200px]">
+                          <div
+                            className="w-9 h-9 rounded-lg bg-atenas-sidebar text-white text-xs font-bold flex items-center justify-center shrink-0"
+                            aria-hidden
+                          >
+                            {iniciales(p.full_name)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-atenas-ink truncate">{p.full_name}</p>
+                            <p className="text-xs text-atenas-muted truncate">{p.email}</p>
+                          </div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge tone={rolBadgeTone(p.role)}>{ROL_LABEL[p.role]}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge tone={p.activo === false ? 'muted' : 'success'}>
+                        {p.activo === false ? 'Desactivado' : 'Activo'}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      {editingId !== p.id && (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(p)}
+                            className="text-sm font-medium text-atenas-ink hover:underline"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleActivo(p.id, p.activo !== false)}
+                            className={`text-sm font-medium ${
+                              p.activo === false
+                                ? 'text-emerald-700 hover:underline'
+                                : 'text-red-700 hover:underline'
+                            }`}
+                          >
+                            {p.activo === false ? 'Activar' : 'Desactivar'}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
