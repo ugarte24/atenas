@@ -7,7 +7,7 @@ import {
 import { prepareCertificadoParams } from './certificadoVentana';
 import { CERT_LETTER_H_PX, CERT_LETTER_W_PX } from './certificadoDimensions';
 
-export { openCertificadoEnVentana, prepareCertificadoParams, buildCertificadoHtmlBlobUrl } from './certificadoVentana';
+export { openCertificadoEnVentana, prepareCertificadoParams, buildCertificadoHtmlBlobUrl, reservarVentanaCertificado } from './certificadoVentana';
 
 function safeFileNameSegment(s: string, maxLen: number): string {
   const n = s

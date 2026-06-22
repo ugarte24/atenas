@@ -14,7 +14,7 @@ import { useMisionesAlumno } from '../hooks/useMisiones';
 import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
-import { downloadCertificadoPdf, openCertificadoEnVentana } from '../lib/certificadoPdf';
+import { downloadCertificadoPdf, openCertificadoEnVentana, reservarVentanaCertificado } from '../lib/certificadoPdf';
 import { buildCertificadoParams } from '../lib/certificadoStats';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
@@ -89,6 +89,7 @@ export default function Certificados() {
 
   async function abrirCertificado(unidadId: string, titulo: string, pct: number, umbral: number) {
     if (!user) return;
+    const ventana = reservarVentanaCertificado();
     setOpeningId(unidadId);
     try {
       const params = await buildCertificadoParams(user.id, unidadId, {
@@ -97,12 +98,11 @@ export default function Certificados() {
         porcentajeUnidad: pct,
         umbralCertificado: umbral,
       });
-      await openCertificadoEnVentana(params);
+      openCertificadoEnVentana(params, ventana);
     } catch (e) {
+      ventana?.close();
       console.error(e);
-      window.alert(
-        e instanceof Error ? e.message : 'No se pudo abrir el certificado. Permite ventanas emergentes e intenta de nuevo.'
-      );
+      window.alert('No se pudo preparar el certificado. Intenta de nuevo.');
     } finally {
       setOpeningId(null);
     }

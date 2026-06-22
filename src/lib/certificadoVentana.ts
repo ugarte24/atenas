@@ -53,15 +53,45 @@ export async function buildCertificadoHtmlBlobUrl(params: CertificadoParams): Pr
 }
 
 /**
- * Abre el certificado en una nueva pestaña con barra Imprimir / Descargar PDF.
+ * Reserva una pestaña en el mismo gesto del clic (antes de cualquier await).
+ * Los navegadores bloquean window.open si ocurre después de operaciones async.
  */
-export async function openCertificadoEnVentana(params: CertificadoParams): Promise<void> {
-  saveCertificadoPreviewParams(params);
-
-  const url = certificadoVistaUrl();
-  const win = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!win) {
-    throw new Error('Permite ventanas emergentes para ver el certificado.');
+export function reservarVentanaCertificado(): Window | null {
+  const win = window.open('about:blank', '_blank');
+  if (win && !win.closed) {
+    try {
+      win.document.title = 'Certificado · ATENAS';
+      win.document.body.innerHTML =
+        '<p style="font-family:system-ui,sans-serif;text-align:center;margin-top:2rem;color:#555">Preparando certificado…</p>';
+    } catch {
+      /* about:blank — mismo origen */
+    }
   }
-  win.focus();
+  return win;
+}
+
+/**
+ * Abre el certificado en una nueva pestaña con barra Imprimir / Descargar PDF.
+ * Si el popup fue bloqueado, abre en la misma pestaña como respaldo.
+ */
+export function openCertificadoEnVentana(
+  params: CertificadoParams,
+  ventanaReservada?: Window | null
+): void {
+  saveCertificadoPreviewParams(params);
+  const url = certificadoVistaUrl();
+
+  if (ventanaReservada && !ventanaReservada.closed) {
+    ventanaReservada.location.href = url;
+    ventanaReservada.focus();
+    return;
+  }
+
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (win) {
+    win.focus();
+    return;
+  }
+
+  window.location.assign(url);
 }

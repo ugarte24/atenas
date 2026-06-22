@@ -20,7 +20,7 @@ import { SkeletonLines } from '../components/ui/Skeleton';
 import { Badge } from '../components/ui/Badge';
 import { cn } from '../components/ui/cn';
 import { buildCertificadoParams } from '../lib/certificadoStats';
-import { openCertificadoEnVentana } from '../lib/certificadoPdf';
+import { openCertificadoEnVentana, reservarVentanaCertificado } from '../lib/certificadoPdf';
 
 type UnidadTab = 'temas' | 'recursos' | 'actividades' | 'evaluaciones';
 
@@ -270,6 +270,7 @@ export default function UnidadTemas() {
             aria-busy={abriendoCert}
             onClick={() => {
               if (!user || !unidadId) return;
+              const ventana = reservarVentanaCertificado();
               setAbriendoCert(true);
               void buildCertificadoParams(user.id, unidadId, {
                 nombreEstudiante,
@@ -277,14 +278,11 @@ export default function UnidadTemas() {
                 porcentajeUnidad: pctUnidad ?? 0,
                 umbralCertificado: umbralCert ?? 0,
               })
-                .then((params) => openCertificadoEnVentana(params))
+                .then((params) => openCertificadoEnVentana(params, ventana))
                 .catch((e) => {
+                  ventana?.close();
                   console.error(e);
-                  window.alert(
-                    e instanceof Error
-                      ? e.message
-                      : 'No se pudo abrir el certificado. Permite ventanas emergentes e intenta de nuevo.'
-                  );
+                  window.alert('No se pudo preparar el certificado. Intenta de nuevo.');
                 })
                 .finally(() => setAbriendoCert(false));
             }}
