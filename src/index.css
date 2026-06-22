@@ -232,27 +232,211 @@
   }
   .btn-secondary:hover { background-color: var(--atenas-mist-border); }
   .input-field {
-    @apply w-full px-4 py-3 rounded-2xl border bg-white text-gray-900 transition-shadow min-h-touch;
+    @apply w-full px-5 py-3 rounded-full border bg-white text-atenas-ink transition-shadow min-h-touch text-sm;
     border-color: var(--atenas-mist-border);
+  }
+  .input-field--textarea,
+  textarea.input-field {
+    @apply rounded-2xl min-h-[100px] resize-y py-3.5;
+  }
+  .input-field--compact {
+    @apply rounded-xl px-3 py-2 min-h-0 text-sm;
   }
   .input-field::placeholder {
     color: var(--atenas-text-muted);
     opacity: 1;
   }
   .input-field:focus {
-    border-color: var(--atenas-ink);
-    box-shadow: 0 0 0 2px rgba(31, 45, 42, 0.2);
+    border-color: var(--atenas-blue);
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.12);
     outline: none;
   }
+  select.input-field {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 2.75rem;
+    cursor: pointer;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235a6b7d' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.15rem;
+  }
+  select.input-field:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    background-color: var(--atenas-mist);
+  }
+  .select-wrap {
+    @apply relative w-full;
+  }
+  .select-wrap select.input-field {
+    background-image: none;
+  }
+  .select-wrap__chevron {
+    @apply absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-atenas-muted-strong;
+  }
+  .input-field--inline {
+    @apply rounded-xl px-4 py-2.5 text-sm min-h-[2.5rem];
+  }
   .label {
-    @apply block text-sm font-medium mb-1.5;
+    @apply block text-xs font-semibold uppercase tracking-wide mb-2;
     color: var(--atenas-text-muted-strong);
   }
+  .label-required::after {
+    content: ' *';
+    color: var(--atenas-blue);
+    font-weight: 700;
+  }
+  .field-hint {
+    @apply text-xs mt-1.5 leading-relaxed;
+    color: var(--atenas-text-muted);
+  }
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  /** Panel de formulario (modal / inline) */
+  .form-panel {
+    @apply rounded-2xl border bg-white overflow-hidden shadow-card;
+    border-color: var(--atenas-mist-border);
+  }
+  .form-panel-header {
+    @apply px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b;
+    border-color: var(--atenas-mist-border);
+    background: linear-gradient(180deg, rgba(0, 51, 102, 0.04) 0%, transparent 100%);
+  }
+  .form-panel-body {
+    @apply px-5 sm:px-6 py-5 space-y-6;
+  }
+  .form-panel-footer {
+    @apply flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-5 sm:px-6 py-4 border-t;
+    border-color: var(--atenas-mist-border);
+    background-color: color-mix(in srgb, var(--atenas-page) 80%, white);
+  }
+  .form-section {
+    @apply space-y-3;
+  }
+  .form-section-title {
+    @apply text-xs font-semibold uppercase tracking-wide;
+    color: var(--atenas-text-muted-strong);
+  }
+  .form-section-box {
+    @apply rounded-2xl border p-4 space-y-3;
+    border-color: var(--atenas-mist-border);
+    background-color: color-mix(in srgb, var(--atenas-page) 65%, white);
+  }
+  .form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+  .form-check-list {
+    @apply space-y-2 list-none m-0 p-0 max-h-56 overflow-y-auto scrollbar-nav-hide;
+  }
+  .form-check-item {
+    @apply flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors text-sm text-atenas-ink min-h-touch;
+    border-color: var(--atenas-mist-border);
+    background-color: #fff;
+  }
+  .form-check-item:hover {
+    background-color: var(--atenas-mist);
+  }
+  .form-check-item:has(input:checked) {
+    border-color: color-mix(in srgb, var(--atenas-blue) 35%, var(--atenas-mist-border));
+    background-color: color-mix(in srgb, var(--atenas-blue) 6%, white);
+  }
+  .form-check-item input[type='checkbox'] {
+    @apply w-4 h-4 shrink-0 rounded border-atenas-mist-border text-atenas-blue;
+    accent-color: var(--atenas-blue);
+  }
+  /** Tabla de datos profesional */
+  .data-table-shell {
+    @apply overflow-x-auto rounded-2xl border bg-white shadow-card;
+    border-color: var(--atenas-mist-border);
+  }
+  .data-table,
+  .table-mobile.data-table {
+    @apply w-full border-collapse text-sm;
+  }
+  .data-table thead tr,
+  .table-mobile.data-table thead tr {
+    @apply border-b;
+    border-color: var(--atenas-mist-border);
+    background-color: var(--atenas-page);
+  }
+  .data-table th,
+  .table-mobile.data-table th {
+    @apply px-4 sm:px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider align-middle whitespace-nowrap;
+    color: var(--atenas-text-muted-strong);
+  }
+  .data-table th.text-right,
+  .table-mobile.data-table th.text-right {
+    text-align: right;
+  }
+  .data-table tbody tr,
+  .table-mobile.data-table tbody tr {
+    @apply border-b transition-colors last:border-0;
+    border-color: color-mix(in srgb, var(--atenas-mist-border) 70%, transparent);
+  }
+  .data-table tbody tr:hover,
+  .table-mobile.data-table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--atenas-page) 55%, white);
+  }
+  .data-table td,
+  .table-mobile.data-table td {
+    @apply px-4 sm:px-5 py-4 align-middle text-atenas-ink;
+  }
+  .data-table td.text-right,
+  .table-mobile.data-table td.text-right {
+    text-align: right;
+  }
+  .table-cell-primary {
+    @apply font-semibold text-atenas-ink leading-snug;
+  }
+  .table-cell-secondary {
+    @apply text-xs text-atenas-muted mt-0.5 leading-snug;
+  }
+  .table-action-btn {
+    @apply inline-flex items-center justify-center shrink-0 rounded-xl border transition-colors;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    border-color: var(--atenas-mist-border);
+    background-color: #fff;
+    color: var(--atenas-blue);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  .table-action-btn:hover {
+    background-color: var(--atenas-mist);
+    border-color: color-mix(in srgb, var(--atenas-blue) 25%, var(--atenas-mist-border));
+  }
+  .table-action-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.18);
+  }
+  .table-action-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke-width: 2.25;
+  }
+  .table-action-btn--danger {
+    color: #b91c1c;
+  }
+  .table-action-btn--danger:hover {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+  }
+  .table-action-btn--success {
+    color: #047857;
+  }
+  .table-action-btn--success:hover {
+    background-color: #ecfdf5;
+    border-color: #a7f3d0;
+  }
+  .table-actions {
+    @apply flex items-center justify-end gap-2;
   }
   .table-mobile {
-    @apply text-sm sm:text-base;
+    @apply text-sm;
   }
   .table-mobile th,
   .table-mobile td {

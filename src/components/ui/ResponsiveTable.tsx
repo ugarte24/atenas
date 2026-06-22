@@ -8,6 +8,7 @@ export type Column<T> = {
   /** Ocultar en vista móvil card */
   hideOnMobile?: boolean;
   className?: string;
+  align?: 'left' | 'center' | 'right';
 };
 
 type Props<T> = {
@@ -31,22 +32,20 @@ export function ResponsiveTable<T>({
 
   return (
     <>
-      {/* Móvil: cards */}
       <div className="md:hidden space-y-3">
         {data.map((row) =>
           mobileCard ? (
             <div key={keyExtractor(row)}>{mobileCard(row)}</div>
           ) : (
-            <div
-              key={keyExtractor(row)}
-              className="card p-4 space-y-2 text-sm"
-            >
+            <div key={keyExtractor(row)} className="card p-4 space-y-3 text-sm">
               {columns
                 .filter((c) => !c.hideOnMobile)
                 .map((col) => (
-                  <div key={col.key} className="flex justify-between gap-3">
-                    <span className="text-atenas-muted font-medium shrink-0">{col.header}</span>
-                    <span className="text-atenas-ink text-right">{col.cell(row)}</span>
+                  <div key={col.key} className="flex justify-between gap-3 items-start">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-atenas-muted-strong shrink-0 pt-0.5">
+                      {col.header}
+                    </span>
+                    <span className="text-atenas-ink text-right min-w-0">{col.cell(row)}</span>
                   </div>
                 ))}
             </div>
@@ -54,17 +53,17 @@ export function ResponsiveTable<T>({
         )}
       </div>
 
-      {/* Desktop: tabla */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-atenas-mist-border shadow-card">
-        <table className="w-full border-collapse bg-white table-mobile">
+      <div className="hidden md:block data-table-shell">
+        <table className="data-table table-mobile">
           <thead>
-            <tr className="bg-atenas-page border-b border-atenas-mist-border">
+            <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
                   scope="col"
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-atenas-ink',
+                    col.align === 'right' && 'text-right',
+                    col.align === 'center' && 'text-center',
                     col.className
                   )}
                 >
@@ -75,12 +74,16 @@ export function ResponsiveTable<T>({
           </thead>
           <tbody>
             {data.map((row) => (
-              <tr
-                key={keyExtractor(row)}
-                className="border-b border-atenas-mist-border/60 last:border-0 hover:bg-atenas-page/50"
-              >
+              <tr key={keyExtractor(row)}>
                 {columns.map((col) => (
-                  <td key={col.key} className={cn('px-4 py-3 text-sm text-atenas-ink', col.className)}>
+                  <td
+                    key={col.key}
+                    className={cn(
+                      col.align === 'right' && 'text-right',
+                      col.align === 'center' && 'text-center',
+                      col.className
+                    )}
+                  >
                     {col.cell(row)}
                   </td>
                 ))}

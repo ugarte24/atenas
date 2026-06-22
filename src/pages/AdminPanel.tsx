@@ -3,7 +3,9 @@ import {
   Activity,
   BookOpen,
   GraduationCap,
+  Pencil,
   Plus,
+  Power,
   Search,
   UserCog,
   Users,
@@ -12,15 +14,28 @@ import {
 import { PageHeader } from '../components/ui/PageHeader';
 import { StatCard } from '../components/ui/StatCard';
 import { SkeletonLines } from '../components/ui/Skeleton';
-import { Input } from '../components/ui/Input';
+import { Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { Alert } from '../components/ui/Alert';
 import { EmptyState } from '../components/ui/EmptyState';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableHead,
+  DataTableRow,
+  DataTableShell,
+  DataTableTd,
+  DataTableTh,
+  TableCellStack,
+} from '../components/ui/DataTable';
+import { Form, FormBody, FormFooter, FormGrid, FormHeader, FormSection } from '../components/ui/Form';
+import { FormModal } from '../components/ui/FormModal';
 import { supabase } from '../lib/supabase';
 import { useProfiles } from '../hooks/useProfiles';
 import { useUnidades } from '../hooks/useUnidades';
+import { tituloUnidadFiltro, tituloUnidadFiltroCompleto } from '../lib/unidadTitulo';
 import type { Profile, UserRole, Unidad } from '../types';
 
 const ROL_LABEL: Record<UserRole, string> = {
@@ -108,53 +123,59 @@ function AsignarDocenteUnidades({
   if (!docentes.length || !unidades.length) return null;
 
   return (
-    <Card padding="md" className="mb-6">
-      <h2 className="text-base font-bold text-atenas-ink mb-1">Asignar unidades a docentes</h2>
-      <p className="text-sm text-atenas-muted mb-4">
-        Si no marcas ninguna unidad, el docente verá todas. Si marcas al menos una, solo verá esas.
-      </p>
-      <label htmlFor="asig-docente-sel" className="label">
-        Docente
-      </label>
-      <select
-        id="asig-docente-sel"
-        className="input-field max-w-md mb-4"
-        value={selDoc}
-        onChange={(e) => setSelDoc(e.target.value)}
-      >
-        <option value="">— Elegir docente —</option>
-        {docentes.map((d) => (
-          <option key={d.id} value={d.id}>
-            {d.full_name} ({d.email})
-          </option>
-        ))}
-      </select>
-      {selDoc && (
-        <>
-          <fieldset className="border border-atenas-mist-border rounded-xl p-3 mb-4 bg-atenas-page/50">
-            <legend className="text-sm font-medium px-1 text-atenas-ink">Unidades visibles</legend>
-            <ul className="space-y-2 list-none m-0 p-0 max-h-48 overflow-y-auto scrollbar-nav-hide">
+    <Card padding="none" className="mb-6 overflow-hidden">
+      <FormHeader
+        title="Asignar unidades a docentes"
+        description="Si no marcas ninguna unidad, el docente verá todas. Si marcas al menos una, solo verá esas."
+        icon={<BookOpen className="w-5 h-5" />}
+      />
+      <FormBody>
+        <Select
+          id="asig-docente-sel"
+          label="Docente"
+          hint="Elige el docente al que quieres restringir o liberar unidades."
+          value={selDoc}
+          onChange={(e) => setSelDoc(e.target.value)}
+          className="max-w-xl"
+        >
+          <option value="">Seleccionar docente…</option>
+          {docentes.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.full_name} · {d.email}
+            </option>
+          ))}
+        </Select>
+        {selDoc && (
+          <FormSection
+            boxed
+            title="Unidades visibles"
+            description="Marca las unidades que este docente podrá gestionar en Contenidos."
+          >
+            <ul className="form-check-list">
               {unidades.map((u) => (
                 <li key={u.id}>
-                  <label className="flex items-center gap-2 text-atenas-ink cursor-pointer text-sm min-h-touch">
+                  <label className="form-check-item">
                     <input
                       type="checkbox"
-                      className="rounded border-atenas-mist-border"
                       checked={checks[u.id] === true}
                       onChange={(e) =>
                         setChecks((prev) => ({ ...prev, [u.id]: e.target.checked }))
                       }
                     />
-                    {u.title}
+                    <span className="font-medium leading-snug">{u.title}</span>
                   </label>
                 </li>
               ))}
             </ul>
-          </fieldset>
+          </FormSection>
+        )}
+      </FormBody>
+      {selDoc && (
+        <FormFooter>
           <Button type="button" disabled={loadingAsig} onClick={guardar}>
             {loadingAsig ? 'Guardando…' : 'Guardar asignaciones'}
           </Button>
-        </>
+        </FormFooter>
       )}
     </Card>
   );
@@ -189,33 +210,33 @@ function UsuarioCard({
 
   if (editing) {
     return (
-      <Card padding="md" className="border-atenas-blue/20 ring-1 ring-atenas-blue/10">
-        <form onSubmit={onSubmitEdit} className="space-y-3">
-          <p className="text-sm font-semibold text-atenas-ink">Editar usuario</p>
-          <input
-            value={editName}
-            onChange={(e) => onEditName(e.target.value)}
-            className="input-field"
-            required
-            aria-label="Nombre"
-          />
-          <select
-            value={editRole}
-            onChange={(e) => onEditRole(e.target.value as UserRole)}
-            className="input-field"
-            aria-label="Rol"
-          >
-            <option value="estudiante">Estudiante</option>
-            <option value="docente">Docente</option>
-            <option value="admin">Administrador</option>
-          </select>
-          <div className="flex flex-wrap gap-2">
-            <Button type="submit">Guardar</Button>
+      <Card padding="none" className="border-atenas-blue/25 ring-1 ring-atenas-blue/10 overflow-hidden">
+        <Form onSubmit={onSubmitEdit}>
+          <FormHeader title="Editar usuario" icon={<Pencil className="w-5 h-5" />} />
+          <FormBody>
+            <Input
+              value={editName}
+              onChange={(e) => onEditName(e.target.value)}
+              label="Nombre"
+              required
+            />
+            <Select
+              value={editRole}
+              onChange={(e) => onEditRole(e.target.value as UserRole)}
+              label="Rol"
+            >
+              <option value="estudiante">Estudiante</option>
+              <option value="docente">Docente</option>
+              <option value="admin">Administrador</option>
+            </Select>
+          </FormBody>
+          <FormFooter>
             <Button type="button" variant="secondary" onClick={onCancelEdit}>
               Cancelar
             </Button>
-          </div>
-        </form>
+            <Button type="submit">Guardar</Button>
+          </FormFooter>
+        </Form>
       </Card>
     );
   }
@@ -505,19 +526,21 @@ export default function AdminPanel() {
         title="Gestión de usuarios"
         description="Dar de alta estudiantes y docentes. Edita roles y activa o desactiva cuentas."
         actions={
-          !creating ? (
-            <Button
-              type="button"
-              className="inline-flex items-center gap-1.5"
-              onClick={() => {
-                setEditingId(null);
-                setCreating(true);
-              }}
-            >
-              <Plus className="w-4 h-4" aria-hidden />
-              Nuevo usuario
-            </Button>
-          ) : undefined
+          <Button
+            type="button"
+            className="inline-flex items-center gap-1.5"
+            onClick={() => {
+              setEditingId(null);
+              setFormEmail('');
+              setFormPassword('');
+              setFormFullName('');
+              setFormRole('estudiante');
+              setCreating(true);
+            }}
+          >
+            <Plus className="w-4 h-4" aria-hidden />
+            Nuevo usuario
+          </Button>
         }
       />
 
@@ -552,81 +575,65 @@ export default function AdminPanel() {
         </Alert>
       )}
 
-      {creating && (
-        <Card padding="md" className="mb-6 border-atenas-success/20 ring-1 ring-atenas-success/10">
-          <form onSubmit={handleCreate} className="space-y-4 max-w-lg">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold text-atenas-ink">Nuevo usuario</h2>
-                <p className="text-sm text-atenas-muted mt-1">
-                  Supabase puede limitar registros por minuto. Si falla, espera un momento.
-                </p>
-              </div>
-              <Button type="button" variant="secondary" onClick={() => setCreating(false)}>
-                Cancelar
-              </Button>
-            </div>
-            <div>
-              <label htmlFor="nu-email" className="label">
-                Correo
-              </label>
-              <input
+      <FormModal
+        open={creating}
+        onClose={() => setCreating(false)}
+        title="Nuevo usuario"
+        description="Supabase puede limitar registros por minuto. Si falla, espera un momento e inténtalo de nuevo."
+        icon={<Plus className="w-5 h-5" />}
+      >
+        <Form onSubmit={handleCreate}>
+          <FormBody>
+            <FormGrid>
+              <Input
                 id="nu-email"
                 type="email"
+                label="Correo"
                 value={formEmail}
                 onChange={(e) => setFormEmail(e.target.value)}
                 placeholder="correo@ejemplo.com"
-                className="input-field"
                 required
               />
-            </div>
-            <div>
-              <label htmlFor="nu-pass" className="label">
-                Contraseña temporal
-              </label>
-              <input
+              <Input
                 id="nu-pass"
                 type="password"
+                label="Contraseña temporal"
                 value={formPassword}
                 onChange={(e) => setFormPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                className="input-field"
                 required
                 minLength={6}
               />
-            </div>
-            <div>
-              <label htmlFor="nu-name" className="label">
-                Nombre completo
-              </label>
-              <input
+            </FormGrid>
+            <FormGrid>
+              <Input
                 id="nu-name"
+                label="Nombre completo"
                 value={formFullName}
                 onChange={(e) => setFormFullName(e.target.value)}
                 placeholder="Nombre y apellidos"
-                className="input-field"
                 required
               />
-            </div>
-            <div>
-              <label htmlFor="nu-role" className="label">
-                Rol
-              </label>
-              <select
+              <Select
                 id="nu-role"
+                label="Rol"
                 value={formRole}
                 onChange={(e) => setFormRole(e.target.value as UserRole)}
-                className="input-field"
               >
                 <option value="estudiante">Estudiante</option>
                 <option value="docente">Docente</option>
                 <option value="admin">Administrador</option>
-              </select>
-            </div>
+              </Select>
+            </FormGrid>
+          </FormBody>
+          <FormFooter>
+            <Button type="button" variant="secondary" onClick={() => setCreating(false)}>
+              Cancelar
+            </Button>
             <Button type="submit">Crear usuario</Button>
-          </form>
-        </Card>
-      )}
+          </FormFooter>
+        </Form>
+      </FormModal>
 
       <AsignarDocenteUnidades
         docentes={profiles.filter((p) => p.role === 'docente')}
@@ -677,30 +684,38 @@ export default function AdminPanel() {
           ))}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <select
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+          <Select
+            label="Estado"
             value={filtroActivo}
             onChange={(e) => setFiltroActivo(e.target.value as typeof filtroActivo)}
-            className="input-field max-w-xs text-sm min-h-touch"
+            compact
             aria-label="Filtrar por estado"
           >
-            <option value="todos">Activos e inactivos</option>
+            <option value="todos">Todos</option>
             <option value="activo">Solo activos</option>
             <option value="inactivo">Solo inactivos</option>
-          </select>
-          <select
+          </Select>
+          <Select
+            id="filtro-unidad-actividad"
+            label="Actividad en unidad"
+            hint="Usuarios con intentos en actividades o evaluaciones de la unidad elegida."
             value={unidadActividadId}
             onChange={(e) => setUnidadActividadId(e.target.value)}
-            className="input-field flex-1 text-sm min-h-touch"
+            className="min-w-0"
             aria-label="Filtrar por actividad en unidad"
           >
             <option value="">Todas las unidades</option>
-            {unidades.map((u) => (
-              <option key={u.id} value={u.id}>
-                Con actividad en: {u.title}
-              </option>
-            ))}
-          </select>
+            {unidades.map((u, index) => {
+              const completo = tituloUnidadFiltroCompleto(u.orden ?? 0, u.title, index);
+              const corto = tituloUnidadFiltro(u.orden ?? 0, u.title, index);
+              return (
+                <option key={u.id} value={u.id} title={completo}>
+                  {corto}
+                </option>
+              );
+            })}
+          </Select>
         </div>
 
         {hayFiltros && (
@@ -758,23 +773,21 @@ export default function AdminPanel() {
             ))}
           </div>
 
-          <div className="hidden md:block overflow-x-auto rounded-xl border border-atenas-mist-border shadow-card">
-            <table className="w-full border-collapse bg-white table-mobile">
-              <thead>
-                <tr className="bg-atenas-mist border-b border-atenas-mist-border">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Usuario</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Rol</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Estado</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-atenas-ink">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="hidden md:block">
+          <DataTableShell className="mb-6">
+            <DataTable>
+              <DataTableHead>
+                <DataTableRow>
+                  <DataTableTh>Usuario</DataTableTh>
+                  <DataTableTh>Rol</DataTableTh>
+                  <DataTableTh>Estado</DataTableTh>
+                  <DataTableTh align="right">Acciones</DataTableTh>
+                </DataTableRow>
+              </DataTableHead>
+              <DataTableBody>
                 {profilesFiltrados.map((p) => (
-                  <tr
-                    key={p.id}
-                    className={`border-b border-atenas-mist last:border-0 ${p.activo === false ? 'bg-atenas-mist/50' : ''}`}
-                  >
-                    <td className="px-4 py-3">
+                  <DataTableRow key={p.id} className={p.activo === false ? 'opacity-75' : undefined}>
+                    <DataTableTd>
                       {editingId === p.id ? (
                         <form
                           onSubmit={(e) => handleUpdate(e, p.id)}
@@ -783,13 +796,13 @@ export default function AdminPanel() {
                           <input
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="input-field py-2 text-sm max-w-[180px]"
+                            className="input-field input-field--compact max-w-[180px]"
                             required
                           />
                           <select
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value as UserRole)}
-                            className="input-field py-2 text-sm max-w-[140px]"
+                            className="input-field input-field--compact max-w-[140px]"
                           >
                             <option value="estudiante">Estudiante</option>
                             <option value="docente">Docente</option>
@@ -805,54 +818,58 @@ export default function AdminPanel() {
                       ) : (
                         <div className="flex items-center gap-3 min-w-[200px]">
                           <div
-                            className="w-9 h-9 rounded-lg bg-atenas-sidebar text-white text-xs font-bold flex items-center justify-center shrink-0"
+                            className="w-9 h-9 rounded-full bg-atenas-sidebar text-white text-xs font-bold flex items-center justify-center shrink-0"
                             aria-hidden
                           >
                             {iniciales(p.full_name)}
                           </div>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-atenas-ink truncate">{p.full_name}</p>
-                            <p className="text-xs text-atenas-muted truncate">{p.email}</p>
-                          </div>
+                          <TableCellStack primary={p.full_name} secondary={p.email} />
                         </div>
                       )}
-                    </td>
-                    <td className="px-4 py-3">
+                    </DataTableTd>
+                    <DataTableTd>
                       <Badge tone={rolBadgeTone(p.role)}>{ROL_LABEL[p.role]}</Badge>
-                    </td>
-                    <td className="px-4 py-3">
+                    </DataTableTd>
+                    <DataTableTd>
                       <Badge tone={p.activo === false ? 'muted' : 'success'}>
                         {p.activo === false ? 'Desactivado' : 'Activo'}
                       </Badge>
-                    </td>
-                    <td className="px-4 py-3">
+                    </DataTableTd>
+                    <DataTableTd align="right">
                       {editingId !== p.id && (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="table-actions">
                           <button
                             type="button"
                             onClick={() => startEdit(p)}
-                            className="text-sm font-medium text-atenas-ink hover:underline"
+                            className="table-action-btn"
+                            title="Editar usuario"
+                            aria-label={`Editar ${p.full_name}`}
                           >
-                            Editar
+                            <Pencil aria-hidden />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleToggleActivo(p.id, p.activo !== false)}
-                            className={`text-sm font-medium ${
+                            className={
                               p.activo === false
-                                ? 'text-emerald-700 hover:underline'
-                                : 'text-red-700 hover:underline'
-                            }`}
+                                ? 'table-action-btn table-action-btn--success'
+                                : 'table-action-btn table-action-btn--danger'
+                            }
+                            title={p.activo === false ? 'Activar usuario' : 'Desactivar usuario'}
+                            aria-label={
+                              p.activo === false ? `Activar ${p.full_name}` : `Desactivar ${p.full_name}`
+                            }
                           >
-                            {p.activo === false ? 'Activar' : 'Desactivar'}
+                            <Power aria-hidden />
                           </button>
                         </div>
                       )}
-                    </td>
-                  </tr>
+                    </DataTableTd>
+                  </DataTableRow>
                 ))}
-              </tbody>
-            </table>
+              </DataTableBody>
+            </DataTable>
+          </DataTableShell>
           </div>
         </>
       )}

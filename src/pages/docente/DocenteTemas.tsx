@@ -6,6 +6,7 @@ import {
   ClipboardList,
   FileCheck,
   GitBranch,
+  Info,
   Layers,
   Pencil,
   Plus,
@@ -18,10 +19,12 @@ import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { StatCard } from '../../components/ui/StatCard';
+import { Input, Select, Textarea } from '../../components/ui/Input';
+import { Form, FormBody, FormFooter, FormHeader, FormSection } from '../../components/ui/Form';
 import { useUnidad } from '../../hooks/useUnidad';
 import { useTemas } from '../../hooks/useTemas';
 import { tituloUnidadConOrden } from '../../lib/unidadTitulo';
-import { temaContentPreview } from '../../lib/temaContent';
+import { temaContentEsHtml, temaContentPreview } from '../../lib/temaContent';
 import type { Tema } from '../../types';
 
 type FormState = {
@@ -45,86 +48,100 @@ type TemaFormProps = {
   form: FormState;
   temas: Tema[];
   editingId?: string | null;
+  temaIndex?: number;
   onChange: (patch: Partial<FormState>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
 };
 
-function TemaForm({ mode, form, temas, editingId, onChange, onSubmit, onCancel }: TemaFormProps) {
+function TemaForm({ mode, form, temas, editingId, temaIndex, onChange, onSubmit, onCancel }: TemaFormProps) {
   const prereqOptions = temas.filter((x) => x.id !== editingId);
+  const contentEsHtml = form.content ? temaContentEsHtml(form.content) : false;
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-base font-bold text-atenas-ink">
-            {mode === 'create' ? 'Nuevo tema' : 'Editar tema'}
-          </h2>
-          <p className="text-sm text-atenas-muted mt-1">
-            {mode === 'create'
-              ? 'Define el título y, si quieres, un texto introductorio para los estudiantes.'
-              : 'Actualiza la información del tema. Los recursos y actividades no se pierden.'}
-          </p>
-        </div>
-        <Button type="button" variant="secondary" className="shrink-0" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
+    <Form onSubmit={onSubmit}>
+      <FormHeader
+        title={mode === 'create' ? 'Nuevo tema' : 'Editar tema'}
+        description={
+          mode === 'create'
+            ? 'Define el título y el contenido que verán tus estudiantes al abrir el tema.'
+            : 'Los recursos, actividades y evaluaciones asociados se conservan.'
+        }
+        icon={mode === 'create' ? <Plus className="w-5 h-5" /> : <Pencil className="w-5 h-5" />}
+        badge={
+          mode === 'edit' && temaIndex != null ? (
+            <Badge tone="default" className="tabular-nums">
+              Tema {temaIndex + 1}
+            </Badge>
+          ) : undefined
+        }
+      />
 
-      <div className="space-y-3">
-        <div>
-          <label htmlFor="tema-title" className="label">
-            Título
-          </label>
-          <input
+      <FormBody>
+        <FormSection title="Información básica">
+          <Input
             id="tema-title"
+            label="Título"
             value={form.title}
             onChange={(e) => onChange({ title: e.target.value })}
             placeholder="Ej. T1.1 · La forma de la Tierra y sus movimientos"
-            className="input-field"
             required
           />
-        </div>
-        <div>
-          <label htmlFor="tema-content" className="label">
-            Contenido introductorio <span className="text-atenas-muted font-normal">(opcional)</span>
-          </label>
-          <textarea
+        </FormSection>
+
+        <FormSection
+          title="Contenido introductorio"
+          description="Texto o HTML que aparece al inicio de la lección del estudiante."
+        >
+          <Textarea
             id="tema-content"
             value={form.content}
             onChange={(e) => onChange({ content: e.target.value })}
-            placeholder="Breve descripción o contexto que verán los estudiantes al abrir el tema…"
-            className="input-field min-h-[100px] font-sans"
-            rows={4}
+            placeholder="Breve introducción, párrafos o etiquetas HTML (&lt;h3&gt;, &lt;p&gt;, etc.)"
+            rows={contentEsHtml ? 8 : 5}
+            className={contentEsHtml ? 'font-mono text-sm leading-relaxed' : undefined}
           />
-        </div>
-        <div>
-          <label htmlFor="tema-prereq" className="label">
-            Prerequisito <span className="text-atenas-muted font-normal">(opcional)</span>
-          </label>
-          <select
+          {contentEsHtml && (
+            <p className="flex items-start gap-2 text-xs text-atenas-muted rounded-2xl bg-atenas-page border border-atenas-mist-border px-3 py-2.5">
+              <Info className="w-4 h-4 shrink-0 text-atenas-blue mt-0.5" aria-hidden />
+              <span>
+                Este tema usa HTML. Puedes editar las etiquetas directamente o sustituirlas por texto
+                plano.
+              </span>
+            </p>
+          )}
+        </FormSection>
+
+        <FormSection
+          boxed
+          title="Prerequisito"
+          description="Opcional · el estudiante debe completar el tema seleccionado antes de acceder a este."
+        >
+          <Select
             id="tema-prereq"
             value={form.prereq}
             onChange={(e) => onChange({ prereq: e.target.value })}
-            className="input-field"
+            aria-label="Tema que debe completarse antes"
           >
-            <option value="">— Ninguno —</option>
+            <option value="">Sin prerequisito — acceso libre</option>
             {prereqOptions.map((x) => (
               <option key={x.id} value={x.id}>
                 {x.title}
               </option>
             ))}
-          </select>
-          <p className="text-xs text-atenas-muted mt-1.5">
-            El estudiante deberá completar el tema seleccionado antes de acceder a este.
-          </p>
-        </div>
-      </div>
+          </Select>
+        </FormSection>
+      </FormBody>
 
-      <div className="flex flex-wrap gap-2 pt-1">
-        <Button type="submit">{mode === 'create' ? 'Crear tema' : 'Guardar cambios'}</Button>
-      </div>
-    </form>
+      <FormFooter>
+        <Button type="button" variant="secondary" className="w-full sm:w-auto min-h-touch" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button type="submit" className="w-full sm:w-auto min-h-touch">
+          {mode === 'create' ? 'Crear tema' : 'Guardar cambios'}
+        </Button>
+      </FormFooter>
+    </Form>
   );
 }
 
@@ -157,12 +174,13 @@ function TemaRow({
 }: TemaRowProps) {
   if (editing) {
     return (
-      <Card padding="md" className="border-atenas-blue/20 ring-1 ring-atenas-blue/10">
+      <Card padding="none" className="border-atenas-blue/25 ring-1 ring-atenas-blue/10 overflow-hidden">
         <TemaForm
           mode="edit"
           form={form}
           temas={temas}
           editingId={tema.id}
+          temaIndex={index}
           onChange={onFormChange}
           onSubmit={onSubmitEdit}
           onCancel={onCancelEdit}
@@ -377,7 +395,7 @@ export default function DocenteTemas() {
         }
       />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard
           label="Temas"
           value={stats.total}
@@ -398,7 +416,7 @@ export default function DocenteTemas() {
       </div>
 
       {showFormPanel && (
-        <Card padding="md" className="border-atenas-success/20 ring-1 ring-atenas-success/10">
+        <Card padding="none" className="border-atenas-success/25 ring-1 ring-atenas-success/10 overflow-hidden">
           <TemaForm
             mode="create"
             form={form}

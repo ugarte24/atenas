@@ -1,6 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { formatTiempoEstudio } from '../../lib/formatTiempo';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableHead,
+  DataTableRow,
+  DataTableShell,
+  DataTableTd,
+  DataTableTh,
+  TableCellStack,
+} from '../ui/DataTable';
 
 type Fila = {
   user_id: string;
@@ -212,67 +222,69 @@ export function DocenteDetalleIntentosModal({ tipo, itemId, titulo, onClose }: P
             <p className="text-atenas-muted text-sm">Ningún alumno ha completado aún.</p>
           )}
           {!loading && filas.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-atenas-mist-border">
-              <table className="w-full text-sm table-mobile">
-                <thead>
-                  <tr className="bg-atenas-page border-b border-atenas-mist-border">
-                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-atenas-muted-strong">Alumno</th>
-                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-atenas-muted-strong hidden sm:table-cell">
-                      Email
-                    </th>
-                    {tipo === 'evaluacion' && (
-                      <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">#</th>
-                    )}
-                    <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">Nota</th>
+            <DataTableShell>
+              <DataTable>
+                <DataTableHead>
+                  <DataTableRow>
+                    <DataTableTh>Alumno</DataTableTh>
+                    {tipo === 'evaluacion' && <DataTableTh align="center">Intento</DataTableTh>}
+                    <DataTableTh align="center">Nota</DataTableTh>
                     {tipo === 'evaluacion' && (
                       <>
-                        <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">Tiempo</th>
-                        <th className="text-center px-2 py-2 font-semibold text-atenas-muted-strong">Aprobado</th>
+                        <DataTableTh align="center">Tiempo</DataTableTh>
+                        <DataTableTh align="center">Aprobado</DataTableTh>
                       </>
                     )}
-                    <th className="text-left px-2 sm:px-3 py-2 font-semibold text-atenas-muted-strong">Fecha</th>
-                  </tr>
-                </thead>
-                <tbody>
+                    <DataTableTh>Fecha</DataTableTh>
+                  </DataTableRow>
+                </DataTableHead>
+                <DataTableBody>
                   {filas.map((f, i) => (
-                    <tr key={`${f.user_id}-${i}`} className="border-b border-atenas-mist-border/60">
-                      <td className="px-2 sm:px-3 py-2 text-atenas-ink">{f.full_name}</td>
-                      <td className="px-2 sm:px-3 py-2 text-atenas-muted hidden sm:table-cell text-xs">
-                        {f.email}
-                      </td>
+                    <DataTableRow key={`${f.user_id}-${i}`}>
+                      <DataTableTd>
+                        <TableCellStack primary={f.full_name} secondary={f.email} />
+                      </DataTableTd>
                       {tipo === 'evaluacion' && (
-                        <td className="px-2 py-2 text-center">{f.numero_intento ?? '—'}</td>
+                        <DataTableTd align="center" className="tabular-nums">
+                          {f.numero_intento ?? '—'}
+                        </DataTableTd>
                       )}
-                      <td className="px-2 py-2 text-center">{f.puntuacion}%</td>
+                      <DataTableTd align="center">
+                        <span className="font-semibold tabular-nums">{f.puntuacion}%</span>
+                      </DataTableTd>
                       {tipo === 'evaluacion' && (
                         <>
-                          <td className="px-2 py-2 text-center text-xs whitespace-nowrap">
+                          <DataTableTd align="center" className="text-xs whitespace-nowrap">
                             {f.tiempo_segundos != null
                               ? formatTiempoEstudio(f.tiempo_segundos)
                               : '—'}
-                          </td>
-                          <td className="px-2 py-2 text-center">
+                          </DataTableTd>
+                          <DataTableTd align="center">
                             {f.aprobado ? (
-                              <span className="text-emerald-700 font-medium">Sí</span>
+                              <span className="badge border bg-emerald-50 text-emerald-800 border-emerald-200">
+                                Sí
+                              </span>
                             ) : (
-                              <span className="text-atenas-muted">No</span>
+                              <span className="badge border bg-atenas-page text-atenas-muted border-atenas-mist-border">
+                                No
+                              </span>
                             )}
-                          </td>
+                          </DataTableTd>
                         </>
                       )}
-                      <td className="px-2 sm:px-3 py-2 text-atenas-muted text-xs whitespace-nowrap">
+                      <DataTableTd className="text-xs text-atenas-muted whitespace-nowrap">
                         {f.completado_at
                           ? new Date(f.completado_at).toLocaleString('es-PE', {
                               dateStyle: 'short',
                               timeStyle: 'short',
                             })
                           : '—'}
-                      </td>
-                    </tr>
+                      </DataTableTd>
+                    </DataTableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </DataTableBody>
+              </DataTable>
+            </DataTableShell>
           )}
         </div>
       </div>

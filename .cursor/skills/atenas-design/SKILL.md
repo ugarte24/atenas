@@ -42,6 +42,9 @@ Clases utilitarias Tailwind: `text-atenas-ink`, `bg-atenas-sidebar`, etc.
 Reutilizar antes de crear nuevos:
 
 - `Button`, `Card`, `PageHeader`, `StatCard`, `EmptyState`, `Badge`, `ProgressBar`
+- `DataTable`, `ResponsiveTable`, `TableCellStack` — tablas de datos
+- `Form`, `FormPanel`, `FormHeader`, `FormSection`, `FormFooter` — formularios
+- `Input`, `Select`, `Textarea` — campos con etiquetas en mayúsculas y bordes redondeados
 - Clases globales: `.card`, `.btn-primary`, `.btn-secondary`, `.btn-success`, `.btn-atenas-gold`
 - Pestañas: `.segment-tab`, `.page-tab`, `.profile-tab` (siempre par `--active` / `--inactive`)
 - Nav lección: `.lesson-nav-item`

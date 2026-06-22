@@ -14,6 +14,7 @@ import { descargarCsv } from '../../lib/exportCsv';
 import { formatTiempoEstudio } from '../../lib/formatTiempo';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { StatCard } from '../../components/ui/StatCard';
@@ -213,12 +214,12 @@ export default function DocenteProgreso() {
               <EstudianteAvatar nombre={e.full_name} />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-atenas-ink">{e.full_name}</span>
-                  <Badge tone={estado.tone} className="text-[10px] py-0">
+                  <span className="table-cell-primary">{e.full_name}</span>
+                  <Badge tone={estado.tone} className="text-[10px] py-0 shrink-0">
                     {estado.label}
                   </Badge>
                 </div>
-                <span className="text-xs text-atenas-muted truncate block max-w-[240px]">{e.email}</span>
+                <div className="table-cell-secondary truncate max-w-[240px]">{e.email}</div>
               </div>
             </div>
           );
@@ -362,19 +363,23 @@ export default function DocenteProgreso() {
                 className="pl-9"
               />
             </div>
-            <label className="flex items-center gap-2 text-sm text-atenas-muted shrink-0">
-              <span className="font-medium">Ordenar</span>
-              <select
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-semibold uppercase tracking-wide text-atenas-muted-strong">
+                Ordenar
+              </span>
+            <div className="w-auto min-w-[11rem] shrink-0">
+              <Select
                 value={orden}
                 onChange={(e) => setOrden(e.target.value as OrdenLista)}
-                className="input-field py-2 min-h-touch text-sm w-auto min-w-[10rem]"
+                compact
                 aria-label="Ordenar lista de estudiantes"
               >
                 <option value="nombre">Por nombre</option>
                 <option value="rendimiento">Mejor rendimiento</option>
                 <option value="actividad">Más actividad</option>
-              </select>
-            </label>
+              </Select>
+            </div>
+            </div>
           </div>
 
           <div
