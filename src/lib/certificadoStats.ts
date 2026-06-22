@@ -51,7 +51,7 @@ export async function fetchCertificadoStats(
     tiempoEstudioSegundos += row.tiempo_estudio_segundos ?? 0;
   }
 
-  const [ia, ie] = await Promise.all([
+  const [ia, ie, evalTiemposRes] = await Promise.all([
     actIds.length
       ? supabase
           .from('actividad_intentos')
@@ -66,7 +66,18 @@ export async function fetchCertificadoStats(
           .eq('user_id', userId)
           .in('evaluacion_id', evalIds)
       : Promise.resolve({ data: [] as { evaluacion_id: string; aprobado: boolean }[] }),
+    evalIds.length
+      ? supabase
+          .from('evaluacion_intentos')
+          .select('tiempo_segundos')
+          .eq('user_id', userId)
+          .in('evaluacion_id', evalIds)
+      : Promise.resolve({ data: [] as { tiempo_segundos?: number | null }[] }),
   ]);
+
+  for (const row of (evalTiemposRes.data ?? []) as { tiempo_segundos?: number | null }[]) {
+    tiempoEstudioSegundos += row.tiempo_segundos ?? 0;
+  }
 
   const doneAct = new Set((ia.data ?? []).map((r) => r.actividad_id));
   const approvedEval = new Set<string>();
@@ -81,6 +92,31 @@ export async function fetchCertificadoStats(
     evaluacionesTotal: evalIds.length,
     tiempoEstudioSegundos,
   };
+}
+
+async function registrarCertificadoEmitido(
+  userId: string,
+  unidadId: string,
+  certificadoId: string,
+  nombreEstudiante: string,
+  tituloUnidad: string,
+  porcentaje: number
+): Promise<void> {
+  const { error } = await supabase.from('certificados_emitidos').upsert(
+    {
+      id: certificadoId,
+      user_id: userId,
+      unidad_id: unidadId,
+      nombre_estudiante: nombreEstudiante,
+      titulo_unidad: tituloUnidad,
+      porcentaje,
+      emitido_at: new Date().toISOString(),
+    },
+    { onConflict: 'id' }
+  );
+  if (error) {
+    console.warn('No se pudo registrar certificado emitido:', error.message);
+  }
 }
 
 export async function buildCertificadoParams(
@@ -100,12 +136,25 @@ export async function buildCertificadoParams(
     fetchCertificadoStats(userId, unidadId),
   ]);
 
+  const certificadoId = generarCertificadoId(userId, unidadId);
+
+  if (pct >= base.umbralCertificado && base.umbralCertificado > 0) {
+    await registrarCertificadoEmitido(
+      userId,
+      unidadId,
+      certificadoId,
+      base.nombreEstudiante,
+      base.tituloUnidad,
+      pct
+    );
+  }
+
   return {
     nombreEstudiante: base.nombreEstudiante,
     tituloUnidad: base.tituloUnidad,
     porcentajeUnidad: pct,
     umbralCertificado: base.umbralCertificado,
     ...stats,
-    certificadoId: generarCertificadoId(userId, unidadId),
+    certificadoId,
   };
 }

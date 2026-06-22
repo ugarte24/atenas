@@ -86,6 +86,16 @@ function statCell(icon: string, label: string, value: string): string {
   </div>`;
 }
 
+function formatActividadesStat(done: number, total: number): string {
+  if (total === 0) return '—';
+  return `${done} / ${total}`;
+}
+
+function formatEvaluacionesStat(done: number, total: number): string {
+  if (total === 0) return '—';
+  return `${done} / ${total}`;
+}
+
 export function buildCertificadoPrintDocument(
   params: CertificadoParams,
   options: CertificadoDocumentOptions = {}
@@ -109,6 +119,8 @@ export function buildCertificadoPrintDocument(
   const actTotal = params.actividadesTotal ?? 0;
   const evalDone = params.evaluacionesAprobadas ?? 0;
   const evalTotal = params.evaluacionesTotal ?? 0;
+  const actStat = escapeHtml(formatActividadesStat(actDone, actTotal));
+  const evalStat = escapeHtml(formatEvaluacionesStat(evalDone, evalTotal));
   const tiempo = formatTiempoCertificado(params.tiempoEstudioSegundos ?? 0);
   const certId = escapeHtml(params.certificadoId ?? `AT-${anio}-000000`);
 
@@ -151,6 +163,15 @@ export function buildCertificadoPrintDocument(
         </div>
       </div>`
     : '';
+
+  const watermarkStyle = `--cert-watermark: url('${emblemaUrl}');`;
+
+  const nombreRaw = params.nombreEstudiante.trim() || 'Estudiante';
+  const nombreUpperOnly =
+    /[A-Za-zÁÉÍÓÚÑáéíóúñ]/.test(nombreRaw) &&
+    nombreRaw.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g, '') ===
+      nombreRaw.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g, '').toUpperCase();
+  const nombreClass = nombreUpperOnly ? 'cert-name cert-name--upper' : 'cert-name';
 
   return `<!DOCTYPE html>
 <html lang="es" class="${rootClass}">
@@ -257,20 +278,20 @@ export function buildCertificadoPrintDocument(
       position: relative; z-index: 1; flex: 0 0 23%; min-width: 0;
       background: linear-gradient(170deg, #1a2230 0%, #252f42 50%, #1c2433 100%);
       color: #f8f6f0; display: flex; flex-direction: column; align-items: center;
-      padding: 1.65rem 0.85rem 0.95rem; text-align: center;
+      padding: 1.85rem 0.8rem 0.85rem; text-align: center;
       border-right: 2px solid var(--cert-gold);
     }
     .cert-aside__athena-wrap {
-      width: 68px; height: 68px; border-radius: 50%;
+      width: 58px; height: 58px; border-radius: 50%;
       border: 2px solid var(--cert-gold);
-      overflow: hidden; margin-bottom: 0.5rem;
+      overflow: hidden; margin-bottom: 0.45rem;
       background: transparent;
-      box-shadow: 0 0 0 2px rgba(201,166,106,0.15);
+      box-shadow: 0 0 0 2px rgba(201,166,106,0.12);
       flex-shrink: 0;
     }
     .cert-aside__athena {
-      width: 100%; height: 100%; object-fit: contain; object-position: center 22%;
-      display: block; transform: scale(0.92);
+      width: 100%; height: 100%; object-fit: contain; object-position: center 28%;
+      display: block; transform: scale(0.85);
       background: transparent;
     }
     .cert-aside__athena--hidden { display: none !important; }
@@ -320,14 +341,30 @@ export function buildCertificadoPrintDocument(
 
     .cert-main {
       position: relative; z-index: 1; flex: 1; min-width: 0; min-height: 0;
-      display: flex; flex-direction: column;
-      padding: 1rem 1.35rem 0.75rem 1.25rem;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      padding: 0.85rem 1.15rem 0.6rem 1.05rem;
       background-image: radial-gradient(ellipse 55% 70% at 88% 45%, rgba(201,166,106,0.06), transparent 70%);
+    }
+    .cert-main--watermark::before {
+      content: '';
+      position: absolute;
+      right: 12%;
+      top: 38%;
+      width: 42%;
+      height: 55%;
+      background-image: var(--cert-watermark);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.045;
+      pointer-events: none;
+      z-index: 0;
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: 0.45rem; right: 0.55rem;
-      width: 1.38in; height: 1.38in; z-index: 10; pointer-events: none;
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      width: 1.2in; height: 1.2in; z-index: 10; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -335,12 +372,25 @@ export function buildCertificadoPrintDocument(
     }
     .cert-emblema-wrap.cert-emblema--hidden { display: none !important; }
 
-    .cert-content { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-right: 1.5in; }
+    .cert-content {
+      position: relative; z-index: 1;
+      min-height: 0; overflow: hidden;
+      display: flex; flex-direction: column;
+      padding-right: 1.35in;
+    }
+
+    .cert-bottom {
+      position: relative; z-index: 1;
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+      gap: 0.2rem;
+    }
 
     .cert-platform-header {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
       font-size: 1.05rem; letter-spacing: 0.13em; text-transform: uppercase;
       color: var(--cert-ink); margin-bottom: 0.25rem; line-height: 1.2;
+      text-align: left;
     }
 
     .cert-stars { color: var(--cert-gold); font-size: 0.72rem; letter-spacing: 0.35em; margin-bottom: 0.2rem; }
@@ -351,10 +401,10 @@ export function buildCertificadoPrintDocument(
       color: var(--cert-ink); line-height: 1.2; margin-bottom: 0.15rem;
     }
     .cert-subtitle {
-      font-size: 0.72rem; font-style: italic; color: var(--cert-muted); margin-bottom: 0.45rem;
+      font-size: 0.72rem; font-style: italic; color: var(--cert-muted); margin-bottom: 0.35rem;
     }
 
-    .cert-name-block { margin: 0.3rem 0 0.4rem; max-width: 95%; }
+    .cert-name-block { margin: 0.25rem 0 0.32rem; max-width: 95%; }
     .cert-name-rule {
       height: 2px; background: linear-gradient(90deg, transparent, var(--cert-gold) 20%, var(--cert-gold) 80%, transparent);
       position: relative;
@@ -368,6 +418,7 @@ export function buildCertificadoPrintDocument(
       font-size: 1.32rem; letter-spacing: 0.02em; color: var(--cert-ink);
       padding: 0.35rem 0.25rem; line-height: 1.25; text-align: center;
     }
+    .cert-name--upper { text-transform: uppercase; letter-spacing: 0.05em; }
 
     .cert-unit { font-size: 0.76rem; color: #2d3748; margin-bottom: 0.45rem; }
     .cert-unit strong { font-weight: 600; color: var(--cert-ink); }
@@ -423,12 +474,12 @@ export function buildCertificadoPrintDocument(
     }
 
     .cert-signatures {
-      display: flex; justify-content: center; gap: 2.5rem;
-      margin-top: 0.45rem; padding: 0 0.5rem;
+      display: flex; justify-content: center; gap: 3rem;
+      padding: 0.15rem 0.5rem 0;
       flex-shrink: 0;
     }
     .cert-signatures__col {
-      flex: 0 1 9rem; text-align: center; min-width: 0;
+      flex: 0 1 11rem; text-align: center; min-width: 0;
     }
     .cert-signatures__line {
       height: 1px;
@@ -441,7 +492,7 @@ export function buildCertificadoPrintDocument(
     }
 
     .cert-footer {
-      margin-top: 0.35rem; padding-top: 0.4rem;
+      margin-top: 0; padding-top: 0.35rem;
       border-top: 1px solid rgba(201,166,106,0.35);
       display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem;
       flex-shrink: 0;
@@ -503,8 +554,8 @@ export function buildCertificadoPrintDocument(
             class="cert-aside__athena"
             src="${athenaUrl}"
             alt=""
-            width="68"
-            height="68"
+            width="58"
+            height="58"
             onerror="this.classList.add('cert-aside__athena--hidden')"
           />
         </div>
@@ -521,14 +572,14 @@ export function buildCertificadoPrintDocument(
         <p class="cert-aside__year">${anio}<span class="cert-aside__year-line" aria-hidden="true"></span></p>
       </aside>
 
-      <div class="cert-main">
+      <div class="cert-main cert-main--watermark" style="${watermarkStyle}">
         <div class="cert-emblema-wrap" aria-hidden="true">
           <img
             class="cert-emblema"
             src="${emblemaUrl}"
             alt=""
-            width="132"
-            height="132"
+            width="115"
+            height="115"
             onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
           />
         </div>
@@ -541,7 +592,7 @@ export function buildCertificadoPrintDocument(
 
           <div class="cert-name-block">
             <div class="cert-name-rule" aria-hidden="true"></div>
-            <p class="cert-name">${nombre}</p>
+            <p class="${nombreClass}">${nombre}</p>
             <div class="cert-name-rule" aria-hidden="true"></div>
           </div>
 
@@ -561,32 +612,34 @@ export function buildCertificadoPrintDocument(
           <div class="cert-summary">
             <p class="cert-summary__title">Resumen de progreso</p>
             <div class="cert-summary__grid">
-              ${statCell(VALUE_ICONS.book, 'Actividades completadas', `${actDone} / ${actTotal}`)}
-              ${statCell(VALUE_ICONS.cap, 'Evaluaciones aprobadas', `${evalDone} / ${evalTotal}`)}
+              ${statCell(VALUE_ICONS.book, 'Actividades completadas', actStat)}
+              ${statCell(VALUE_ICONS.cap, 'Evaluaciones aprobadas', evalStat)}
               ${statCell(VALUE_ICONS.chart, 'Tiempo dedicado', escapeHtml(tiempo))}
               ${statCell(VALUE_ICONS.star, 'Calificación final', `${pct}%`)}
             </div>
           </div>
         </div>
 
-        <div class="cert-signatures" role="group" aria-label="Espacios para firmas">
-          <div class="cert-signatures__col">
-            <div class="cert-signatures__line" aria-hidden="true"></div>
-            <p class="cert-signatures__label">Docente de aula</p>
+        <div class="cert-bottom">
+          <div class="cert-signatures" role="group" aria-label="Espacios para firmas">
+            <div class="cert-signatures__col">
+              <div class="cert-signatures__line" aria-hidden="true"></div>
+              <p class="cert-signatures__label">Docente de aula</p>
+            </div>
+            <div class="cert-signatures__col">
+              <div class="cert-signatures__line" aria-hidden="true"></div>
+              <p class="cert-signatures__label">Director(a)</p>
+            </div>
           </div>
-          <div class="cert-signatures__col">
-            <div class="cert-signatures__line" aria-hidden="true"></div>
-            <p class="cert-signatures__label">Director(a)</p>
-          </div>
-        </div>
 
-        <footer class="cert-footer">
-          <p class="cert-date">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            Fecha de emisión: ${fechaEsc}
-          </p>
-          ${qrBlock}
-        </footer>
+          <footer class="cert-footer">
+            <p class="cert-date">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Fecha de emisión: ${fechaEsc}
+            </p>
+            ${qrBlock}
+          </footer>
+        </div>
       </div>
     </article>
   </div>

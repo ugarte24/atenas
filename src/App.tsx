@@ -13,6 +13,8 @@ const Progreso = lazy(() => import('./pages/Progreso'));
 const Logros = lazy(() => import('./pages/Logros'));
 const Misiones = lazy(() => import('./pages/Misiones'));
 const Certificados = lazy(() => import('./pages/Certificados'));
+const CertificadoVista = lazy(() => import('./components/certificado/CertificadoVista'));
+const VerificarCertificado = lazy(() => import('./pages/VerificarCertificado'));
 const AulaEnVivo = lazy(() => import('./pages/AulaEnVivo'));
 const Unidades = lazy(() => import('./pages/Unidades'));
 const UnidadTemas = lazy(() => import('./pages/UnidadTemas'));
@@ -60,6 +62,24 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route
+            path="/verificar-certificado/:id"
+            element={
+              <WithPageSuspense>
+                <VerificarCertificado />
+              </WithPageSuspense>
+            }
+          />
+          <Route
+            path="/certificado/vista"
+            element={
+              <ProtectedRoute allowedRoles={['estudiante', 'docente', 'admin']}>
+                <WithPageSuspense>
+                  <CertificadoVista />
+                </WithPageSuspense>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/"
             element={

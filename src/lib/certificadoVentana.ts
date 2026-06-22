@@ -5,6 +5,8 @@ import {
   type CertificadoParams,
 } from './certificadoPrintHtml';
 import { generarCertificadoQrDataUrl } from './certificadoQr';
+import { saveCertificadoPreviewParams } from './certificadoStorage';
+import { certificadoVistaUrl } from './certificadoUrls';
 
 async function fetchImageAsDataUrl(url: string): Promise<string | undefined> {
   if (!url) return undefined;
@@ -51,29 +53,16 @@ export async function buildCertificadoHtmlBlobUrl(params: CertificadoParams): Pr
 }
 
 /**
- * Abre el certificado en una nueva pestaña (HTML) con barra Imprimir / PDF.
+ * Abre el certificado en una nueva pestaña con barra Imprimir / Descargar PDF.
  */
 export async function openCertificadoEnVentana(params: CertificadoParams): Promise<void> {
   const ready = await prepareCertificadoParams(params);
-  const html = buildCertificadoPrintDocument(ready, {
-    variant: 'print',
-    autoPrint: false,
-    includeToolbar: true,
-  });
+  saveCertificadoPreviewParams(ready);
 
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-
-  try {
-    const win = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!win) {
-      throw new Error('Permite ventanas emergentes para ver el certificado.');
-    }
-    win.focus();
-  } catch (e) {
-    URL.revokeObjectURL(url);
-    throw e;
+  const url = certificadoVistaUrl();
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!win) {
+    throw new Error('Permite ventanas emergentes para ver el certificado.');
   }
-
-  window.setTimeout(() => URL.revokeObjectURL(url), 120_000);
+  win.focus();
 }
