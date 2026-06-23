@@ -24,9 +24,13 @@ describe('formatTiempoEstudio', () => {
 });
 
 describe('formatTiempoCertificado', () => {
-  it('muestra guión si el tiempo es menor a 60 segundos', () => {
+  it('oculta tiempo cero (columna no se muestra en certificado)', () => {
     expect(formatTiempoCertificado(0)).toBe('—');
-    expect(formatTiempoCertificado(45)).toBe('—');
+  });
+
+  it('muestra menos de un minuto cuando hay tiempo registrado', () => {
+    expect(formatTiempoCertificado(45)).toBe('< 1 min');
+    expect(formatTiempoCertificado(1)).toBe('< 1 min');
   });
 
   it('formatea horas para certificado', () => {
