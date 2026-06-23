@@ -207,7 +207,7 @@ export function buildCertificadoPrintDocument(
         <span class="cert-toolbar__title">Certificado · ATENAS</span>
         <div class="cert-toolbar__actions">
           <button type="button" class="cert-toolbar__btn" onclick="window.print()">Imprimir</button>
-          <span class="cert-toolbar__hint">Apaisado · Sin márgenes · Guardar como PDF</span>
+          <span class="cert-toolbar__hint">Apaisado · Sin márgenes · Escala 100% · PDF</span>
         </div>
       </div>`
     : '';
@@ -229,7 +229,7 @@ export function buildCertificadoPrintDocument(
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     @page {
-      size: letter landscape;
+      size: 11in 8.5in landscape;
       margin: 0;
     }
 
@@ -399,11 +399,12 @@ export function buildCertificadoPrintDocument(
       flex-direction: column;
       height: 100%;
       padding: 0.4rem 0.85rem 0.45rem 0.8rem;
+      overflow: hidden;
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: -0.28rem; right: 0;
-      width: 0.78in; height: 0.78in; z-index: 3; pointer-events: none;
+      position: absolute; top: 0.22rem; right: 0.32rem;
+      width: 0.92in; height: 0.92in; z-index: 4; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -438,7 +439,7 @@ export function buildCertificadoPrintDocument(
       text-align: center;
       margin-bottom: 0.2rem;
       position: relative;
-      padding: 0 0.9in 0 0;
+      padding: 0 1.05in 0 0;
     }
 
     .cert-platform-header {
@@ -649,10 +650,26 @@ export function buildCertificadoPrintDocument(
         overflow: hidden !important;
         aspect-ratio: auto;
         box-shadow: none !important;
+        border-width: 2px;
         page-break-before: avoid;
         page-break-after: avoid;
         page-break-inside: avoid;
         break-inside: avoid;
+        zoom: 0.93;
+      }
+      html.certificado-root--print .cert-main {
+        padding: 0.32rem 0.72rem 0.38rem 0.68rem;
+      }
+      html.certificado-root--print .cert-name {
+        font-size: 1.88rem;
+        padding: 0.32rem 0.3rem;
+      }
+      html.certificado-root--print .cert-grade-badge {
+        width: 94px;
+        height: 94px;
+      }
+      html.certificado-root--print .cert-aside {
+        padding: 1.25rem 0.7rem 0.6rem;
       }
       .cert-main, .cert-aside, .cert-body, .cert-bottom, .cert-footer {
         page-break-inside: avoid;
@@ -695,18 +712,19 @@ export function buildCertificadoPrintDocument(
       </aside>
 
       <div class="cert-main">
+        <div class="cert-emblema-wrap" aria-hidden="true">
+          <img
+            class="cert-emblema"
+            src="${emblemaUrl}"
+            alt=""
+            width="88"
+            height="88"
+            onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
+          />
+        </div>
+
         <div class="cert-body">
           <div class="cert-header">
-            <div class="cert-emblema-wrap" aria-hidden="true">
-              <img
-                class="cert-emblema"
-                src="${emblemaUrl}"
-                alt=""
-                width="75"
-                height="75"
-                onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
-              />
-            </div>
             <p class="cert-platform-header">Plataforma educativa ATENAS</p>
             <p class="cert-stars" aria-hidden="true">★ ★ ★</p>
             <h1 class="cert-title">Certificado de logro académico</h1>
