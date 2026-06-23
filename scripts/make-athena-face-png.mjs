@@ -25,9 +25,9 @@ async function main() {
   const h = meta.height ?? 512;
 
   const cropW = Math.round(w * 0.58);
-  const cropH = Math.round(h * 0.52);
+  const cropH = Math.round(h * 0.68);
   const left = Math.round((w - cropW) / 2);
-  const top = Math.max(0, Math.round(h * 0.0));
+  const top = Math.max(0, Math.round(h * 0.01));
 
   let { data, info } = await sharp(src)
     .extract({ left, top, width: cropW, height: cropH })

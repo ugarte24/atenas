@@ -186,7 +186,7 @@ export function buildCertificadoPrintDocument(
 
   const qrBlock = params.qrDataUrl
     ? `<div class="cert-qr">
-        <img class="cert-qr__img" src="${params.qrDataUrl}" alt="" width="72" height="72" />
+        <img class="cert-qr__img" src="${params.qrDataUrl}" alt="" width="48" height="48" />
       </div>`
     : '';
 
@@ -328,7 +328,7 @@ export function buildCertificadoPrintDocument(
       border-right: 2px solid var(--cert-gold);
     }
     .cert-aside__athena-wrap {
-      width: 58px; height: 58px; border-radius: 50%;
+      width: 62px; height: 62px; border-radius: 50%;
       border: 2px solid var(--cert-gold);
       overflow: hidden; margin-bottom: 0.45rem;
       background: transparent;
@@ -336,8 +336,8 @@ export function buildCertificadoPrintDocument(
       flex-shrink: 0;
     }
     .cert-aside__athena {
-      width: 100%; height: 100%; object-fit: contain; object-position: center 28%;
-      display: block; transform: scale(0.85);
+      width: 100%; height: 100%; object-fit: contain; object-position: center center;
+      display: block;
       background: transparent;
     }
     .cert-aside__athena--hidden { display: none !important; }
@@ -390,7 +390,7 @@ export function buildCertificadoPrintDocument(
       display: flex;
       flex-direction: column;
       height: 100%;
-      padding: 0.55rem 0.9rem 0.45rem 0.85rem;
+      padding: 0.55rem 0.9rem 0.65rem 0.85rem;
     }
 
     .cert-emblema-wrap {
@@ -412,7 +412,7 @@ export function buildCertificadoPrintDocument(
       justify-content: flex-start;
       width: 100%;
       min-height: 0;
-      padding-top: 0.1rem;
+      padding-top: 0.55rem;
       padding-right: 0.5rem;
     }
 
@@ -430,7 +430,7 @@ export function buildCertificadoPrintDocument(
     .cert-header {
       width: 100%;
       text-align: center;
-      margin-bottom: 0.05rem;
+      margin-bottom: 0.2rem;
       position: relative;
       padding: 0 0.9in 0 0;
     }
@@ -446,17 +446,20 @@ export function buildCertificadoPrintDocument(
     .cert-title {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
       font-size: 1.15rem; letter-spacing: 0.06em; text-transform: uppercase;
-      color: var(--cert-ink); line-height: 1.15; margin-bottom: 0.08rem;
+      color: var(--cert-ink); line-height: 1.15; margin-bottom: 0.22rem;
     }
     .cert-subtitle {
-      font-size: 0.68rem; font-style: italic; color: var(--cert-muted);
-      margin-bottom: 0.12rem; line-height: 1.35;
+      font-size: 0.82rem; font-style: italic; color: var(--cert-muted);
+      margin-bottom: 0.45rem; line-height: 1.4;
+      max-width: 88%;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .cert-name-block {
       width: 100%;
       max-width: 96%;
-      margin: 0.08rem 0 0.28rem;
+      margin: 0.35rem 0 0.28rem;
       padding: 0.3rem 0.4rem;
       text-align: center;
     }
@@ -487,7 +490,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-grade-row {
       display: flex; align-items: center; justify-content: center;
-      gap: 1rem; width: 100%; max-width: 94%;
+      gap: 1rem; width: fit-content; max-width: 94%;
       margin: 0 auto 0.38rem;
     }
     .cert-grade-badge {
@@ -508,9 +511,9 @@ export function buildCertificadoPrintDocument(
       max-width: 5.5rem;
     }
     .cert-grade-text {
-      flex: 1; min-width: 0;
+      flex: 0 1 auto; max-width: 15rem;
       font-size: 0.76rem; color: var(--cert-muted); line-height: 1.45;
-      text-align: left;
+      text-align: center;
     }
     .cert-grade-text strong { color: var(--cert-ink); }
 
@@ -520,7 +523,7 @@ export function buildCertificadoPrintDocument(
       background: linear-gradient(180deg, #faf6ee 0%, var(--cert-tan) 100%);
       padding: 0.5rem 0.55rem 0.55rem;
       box-shadow: 0 2px 8px rgba(20,28,44,0.05);
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.4rem;
     }
     .cert-summary__title {
       font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; font-weight: 600;
@@ -562,16 +565,17 @@ export function buildCertificadoPrintDocument(
       gap: 4rem;
       width: 100%;
       max-width: 82%;
-      margin: 0.55rem auto 0;
+      margin: 1.1rem auto 0;
       padding: 0 0.5rem;
     }
     .cert-signatures__col {
-      flex: 0 1 10.5rem; text-align: center; min-width: 0;
+      flex: 0 1 11rem; text-align: center; min-width: 0;
+      padding-top: 1.25rem;
     }
     .cert-signatures__line {
       height: 1px;
       background: linear-gradient(90deg, transparent, #2c2c2c 12%, #2c2c2c 88%, transparent);
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.35rem;
     }
     .cert-signatures__label {
       font-size: 0.58rem; color: var(--cert-muted); letter-spacing: 0.06em;
@@ -580,7 +584,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-footer {
       width: 100%;
-      padding: 0.32rem 0.15rem 0.05rem;
+      padding: 0.28rem 0.2rem 0.32rem;
       border-top: 1px solid rgba(201,166,106,0.4);
       display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
     }
@@ -590,9 +594,9 @@ export function buildCertificadoPrintDocument(
     }
     .cert-date svg { width: 12px; height: 12px; flex-shrink: 0; opacity: 0.75; }
 
-    .cert-qr { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
+    .cert-qr { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; margin-bottom: 0.12rem; }
     .cert-qr__img {
-      width: 52px; height: 52px; border: 1px solid rgba(201,166,106,0.45);
+      width: 48px; height: 48px; border: 1px solid rgba(201,166,106,0.45);
       border-radius: 4px; background: #fff;
     }
 
@@ -639,8 +643,8 @@ export function buildCertificadoPrintDocument(
             class="cert-aside__athena"
             src="${athenaUrl}"
             alt=""
-            width="58"
-            height="58"
+            width="62"
+            height="62"
             onerror="this.classList.add('cert-aside__athena--hidden')"
           />
         </div>
