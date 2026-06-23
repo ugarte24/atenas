@@ -14,7 +14,7 @@ import { useMisionesAlumno } from '../hooks/useMisiones';
 import { progresoPorcentajeUnidad } from '../lib/progresoUnidad';
 import { tituloUnidadConOrden } from '../lib/unidadTitulo';
 import { islaDesdeOrdenUnidadSafe } from '../lib/mundoUnidadMap';
-import { downloadCertificadoPdf, openCertificadoEnVentana, reservarVentanaCertificado } from '../lib/certificadoPdf';
+import { downloadCertificadoPdf, openCertificadoPdfEnVentana, reservarVentanaCertificado } from '../lib/certificadoPdf';
 import { buildCertificadoParams } from '../lib/certificadoStats';
 import { PageHeader } from '../components/ui/PageHeader';
 import { SkeletonLines } from '../components/ui/Skeleton';
@@ -98,11 +98,17 @@ export default function Certificados() {
         porcentajeUnidad: pct,
         umbralCertificado: umbral,
       });
-      openCertificadoEnVentana(params, ventana);
+      await openCertificadoPdfEnVentana(params, ventana);
     } catch (e) {
       ventana?.close();
       console.error(e);
-      window.alert('No se pudo preparar el certificado. Intenta de nuevo.');
+      if (e instanceof Error && e.message === 'popup_blocked') {
+        window.alert(
+          'El navegador bloqueó la nueva pestaña. Permite ventanas emergentes o usa el botón PDF para descargar.'
+        );
+      } else {
+        window.alert('No se pudo generar el certificado en PDF. Intenta de nuevo.');
+      }
     } finally {
       setOpeningId(null);
     }
@@ -351,7 +357,7 @@ export default function Certificados() {
                             {openingId === u.id ? (
                               <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
                             ) : null}
-                            Ver certificado
+                            Ver certificado (PDF)
                           </Button>
                           <Button
                             type="button"

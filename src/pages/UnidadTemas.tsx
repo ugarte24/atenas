@@ -20,7 +20,7 @@ import { SkeletonLines } from '../components/ui/Skeleton';
 import { Badge } from '../components/ui/Badge';
 import { cn } from '../components/ui/cn';
 import { buildCertificadoParams } from '../lib/certificadoStats';
-import { openCertificadoEnVentana, reservarVentanaCertificado } from '../lib/certificadoPdf';
+import { openCertificadoPdfEnVentana, reservarVentanaCertificado } from '../lib/certificadoPdf';
 
 type UnidadTab = 'temas' | 'recursos' | 'actividades' | 'evaluaciones';
 
@@ -278,7 +278,7 @@ export default function UnidadTemas() {
                 porcentajeUnidad: pctUnidad ?? 0,
                 umbralCertificado: umbralCert ?? 0,
               })
-                .then((params) => openCertificadoEnVentana(params, ventana))
+                .then((params) => openCertificadoPdfEnVentana(params, ventana))
                 .catch((e) => {
                   ventana?.close();
                   console.error(e);

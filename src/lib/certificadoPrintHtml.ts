@@ -284,16 +284,6 @@ export function buildCertificadoPrintDocument(
       aspect-ratio: 11 / 8.5;
       flex-shrink: 0;
     }
-    html.certificado-root--pdf .sheet {
-      width: ${CERT_LETTER_W_PX}px;
-      height: ${CERT_LETTER_H_PX}px;
-      display: flex;
-    }
-    html.certificado-root--pdf .cert {
-      width: ${CERT_LETTER_W_PX}px;
-      height: ${CERT_LETTER_H_PX}px;
-      flex-shrink: 0;
-    }
 
     .cert-toolbar {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -614,6 +604,92 @@ export function buildCertificadoPrintDocument(
     html.certificado-root--pdf .cert-platform-header,
     html.certificado-root--pdf .cert-stat__value {
       font-family: Georgia, 'Times New Roman', Times, serif !important;
+    }
+
+    html.certificado-root--pdf {
+      width: ${CERT_LETTER_W_PX}px;
+      height: ${CERT_LETTER_H_PX}px;
+      overflow: hidden;
+    }
+    html.certificado-root--pdf .sheet {
+      width: ${CERT_LETTER_W_PX}px;
+      height: ${CERT_LETTER_H_PX}px;
+      overflow: hidden;
+      display: block;
+    }
+    html.certificado-root--pdf .cert {
+      width: ${CERT_LETTER_W_PX}px;
+      height: ${CERT_LETTER_H_PX}px;
+      max-width: ${CERT_LETTER_W_PX}px;
+      max-height: ${CERT_LETTER_H_PX}px;
+      overflow: hidden;
+      box-shadow: none !important;
+      border-width: 2px;
+    }
+    html.certificado-root--pdf .cert-main {
+      padding: 5px 26px 5px 24px;
+    }
+    html.certificado-root--pdf .cert-body {
+      justify-content: center;
+      padding: 0 6px 2px;
+      flex: 1 1 0;
+      min-height: 0;
+    }
+    html.certificado-root--pdf .cert-emblema-wrap {
+      top: 4px;
+      right: 6px;
+      width: 84px;
+      height: 84px;
+    }
+    html.certificado-root--pdf .cert-header {
+      padding-right: 96px;
+      margin-bottom: 0.12rem;
+    }
+    html.certificado-root--pdf .cert-subtitle {
+      font-size: 0.76rem;
+      margin-bottom: 0.32rem;
+    }
+    html.certificado-root--pdf .cert-name {
+      font-size: 1.82rem;
+      padding: 0.28rem 0.25rem;
+    }
+    html.certificado-root--pdf .cert-name-block {
+      margin: 0.22rem 0 0.18rem;
+      padding: 0.22rem 0.28rem;
+    }
+    html.certificado-root--pdf .cert-grade-badge {
+      width: 90px;
+      height: 90px;
+    }
+    html.certificado-root--pdf .cert-grade-value {
+      font-size: 1.35rem;
+    }
+    html.certificado-root--pdf .cert-summary {
+      padding: 0.38rem 0.42rem 0.42rem;
+      margin-bottom: 0.28rem;
+    }
+    html.certificado-root--pdf .cert-signatures {
+      margin: 0.55rem auto 0;
+    }
+    html.certificado-root--pdf .cert-signatures__col {
+      padding-top: 2.15rem;
+    }
+    html.certificado-root--pdf .cert-footer {
+      padding: 5px 8px 4px;
+    }
+    html.certificado-root--pdf .cert-aside {
+      padding: 18px 10px 8px;
+    }
+    html.certificado-root--pdf .cert-aside__athena {
+      filter: none;
+    }
+    html.certificado-root--pdf .cert-aside__values {
+      margin-top: 0.45rem;
+      gap: 0.32rem;
+    }
+    html.certificado-root--pdf .cert-qr__img {
+      width: 50px;
+      height: 50px;
     }
 
     @media print {
