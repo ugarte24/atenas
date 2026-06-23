@@ -393,7 +393,7 @@ export function buildCertificadoPrintDocument(
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: 0.55rem; right: 1.15rem;
+      position: absolute; top: 0.9rem; right: 1.15rem;
       width: 0.82in; height: 0.82in; z-index: 3; pointer-events: none;
     }
     .cert-emblema {
@@ -408,10 +408,10 @@ export function buildCertificadoPrintDocument(
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       width: 100%;
       min-height: 0;
-      padding: 0.15rem 0.5rem 0.1rem;
+      padding: 1.15rem 0.5rem 0.35rem;
       overflow: hidden;
     }
 
@@ -644,14 +644,14 @@ export function buildCertificadoPrintDocument(
       padding: 5px 26px 5px 24px;
     }
     html.certificado-root--pdf .cert-body {
-      justify-content: flex-start;
-      padding: 2px 6px 2px;
+      justify-content: center;
+      padding: 26px 6px 10px;
       flex: 1 1 0;
       min-height: 0;
       overflow: hidden;
     }
     html.certificado-root--pdf .cert-emblema-wrap {
-      top: 8px;
+      top: 20px;
       right: 22px;
       width: 76px;
       height: 76px;
@@ -753,6 +753,10 @@ export function buildCertificadoPrintDocument(
       html.certificado-root--print .cert-main {
         padding: 0.32rem 0.72rem 0.38rem 0.68rem;
       }
+      html.certificado-root--print .cert-body {
+        justify-content: center;
+        padding: 1rem 0.5rem 0.3rem;
+      }
       html.certificado-root--print .cert-name {
         font-size: 1.88rem;
         padding: 0.12rem 0.3rem;
@@ -762,7 +766,7 @@ export function buildCertificadoPrintDocument(
         gap: 0.38rem;
       }
       html.certificado-root--print .cert-emblema-wrap {
-        top: 0.5rem;
+        top: 0.85rem;
         right: 1.1rem;
         width: 0.8in;
         height: 0.8in;
