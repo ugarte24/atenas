@@ -394,8 +394,8 @@ export function buildCertificadoPrintDocument(
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: 0.45rem; right: 0.45rem;
-      width: 0.95in; height: 0.95in; z-index: 3; pointer-events: none;
+      position: absolute; top: 0.1rem; right: 0.15rem;
+      width: 0.82in; height: 0.82in; z-index: 3; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -405,7 +405,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-body {
       position: relative; z-index: 2;
-      flex: 1 1 auto;
+      flex: 0 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -413,7 +413,7 @@ export function buildCertificadoPrintDocument(
       width: 100%;
       min-height: 0;
       padding-top: 0.1rem;
-      padding-right: 0.85in;
+      padding-right: 0.5rem;
     }
 
     .cert-bottom {
@@ -423,14 +423,16 @@ export function buildCertificadoPrintDocument(
       margin-top: auto;
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
-      padding-top: 0.25rem;
+      gap: 0;
+      padding-top: 0;
     }
 
     .cert-header {
       width: 100%;
       text-align: center;
       margin-bottom: 0.05rem;
+      position: relative;
+      padding: 0 0.9in 0 0;
     }
 
     .cert-platform-header {
@@ -518,6 +520,7 @@ export function buildCertificadoPrintDocument(
       background: linear-gradient(180deg, #faf6ee 0%, var(--cert-tan) 100%);
       padding: 0.5rem 0.55rem 0.55rem;
       box-shadow: 0 2px 8px rgba(20,28,44,0.05);
+      margin-bottom: 0.15rem;
     }
     .cert-summary__title {
       font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; font-weight: 600;
@@ -531,12 +534,14 @@ export function buildCertificadoPrintDocument(
     .cert-summary__grid--4 { grid-template-columns: repeat(4, 1fr); }
     .cert-stat {
       text-align: center;
-      background: #fff;
-      border: 1px solid rgba(201,166,106,0.4);
-      border-radius: 6px;
-      padding: 0.45rem 0.3rem 0.4rem;
-      box-shadow: 0 1px 3px rgba(20,28,44,0.04);
+      background: transparent;
+      border: none;
+      border-right: 1px solid rgba(201,166,106,0.35);
+      border-radius: 0;
+      padding: 0.35rem 0.3rem 0.25rem;
+      box-shadow: none;
     }
+    .cert-stat:last-child { border-right: none; }
     .cert-stat__icon {
       width: 32px; height: 32px; margin: 0 auto 0.28rem; border-radius: 50%;
       background: var(--cert-ink); color: var(--cert-gold-light);
@@ -557,7 +562,7 @@ export function buildCertificadoPrintDocument(
       gap: 4rem;
       width: 100%;
       max-width: 82%;
-      margin: 0 auto;
+      margin: 0.55rem auto 0;
       padding: 0 0.5rem;
     }
     .cert-signatures__col {
@@ -653,19 +658,18 @@ export function buildCertificadoPrintDocument(
       </aside>
 
       <div class="cert-main">
-        <div class="cert-emblema-wrap" aria-hidden="true">
-          <img
-            class="cert-emblema"
-            src="${emblemaUrl}"
-            alt=""
-            width="91"
-            height="91"
-            onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
-          />
-        </div>
-
         <div class="cert-body">
           <div class="cert-header">
+            <div class="cert-emblema-wrap" aria-hidden="true">
+              <img
+                class="cert-emblema"
+                src="${emblemaUrl}"
+                alt=""
+                width="79"
+                height="79"
+                onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
+              />
+            </div>
             <p class="cert-platform-header">Plataforma educativa ATENAS</p>
             <p class="cert-stars" aria-hidden="true">★ ★ ★</p>
             <h1 class="cert-title">Certificado de logro académico</h1>
@@ -697,9 +701,7 @@ export function buildCertificadoPrintDocument(
               ${summaryGrid.html}
             </div>
           </div>
-        </div>
 
-        <div class="cert-bottom">
           <div class="cert-signatures" role="group" aria-label="Espacios para firmas">
             <div class="cert-signatures__col">
               <div class="cert-signatures__line" aria-hidden="true"></div>
@@ -710,7 +712,9 @@ export function buildCertificadoPrintDocument(
               <p class="cert-signatures__label">Director(a)</p>
             </div>
           </div>
+        </div>
 
+        <div class="cert-bottom">
           <footer class="cert-footer">
             <p class="cert-date">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
