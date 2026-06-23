@@ -14,6 +14,7 @@
     "preview": "vite preview",
     "prepare-athena-icon": "node scripts/clean-athena-logo-png.mjs && node scripts/embed-favicon-png-in-svg.mjs",
     "prepare-athena-face": "node scripts/make-athena-face-png.mjs",
+    "prepare-certificado-atena": "node scripts/prepare-certificado-atena-logo.mjs",
     "prepare-emblema-colegio": "node scripts/make-emblema-colegio-transparent.mjs",
     "fix-emblema-black": "node scripts/fix-emblema-black-edge.mjs",
     "splash-lottie": "node scripts/generate-splash-lottie.mjs",

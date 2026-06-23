@@ -1,7 +1,7 @@
 /**
  * Certificado de logro académico — carta (letter) horizontal.
  * Emblema del colegio: `public/emblema-colegio-vaca-diez.png` (esquina superior derecha).
- * Rostro Atenea: `public/logo-athena-face.png` (barra lateral).
+ * Rostro Atenea (solo certificado): `public/logo-certificado-atena.png` (barra lateral).
  */
 
 import { getAppPathPrefix } from './deployBaseUrl';
@@ -30,7 +30,7 @@ export function resolveCertificadoEmblemaUrl(): string {
 }
 
 export function resolveCertificadoAthenaFaceUrl(): string {
-  return resolvePublicAssetUrl('logo-athena-face.png');
+  return resolvePublicAssetUrl('logo-certificado-atena.png');
 }
 
 function escapeHtml(s: string): string {
@@ -207,7 +207,7 @@ export function buildCertificadoPrintDocument(
         <span class="cert-toolbar__title">Certificado · ATENAS</span>
         <div class="cert-toolbar__actions">
           <button type="button" class="cert-toolbar__btn" onclick="window.print()">Imprimir</button>
-          <span class="cert-toolbar__hint">Para PDF: Imprimir → Guardar como PDF</span>
+          <span class="cert-toolbar__hint">Apaisado · Sin márgenes · Guardar como PDF</span>
         </div>
       </div>`
     : '';
@@ -229,7 +229,7 @@ export function buildCertificadoPrintDocument(
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     @page {
-      size: ${CERT_LETTER_W_IN} ${CERT_LETTER_H_IN} landscape;
+      size: letter landscape;
       margin: 0;
     }
 
@@ -337,17 +337,16 @@ export function buildCertificadoPrintDocument(
       border-right: 2px solid var(--cert-gold);
     }
     .cert-aside__athena-wrap {
-      width: 62px; height: 62px; border-radius: 50%;
-      border: 2px solid var(--cert-gold);
-      overflow: hidden; margin-bottom: 0.45rem;
+      width: 74px; height: 96px;
+      margin-bottom: 0.4rem;
       background: transparent;
-      box-shadow: 0 0 0 2px rgba(201,166,106,0.12);
       flex-shrink: 0;
     }
     .cert-aside__athena {
       width: 100%; height: 100%; object-fit: contain; object-position: center center;
       display: block;
       background: transparent;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
     }
     .cert-aside__athena--hidden { display: none !important; }
     .cert-aside__brand {
@@ -403,8 +402,8 @@ export function buildCertificadoPrintDocument(
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: 0.1rem; right: 0.15rem;
-      width: 0.82in; height: 0.82in; z-index: 3; pointer-events: none;
+      position: absolute; top: -0.28rem; right: 0;
+      width: 0.78in; height: 0.78in; z-index: 3; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -577,7 +576,7 @@ export function buildCertificadoPrintDocument(
     }
     .cert-signatures__col {
       flex: 0 1 11rem; text-align: center; min-width: 0;
-      padding-top: 1.55rem;
+      padding-top: 2.75rem;
     }
     .cert-signatures__line {
       height: 1px;
@@ -618,19 +617,46 @@ export function buildCertificadoPrintDocument(
 
     @media print {
       .no-print { display: none !important; }
-      body { background: #fff !important; margin: 0; }
+      html, body {
+        width: ${CERT_LETTER_W_IN} !important;
+        height: ${CERT_LETTER_H_IN} !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #fff !important;
+      }
       html.certificado-root--print .sheet {
-        padding: 0; margin: 0; min-height: auto;
-        width: ${CERT_LETTER_W_IN}; height: ${CERT_LETTER_H_IN};
-        display: block;
+        width: ${CERT_LETTER_W_IN} !important;
+        height: ${CERT_LETTER_H_IN} !important;
+        min-height: ${CERT_LETTER_H_IN} !important;
+        max-height: ${CERT_LETTER_H_IN} !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: block !important;
+        page-break-before: avoid;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
       html.certificado-root--print .cert {
-        width: ${CERT_LETTER_W_IN};
-        height: ${CERT_LETTER_H_IN};
-        max-width: none; max-height: none;
+        width: ${CERT_LETTER_W_IN} !important;
+        height: ${CERT_LETTER_H_IN} !important;
+        min-width: ${CERT_LETTER_W_IN} !important;
+        min-height: ${CERT_LETTER_H_IN} !important;
+        max-width: ${CERT_LETTER_W_IN} !important;
+        max-height: ${CERT_LETTER_H_IN} !important;
+        overflow: hidden !important;
         aspect-ratio: auto;
-        box-shadow: none;
+        box-shadow: none !important;
+        page-break-before: avoid;
+        page-break-after: avoid;
         page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .cert-main, .cert-aside, .cert-body, .cert-bottom, .cert-footer {
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
     }
   </style>
@@ -650,8 +676,8 @@ export function buildCertificadoPrintDocument(
             class="cert-aside__athena"
             src="${athenaUrl}"
             alt=""
-            width="62"
-            height="62"
+            width="74"
+            height="96"
             onerror="this.classList.add('cert-aside__athena--hidden')"
           />
         </div>
@@ -676,8 +702,8 @@ export function buildCertificadoPrintDocument(
                 class="cert-emblema"
                 src="${emblemaUrl}"
                 alt=""
-                width="79"
-                height="79"
+                width="75"
+                height="75"
                 onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
               />
             </div>
