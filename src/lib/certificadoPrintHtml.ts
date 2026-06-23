@@ -186,7 +186,7 @@ export function buildCertificadoPrintDocument(
 
   const qrBlock = params.qrDataUrl
     ? `<div class="cert-qr">
-        <img class="cert-qr__img" src="${params.qrDataUrl}" alt="" width="48" height="48" />
+        <img class="cert-qr__img" src="${params.qrDataUrl}" alt="" width="56" height="56" />
       </div>`
     : '';
 
@@ -260,20 +260,29 @@ export function buildCertificadoPrintDocument(
       font-family: Georgia, 'Times New Roman', Times, serif !important;
     }
 
+    html.certificado-root--print body {
+      margin: 0;
+      padding: 0;
+      background: #e8e4dc;
+    }
     html.certificado-root--print .sheet {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 0.5rem;
-      min-height: 100vh;
+      width: ${CERT_LETTER_W_IN};
+      height: ${CERT_LETTER_H_IN};
+      min-height: ${CERT_LETTER_H_IN};
+      max-height: ${CERT_LETTER_H_IN};
+      margin: 0 auto;
+      padding: 0;
+      display: block;
     }
     html.certificado-root--print .cert {
       width: ${CERT_LETTER_W_IN};
       height: ${CERT_LETTER_H_IN};
-      max-width: 100%;
-      max-height: calc(100vh - 1rem);
+      min-width: ${CERT_LETTER_W_IN};
+      min-height: ${CERT_LETTER_H_IN};
+      max-width: ${CERT_LETTER_W_IN};
+      max-height: ${CERT_LETTER_H_IN};
       aspect-ratio: 11 / 8.5;
+      flex-shrink: 0;
     }
     html.certificado-root--pdf .sheet {
       width: ${CERT_LETTER_W_PX}px;
@@ -324,7 +333,7 @@ export function buildCertificadoPrintDocument(
       position: relative; z-index: 1; flex: 0 0 23%; min-width: 0;
       background: linear-gradient(170deg, #1a2230 0%, #252f42 50%, #1c2433 100%);
       color: #f8f6f0; display: flex; flex-direction: column; align-items: center;
-      padding: 1.85rem 0.8rem 0.85rem; text-align: center;
+      padding: 1.5rem 0.8rem 0.75rem; text-align: center;
       border-right: 2px solid var(--cert-gold);
     }
     .cert-aside__athena-wrap {
@@ -390,7 +399,7 @@ export function buildCertificadoPrintDocument(
       display: flex;
       flex-direction: column;
       height: 100%;
-      padding: 0.55rem 0.9rem 0.65rem 0.85rem;
+      padding: 0.4rem 0.85rem 0.45rem 0.8rem;
     }
 
     .cert-emblema-wrap {
@@ -405,22 +414,20 @@ export function buildCertificadoPrintDocument(
 
     .cert-body {
       position: relative; z-index: 2;
-      flex: 0 0 auto;
+      flex: 1 1 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       width: 100%;
       min-height: 0;
-      padding-top: 0.55rem;
-      padding-right: 0.5rem;
+      padding: 0 0.5rem 0.1rem;
     }
 
     .cert-bottom {
       position: relative; z-index: 2;
       flex: 0 0 auto;
       width: 100%;
-      margin-top: auto;
       display: flex;
       flex-direction: column;
       gap: 0;
@@ -565,12 +572,12 @@ export function buildCertificadoPrintDocument(
       gap: 4rem;
       width: 100%;
       max-width: 82%;
-      margin: 1.1rem auto 0;
+      margin: 0.85rem auto 0;
       padding: 0 0.5rem;
     }
     .cert-signatures__col {
       flex: 0 1 11rem; text-align: center; min-width: 0;
-      padding-top: 1.25rem;
+      padding-top: 1.55rem;
     }
     .cert-signatures__line {
       height: 1px;
@@ -584,7 +591,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-footer {
       width: 100%;
-      padding: 0.28rem 0.2rem 0.32rem;
+      padding: 0.22rem 0.2rem 0.28rem;
       border-top: 1px solid rgba(201,166,106,0.4);
       display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
     }
@@ -594,9 +601,9 @@ export function buildCertificadoPrintDocument(
     }
     .cert-date svg { width: 12px; height: 12px; flex-shrink: 0; opacity: 0.75; }
 
-    .cert-qr { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; margin-bottom: 0.12rem; }
+    .cert-qr { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
     .cert-qr__img {
-      width: 48px; height: 48px; border: 1px solid rgba(201,166,106,0.45);
+      width: 56px; height: 56px; border: 1px solid rgba(201,166,106,0.45);
       border-radius: 4px; background: #fff;
     }
 

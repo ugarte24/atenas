@@ -4,7 +4,7 @@ import { downloadCertificadoPdf } from '../../lib/certificadoPdf';
 import { buildCertificadoHtmlBlobUrl } from '../../lib/certificadoVentana';
 import { loadCertificadoPreviewParams } from '../../lib/certificadoStorage';
 import type { CertificadoParams } from '../../lib/certificadoPrintHtml';
-import { CERT_LETTER_H_IN, CERT_LETTER_W_IN } from '../../lib/certificadoDimensions';
+import { CERT_LETTER_H_PX, CERT_LETTER_W_PX } from '../../lib/certificadoDimensions';
 import { cn } from '../ui/cn';
 
 export default function CertificadoVista() {
@@ -125,8 +125,8 @@ export default function CertificadoVista() {
             title="Certificado de progreso"
             className="bg-white shadow-2xl border-0 rounded-sm"
             style={{
-              width: CERT_LETTER_W_IN,
-              height: CERT_LETTER_H_IN,
+              width: CERT_LETTER_W_PX,
+              height: CERT_LETTER_H_PX,
               maxWidth: '100%',
               aspectRatio: '11 / 8.5',
             }}
