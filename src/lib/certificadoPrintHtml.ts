@@ -96,6 +96,11 @@ function formatEvaluacionesStat(done: number, total: number): string {
   return `${done} / ${total}`;
 }
 
+function formatTiempoStat(tiempoSeg: number): string {
+  if (tiempoSeg <= 0) return '—';
+  return formatTiempoCertificado(tiempoSeg);
+}
+
 function formatGradeCopy(pct: number, actTotal: number, evalTotal: number): string {
   if (actTotal > 0 && evalTotal > 0) {
     return `${pct}% de logro en actividades y evaluaciones de la unidad.`;
@@ -109,6 +114,7 @@ function formatGradeCopy(pct: number, actTotal: number, evalTotal: number): stri
   return `${pct}% de logro en la unidad.`;
 }
 
+/** Tres indicadores fijos + actividades opcional como cuarta tarjeta. */
 function buildSummaryGridHtml(
   actDone: number,
   actTotal: number,
@@ -127,24 +133,16 @@ function buildSummaryGridHtml(
       )
     );
   }
-  if (evalTotal > 0) {
-    cells.push(
-      statCell(
-        VALUE_ICONS.cap,
-        'Evaluaciones aprobadas',
-        escapeHtml(formatEvaluacionesStat(evalDone, evalTotal))
-      )
-    );
-  }
-  if (tiempoSeg > 0) {
-    cells.push(
-      statCell(
-        VALUE_ICONS.chart,
-        'Tiempo dedicado',
-        escapeHtml(formatTiempoCertificado(tiempoSeg))
-      )
-    );
-  }
+  cells.push(
+    statCell(
+      VALUE_ICONS.cap,
+      'Evaluaciones aprobadas',
+      escapeHtml(formatEvaluacionesStat(evalDone, evalTotal))
+    )
+  );
+  cells.push(
+    statCell(VALUE_ICONS.chart, 'Tiempo dedicado', escapeHtml(formatTiempoStat(tiempoSeg)))
+  );
   cells.push(statCell(VALUE_ICONS.star, 'Calificación final', `${pct}%`));
   return { html: cells.join(''), cols: cells.length };
 }
@@ -175,11 +173,9 @@ export function buildCertificadoPrintDocument(
   const tiempoSeg = params.tiempoEstudioSegundos ?? 0;
   const summaryGrid = buildSummaryGridHtml(actDone, actTotal, evalDone, evalTotal, tiempoSeg, pct);
   const summaryGridClass =
-    summaryGrid.cols <= 2
-      ? 'cert-summary__grid cert-summary__grid--2'
-      : summaryGrid.cols === 3
-        ? 'cert-summary__grid cert-summary__grid--3'
-        : 'cert-summary__grid';
+    summaryGrid.cols === 4
+      ? 'cert-summary__grid cert-summary__grid--4'
+      : 'cert-summary__grid cert-summary__grid--3';
   const gradeCopy = escapeHtml(formatGradeCopy(pct, actTotal, evalTotal));
 
   const emblemaRaw = params.emblemaUrl ?? resolveCertificadoEmblemaUrl();
@@ -215,8 +211,6 @@ export function buildCertificadoPrintDocument(
         </div>
       </div>`
     : '';
-
-  const watermarkStyle = `--cert-watermark: url('${emblemaUrl}');`;
 
   const nombreRaw = params.nombreEstudiante.trim() || 'Estudiante';
   const nombreUpperOnly =
@@ -396,29 +390,12 @@ export function buildCertificadoPrintDocument(
       display: flex;
       flex-direction: column;
       height: 100%;
-      padding: 0.85rem 1.15rem 0.6rem 1.05rem;
-      background-image: radial-gradient(ellipse 55% 70% at 88% 45%, rgba(201,166,106,0.06), transparent 70%);
-    }
-    .cert-main--watermark::before {
-      content: '';
-      position: absolute;
-      right: 18%;
-      top: 42%;
-      width: 35%;
-      height: 45%;
-      background-image: var(--cert-watermark);
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      opacity: 0.028;
-      pointer-events: none;
-      z-index: 0;
+      padding: 0.55rem 0.9rem 0.45rem 0.85rem;
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: 0.5rem; right: 0.5rem;
-      width: 1.05in; height: 1.05in; z-index: 1; pointer-events: none;
-      opacity: 0.88;
+      position: absolute; top: 0.45rem; right: 0.45rem;
+      width: 0.95in; height: 0.95in; z-index: 3; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -426,126 +403,165 @@ export function buildCertificadoPrintDocument(
     }
     .cert-emblema-wrap.cert-emblema--hidden { display: none !important; }
 
-    .cert-content {
+    .cert-body {
       position: relative; z-index: 2;
-      flex: 0 0 auto;
-      display: flex; flex-direction: column;
-      padding-right: 0.15rem;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      min-height: 0;
+      padding-top: 0.1rem;
+      padding-right: 0.85in;
     }
 
     .cert-bottom {
       position: relative; z-index: 2;
-      flex-shrink: 0;
-      display: flex; flex-direction: column;
-      gap: 0.2rem;
+      flex: 0 0 auto;
+      width: 100%;
       margin-top: auto;
-      padding-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      padding-top: 0.25rem;
     }
 
     .cert-header {
-      position: relative; z-index: 2;
-      padding-right: 1.15in;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 0.05rem;
     }
 
     .cert-platform-header {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.05rem; letter-spacing: 0.13em; text-transform: uppercase;
-      color: var(--cert-ink); margin-bottom: 0.25rem; line-height: 1.2;
-      text-align: left;
+      font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--cert-muted); margin-bottom: 0.2rem; line-height: 1.2;
     }
 
-    .cert-stars { color: var(--cert-gold); font-size: 0.72rem; letter-spacing: 0.35em; margin-bottom: 0.2rem; }
+    .cert-stars { color: var(--cert-gold); font-size: 0.68rem; letter-spacing: 0.4em; margin-bottom: 0.15rem; }
 
     .cert-title {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.28rem; letter-spacing: 0.05em; text-transform: uppercase;
-      color: var(--cert-ink); line-height: 1.2; margin-bottom: 0.15rem;
+      font-size: 1.15rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--cert-ink); line-height: 1.15; margin-bottom: 0.08rem;
     }
     .cert-subtitle {
-      font-size: 0.72rem; font-style: italic; color: var(--cert-muted); margin-bottom: 0.35rem;
+      font-size: 0.68rem; font-style: italic; color: var(--cert-muted);
+      margin-bottom: 0.12rem; line-height: 1.35;
     }
 
-    .cert-name-block { margin: 0.25rem 0 0.32rem; max-width: 100%; position: relative; z-index: 2; }
+    .cert-name-block {
+      width: 100%;
+      max-width: 96%;
+      margin: 0.08rem 0 0.28rem;
+      padding: 0.3rem 0.4rem;
+      text-align: center;
+    }
     .cert-name-rule {
-      height: 2px; background: linear-gradient(90deg, transparent, var(--cert-gold) 20%, var(--cert-gold) 80%, transparent);
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cert-gold) 15%, var(--cert-gold) 85%, transparent);
       position: relative;
+      max-width: 88%;
+      margin: 0 auto;
     }
     .cert-name-rule::after {
       content: '◆'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-      font-size: 0.45rem; color: var(--cert-gold); background: var(--cert-paper); padding: 0 0.35rem;
+      font-size: 0.5rem; color: var(--cert-gold); background: var(--cert-paper); padding: 0 0.4rem;
     }
     .cert-name {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.32rem; letter-spacing: 0.02em; color: var(--cert-ink);
-      padding: 0.35rem 0.25rem; line-height: 1.25; text-align: center;
+      font-size: 2.05rem; letter-spacing: 0.03em; color: var(--cert-ink);
+      padding: 0.4rem 0.35rem; line-height: 1.15; text-align: center;
     }
-    .cert-name--upper { text-transform: uppercase; letter-spacing: 0.05em; }
+    .cert-name--upper { text-transform: uppercase; letter-spacing: 0.06em; }
 
-    .cert-unit { font-size: 0.76rem; color: #2d3748; margin-bottom: 0.45rem; position: relative; z-index: 2; }
+    .cert-unit {
+      font-size: 0.74rem; color: #2d3748; margin-bottom: 0.35rem;
+      text-align: center; width: 100%;
+    }
     .cert-unit strong { font-weight: 600; color: var(--cert-ink); }
     .cert-unit em { font-style: italic; }
 
     .cert-grade-row {
-      display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; margin-bottom: 0.4rem;
-      position: relative; z-index: 2;
+      display: flex; align-items: center; justify-content: center;
+      gap: 1rem; width: 100%; max-width: 94%;
+      margin: 0 auto 0.38rem;
     }
     .cert-grade-badge {
-      flex-shrink: 0; width: 80px; height: 80px; border-radius: 50%;
+      flex-shrink: 0; width: 104px; height: 104px; border-radius: 50%;
       border: 3px solid var(--cert-gold);
       background: linear-gradient(145deg, #fffef9 0%, #f5efe0 100%);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      box-shadow: 0 2px 10px rgba(201,166,106,0.22);
+      box-shadow: 0 3px 14px rgba(201,166,106,0.28);
     }
-    .cert-grade-stars { font-size: 0.42rem; color: var(--cert-gold); letter-spacing: 0.08em; margin-bottom: 0.1rem; }
+    .cert-grade-stars { font-size: 0.44rem; color: var(--cert-gold); letter-spacing: 0.06em; margin-bottom: 0.12rem; }
     .cert-grade-value {
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
-      font-size: 1.2rem; line-height: 1; color: #1f2d2a;
+      font-size: 1.5rem; line-height: 1; color: #1f2d2a;
     }
     .cert-grade-label {
-      font-size: 0.42rem; text-transform: uppercase; letter-spacing: 0.06em;
-      color: var(--cert-muted); font-weight: 600; margin-top: 0.1rem; text-align: center; line-height: 1.2;
+      font-size: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--cert-muted); font-weight: 600; margin-top: 0.12rem; text-align: center; line-height: 1.2;
+      max-width: 5.5rem;
     }
-    .cert-grade-text { font-size: 0.78rem; color: var(--cert-muted); line-height: 1.45; max-width: 18rem; }
+    .cert-grade-text {
+      flex: 1; min-width: 0;
+      font-size: 0.76rem; color: var(--cert-muted); line-height: 1.45;
+      text-align: left;
+    }
     .cert-grade-text strong { color: var(--cert-ink); }
 
     .cert-summary {
-      border: 1px solid rgba(201,166,106,0.55); border-radius: 4px;
-      background: var(--cert-tan); padding: 0.4rem 0.55rem 0.45rem; margin-top: 0.1rem;
-      position: relative; z-index: 2;
+      width: 96%;
+      border: 1px solid rgba(201,166,106,0.5); border-radius: 8px;
+      background: linear-gradient(180deg, #faf6ee 0%, var(--cert-tan) 100%);
+      padding: 0.5rem 0.55rem 0.55rem;
+      box-shadow: 0 2px 8px rgba(20,28,44,0.05);
     }
     .cert-summary__title {
-      font-family: 'Cinzel', Georgia, serif; font-size: 0.58rem; font-weight: 600;
-      letter-spacing: 0.14em; text-transform: uppercase; color: var(--cert-ink);
-      margin-bottom: 0.45rem; text-align: center;
+      font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--cert-ink);
+      margin-bottom: 0.5rem; text-align: center;
     }
     .cert-summary__grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem;
+      display: grid; gap: 0.45rem;
     }
     .cert-summary__grid--3 { grid-template-columns: repeat(3, 1fr); }
-    .cert-summary__grid--2 { grid-template-columns: repeat(2, 1fr); }
-    .cert-stat { text-align: center; }
+    .cert-summary__grid--4 { grid-template-columns: repeat(4, 1fr); }
+    .cert-stat {
+      text-align: center;
+      background: #fff;
+      border: 1px solid rgba(201,166,106,0.4);
+      border-radius: 6px;
+      padding: 0.45rem 0.3rem 0.4rem;
+      box-shadow: 0 1px 3px rgba(20,28,44,0.04);
+    }
     .cert-stat__icon {
-      width: 26px; height: 26px; margin: 0 auto 0.2rem; border-radius: 50%;
+      width: 32px; height: 32px; margin: 0 auto 0.28rem; border-radius: 50%;
       background: var(--cert-ink); color: var(--cert-gold-light);
       display: flex; align-items: center; justify-content: center;
     }
-    .cert-stat__icon svg { width: 13px; height: 13px; }
+    .cert-stat__icon svg { width: 15px; height: 15px; }
     .cert-stat__label {
-      font-size: 0.48rem; text-transform: uppercase; letter-spacing: 0.04em;
-      color: var(--cert-muted); line-height: 1.2; margin-bottom: 0.1rem;
+      font-size: 0.46rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--cert-muted); line-height: 1.25; margin-bottom: 0.15rem;
+      min-height: 1.5em;
     }
     .cert-stat__value {
-      font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; font-weight: 600; color: var(--cert-ink);
+      font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; font-weight: 700; color: var(--cert-ink);
     }
 
     .cert-signatures {
-      display: flex; justify-content: center; gap: 3rem;
-      margin-top: 0;
-      padding: 0.15rem 0.5rem 0;
-      flex-shrink: 0;
+      display: flex; justify-content: center; align-items: flex-end;
+      gap: 4rem;
+      width: 100%;
+      max-width: 82%;
+      margin: 0 auto;
+      padding: 0 0.5rem;
     }
     .cert-signatures__col {
-      flex: 0 1 11rem; text-align: center; min-width: 0;
+      flex: 0 1 10.5rem; text-align: center; min-width: 0;
     }
     .cert-signatures__line {
       height: 1px;
@@ -553,25 +569,26 @@ export function buildCertificadoPrintDocument(
       margin-bottom: 0.3rem;
     }
     .cert-signatures__label {
-      font-size: 0.62rem; color: var(--cert-muted); letter-spacing: 0.05em;
+      font-size: 0.58rem; color: var(--cert-muted); letter-spacing: 0.06em;
       text-transform: uppercase; font-weight: 600;
     }
 
     .cert-footer {
-      margin-top: 0; padding-top: 0.35rem;
-      border-top: 1px solid rgba(201,166,106,0.35);
+      width: 100%;
+      padding: 0.32rem 0.15rem 0.05rem;
+      border-top: 1px solid rgba(201,166,106,0.4);
       display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
-      flex-shrink: 0;
     }
     .cert-date {
-      font-size: 0.66rem; color: var(--cert-muted); display: flex; align-items: center; gap: 0.3rem;
+      font-size: 0.62rem; color: var(--cert-muted); display: flex; align-items: center; gap: 0.28rem;
+      flex-shrink: 0;
     }
-    .cert-date svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.7; }
+    .cert-date svg { width: 12px; height: 12px; flex-shrink: 0; opacity: 0.75; }
 
-    .cert-qr { display: flex; align-items: center; justify-content: flex-end; }
+    .cert-qr { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
     .cert-qr__img {
-      width: 48px; height: 48px; border: 1px solid rgba(201,166,106,0.4);
-      border-radius: 3px; background: #fff;
+      width: 52px; height: 52px; border: 1px solid rgba(201,166,106,0.45);
+      border-radius: 4px; background: #fff;
     }
 
     html.certificado-root--pdf .cert-aside__brand,
@@ -635,19 +652,19 @@ export function buildCertificadoPrintDocument(
         <p class="cert-aside__year">${anio}<span class="cert-aside__year-line" aria-hidden="true"></span></p>
       </aside>
 
-      <div class="cert-main cert-main--watermark" style="${watermarkStyle}">
+      <div class="cert-main">
         <div class="cert-emblema-wrap" aria-hidden="true">
           <img
             class="cert-emblema"
             src="${emblemaUrl}"
             alt=""
-            width="100"
-            height="100"
+            width="91"
+            height="91"
             onerror="this.closest('.cert-emblema-wrap')?.classList.add('cert-emblema--hidden')"
           />
         </div>
 
-        <div class="cert-content">
+        <div class="cert-body">
           <div class="cert-header">
             <p class="cert-platform-header">Plataforma educativa ATENAS</p>
             <p class="cert-stars" aria-hidden="true">★ ★ ★</p>
