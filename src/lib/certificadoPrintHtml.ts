@@ -393,8 +393,8 @@ export function buildCertificadoPrintDocument(
     }
 
     .cert-emblema-wrap {
-      position: absolute; top: 0.22rem; right: 0.32rem;
-      width: 0.92in; height: 0.92in; z-index: 4; pointer-events: none;
+      position: absolute; top: 0.55rem; right: 1.15rem;
+      width: 0.82in; height: 0.82in; z-index: 3; pointer-events: none;
     }
     .cert-emblema {
       display: block; width: 100%; height: 100%;
@@ -408,10 +408,11 @@ export function buildCertificadoPrintDocument(
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       width: 100%;
       min-height: 0;
-      padding: 0 0.5rem 0.1rem;
+      padding: 0.15rem 0.5rem 0.1rem;
+      overflow: hidden;
     }
 
     .cert-bottom {
@@ -422,6 +423,8 @@ export function buildCertificadoPrintDocument(
       flex-direction: column;
       gap: 0;
       padding-top: 0;
+      margin-top: auto;
+      flex-shrink: 0;
     }
 
     .cert-header {
@@ -459,22 +462,33 @@ export function buildCertificadoPrintDocument(
       margin: 0.35rem 0 0.28rem;
       padding: 0.3rem 0.4rem;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.42rem;
+      flex-shrink: 0;
     }
     .cert-name-rule {
+      flex: 0 0 auto;
+      width: 88%;
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--cert-gold) 15%, var(--cert-gold) 85%, transparent);
       position: relative;
       max-width: 88%;
-      margin: 0 auto;
+      margin: 0;
     }
     .cert-name-rule::after {
       content: '◆'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
       font-size: 0.5rem; color: var(--cert-gold); background: var(--cert-paper); padding: 0 0.4rem;
     }
     .cert-name {
+      flex: 0 0 auto;
       font-family: 'Cinzel', Georgia, serif; font-weight: 700;
       font-size: 2.05rem; letter-spacing: 0.03em; color: var(--cert-ink);
-      padding: 0.4rem 0.35rem; line-height: 1.15; text-align: center;
+      margin: 0;
+      padding: 0.15rem 0.35rem; line-height: 1.2; text-align: center;
+      position: relative;
+      z-index: 1;
     }
     .cert-name--upper { text-transform: uppercase; letter-spacing: 0.06em; }
 
@@ -581,7 +595,7 @@ export function buildCertificadoPrintDocument(
 
     .cert-footer {
       width: 100%;
-      padding: 0.22rem 0.2rem 0.28rem;
+      padding: 0.22rem 1.2rem 0.5rem 0.35rem;
       border-top: 1px solid rgba(201,166,106,0.4);
       display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
     }
@@ -630,32 +644,35 @@ export function buildCertificadoPrintDocument(
       padding: 5px 26px 5px 24px;
     }
     html.certificado-root--pdf .cert-body {
-      justify-content: center;
-      padding: 0 6px 2px;
+      justify-content: flex-start;
+      padding: 2px 6px 2px;
       flex: 1 1 0;
       min-height: 0;
+      overflow: hidden;
     }
     html.certificado-root--pdf .cert-emblema-wrap {
-      top: 4px;
-      right: 6px;
-      width: 84px;
-      height: 84px;
+      top: 8px;
+      right: 22px;
+      width: 76px;
+      height: 76px;
     }
     html.certificado-root--pdf .cert-header {
-      padding-right: 96px;
+      padding-right: 88px;
       margin-bottom: 0.12rem;
     }
     html.certificado-root--pdf .cert-subtitle {
       font-size: 0.76rem;
       margin-bottom: 0.32rem;
     }
-    html.certificado-root--pdf .cert-name {
-      font-size: 1.82rem;
-      padding: 0.28rem 0.25rem;
-    }
     html.certificado-root--pdf .cert-name-block {
       margin: 0.22rem 0 0.18rem;
       padding: 0.22rem 0.28rem;
+      gap: 0.36rem;
+    }
+    html.certificado-root--pdf .cert-name {
+      font-size: 1.82rem;
+      padding: 0.12rem 0.25rem;
+      line-height: 1.22;
     }
     html.certificado-root--pdf .cert-grade-badge {
       width: 90px;
@@ -675,7 +692,7 @@ export function buildCertificadoPrintDocument(
       padding-top: 2.15rem;
     }
     html.certificado-root--pdf .cert-footer {
-      padding: 5px 8px 4px;
+      padding: 5px 22px 12px 10px;
     }
     html.certificado-root--pdf .cert-aside {
       padding: 18px 10px 8px;
@@ -738,7 +755,21 @@ export function buildCertificadoPrintDocument(
       }
       html.certificado-root--print .cert-name {
         font-size: 1.88rem;
-        padding: 0.32rem 0.3rem;
+        padding: 0.12rem 0.3rem;
+        line-height: 1.22;
+      }
+      html.certificado-root--print .cert-name-block {
+        gap: 0.38rem;
+      }
+      html.certificado-root--print .cert-emblema-wrap {
+        top: 0.5rem;
+        right: 1.1rem;
+        width: 0.8in;
+        height: 0.8in;
+      }
+      html.certificado-root--print .cert-footer {
+        padding-right: 1.15rem;
+        padding-bottom: 0.48rem;
       }
       html.certificado-root--print .cert-grade-badge {
         width: 94px;
